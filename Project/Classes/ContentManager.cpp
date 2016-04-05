@@ -10,7 +10,7 @@ ContentManager::~ContentManager() {
 }
 
 void ContentManager::LoadContent() {
-	staticObjects.push_back(CreateStaticObject());
+	//staticObjects.push_back(CreateStaticObject());
 }
 
 vector<StaticObject>* ContentManager::getStaticObjects() {
