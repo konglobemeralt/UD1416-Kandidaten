@@ -1,0 +1,25 @@
+﻿Build started 2016-03-02 23:34:20.
+     1>Project "C:\Hemmaprojekt\Project\Demo.vcxproj" on node 2 (Build target(s)).
+     1>FxCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"DPS_main" /T ps_5_0 /Fo "C:\Hemmaprojekt\Project\Debug\DeferredPixelShader.cso" /Od /Zi ..\Shaders\DeferredPixelShader.hlsl 
+         compilation object save succeeded; see C:\Hemmaprojekt\Project\Debug\DeferredPixelShader.cso
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Classes\GraphicsManager.cpp
+         GraphicsManager.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Hemmaprojekt\Project\Debug\Demo.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Hemmaprojekt\Project\Debug\Demo.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Hemmaprojekt\Project\Debug\Demo.lib" /MACHINE:X86 Debug\Camera.obj
+         Debug\ContentManager.obj
+         Debug\HeightMap.obj
+         Debug\main.obj
+         Debug\ObjImporter.obj
+         Debug\Particles.obj
+         Debug\QuadTree.obj
+         Debug\GraphicsManager.obj
+         Debug\WindowManager.obj
+         C:\Hemmaprojekt\Project\DirectXToolkit\Bin\Desktop_2013\Win32\Debug\DirectXTK.lib
+         Demo.vcxproj -> C:\Hemmaprojekt\Project\Debug\Demo.exe
+     1>Done Building Project "C:\Hemmaprojekt\Project\Demo.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.12
