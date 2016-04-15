@@ -6,18 +6,24 @@
 #include <d3dcompiler.h>
 #include <mmsystem.h>
 #include <DirectXMath.h>
+#include <string>
+
+#include "DataStructures.h"
+#include "ToneMapping.h"
+#include "Text.h"
+#include "AntiAliasing.h"
+#include "Compositing.h"
+#include "Lightning.h"
 
 #pragma comment (lib, "WINMM.LIB")
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
-#include "ContentManager.h"
-
 using namespace DirectX;
 
 class GraphicsManager {
 private:
-	ContentManager* gContentManager;
+	GraphicsManager() {};
 
 	IDXGISwapChain* gSwapChain = nullptr;
 	ID3D11Device* gDevice = nullptr;
@@ -25,72 +31,15 @@ private:
 	ID3D11RenderTargetView* gBackbufferRTV = nullptr;
 
 	HWND* windowHandle;
-	UINT windowWidth;
-	UINT windowHeight;
+	UINT windowWidth = 1280;
+	UINT windowHeight = 1024;
 
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	UINT32 vertexSize;
-	UINT32 quadSize;
-	UINT32 boxSize;
-	UINT32 offset;
-
-	void CreateGbuffers();
-	void CreateSamplers();
 	void setRasterstate(D3D11_CULL_MODE cullmode);
 	HRESULT CreateDirect3DContext();
 	void ResetViews();
 
-	// Layouts
-	ID3D11InputLayout* gVertexLayout = nullptr;
-	ID3D11InputLayout* gDeferredVertexLayout = nullptr;
-	ID3D11InputLayout* gShadowMapLayout = nullptr;
-	ID3D11InputLayout* gBoxLayout = nullptr;
-	ID3D11InputLayout* gHMLayout = nullptr;
-
-	// Shaders
-	ID3D11VertexShader* gVertexShader = nullptr;
-	ID3D11VertexShader* gDeferredVertexShader = nullptr;
-	ID3D11VertexShader* gShadowMapVertexShader = nullptr;
-	ID3D11VertexShader* gBoxVertexShader = nullptr;
-	ID3D11VertexShader* gHMVertexShader = nullptr;
-	ID3D11PixelShader* gPixelShader = nullptr;
-	ID3D11PixelShader* gDeferredPixelShader = nullptr;
-	ID3D11PixelShader* gShadowMapPixelShader = nullptr;
-	ID3D11PixelShader* gBoxPixelShader = nullptr;
-	ID3D11PixelShader* gHMPixelShader = nullptr;
-	ID3D11GeometryShader* gGeometryShader = nullptr;
-
 	// Quad
 	ID3D11Buffer* gQuadBuffer = nullptr;
-
-	// G-BUFFERS
-	ID3D11RenderTargetView* g_ColorRTV = nullptr;
-	ID3D11RenderTargetView* g_NormalRTV = nullptr;
-	ID3D11RenderTargetView* g_WposRTV = nullptr;
-	ID3D11RenderTargetView* g_DiffuseRTV = nullptr;
-	ID3D11RenderTargetView* g_RTV[4] = { g_ColorRTV, g_NormalRTV , g_WposRTV, g_DiffuseRTV};
-	
-	ID3D11ShaderResourceView* g_ColorSRV = nullptr;
-	ID3D11ShaderResourceView* g_NormalSRV = nullptr;
-	ID3D11ShaderResourceView* g_LightSRV = nullptr;
-	ID3D11ShaderResourceView* g_WposSRV = nullptr;
-	ID3D11ShaderResourceView* g_DiffuseSRV = nullptr;
-	ID3D11ShaderResourceView* g_SRV[5] = { g_ColorSRV, g_NormalSRV, g_LightSRV, g_WposSRV, g_DiffuseSRV };
-	
-	ID3D11Texture2D* g_Color = nullptr;
-	ID3D11Texture2D* g_Normal = nullptr;
-	ID3D11Texture2D* g_cameraDepth = nullptr;
-	ID3D11Texture2D* g_lightDepth = nullptr;
-	ID3D11Texture2D* g_Wpos = nullptr;
-	ID3D11Texture2D* g_Diffuse = nullptr;
-	
-	ID3D11DepthStencilView* g_cameraDSV = nullptr;
-	ID3D11DepthStencilView* g_lightDSV = nullptr;
-
-	// Samplers
-	ID3D11SamplerState* samplerStateWrap;
-	ID3D11SamplerState* samplerStateClamp;
-	ID3D11SamplerState* samplerStateTerrain;
 
 	// Rasterstate
 	ID3D11RasterizerState* rasterState;
@@ -101,19 +50,52 @@ private:
 	ID3D11ShaderResourceView* emptySRV[8];
 	
 public:
-	GraphicsManager(HWND* hwnd, UINT winWidth, UINT winHeight);
-	~GraphicsManager();
+	static GraphicsManager& getInstance(){
+		static GraphicsManager instance;
+		return instance;
+	}
+
+	void Render();
+
+	int user = TEXT;
+
+	ThesisData thesisData;
+
+	GraphicsManager(GraphicsManager const&) = delete;
+	void operator=(GraphicsManager const&) = delete;
+
+	void initGraphics(HWND* hwnd);
 
 	IDXGISwapChain* getSwapChain();
 	ID3D11Device* getDevice();
 	ID3D11DeviceContext* getDeviceContext();
-	ID3D11RenderTargetView* getBackbufferRTV();
+	ID3D11Buffer** getQuad();
+	UINT getWindowWidth();
+	UINT getWindowHeight();
+	ID3D11RenderTargetView** getBackbuffer();
 
-	void setContentManager(ContentManager* manager);
+	void setWindowSize(UINT width, UINT height);
 
-	void Render();
-	void Release();
-	void CreateShaders();
+	void createConstantBuffer(string name, const void* data, UINT size);
+	void createVertexShader(string shaderName, string layoutName, D3D11_INPUT_ELEMENT_DESC* desc, UINT size);
+	void createDomainShader(string name);
+	void createHullShader(string name);
+	void createGeometryShader(string name);
+	void createPixelShader(string name);
+	void createComputeShader(string name);
+	void createTexture2D(
+		string name, 
+		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT, 
+		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+		bool renderTarget = true,
+		bool shaderResource = true
+	);
+	void createSamplerState(
+		string name, 
+		D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
+		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
+	);
 };
 
 #endif

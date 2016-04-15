@@ -1,4 +1,5 @@
 #include "WindowManager.h"
+#include "GraphicsManager.h"
 
 WindowManager::WindowManager(HINSTANCE hInstance, WNDPROC WndProc) {
 	WNDCLASSEX wcex = { 0 };
@@ -12,7 +13,7 @@ WindowManager::WindowManager(HINSTANCE hInstance, WNDPROC WndProc) {
 	if (!RegisterClassEx(&wcex))
 		exit(-1);
 
-	RECT rc = { 0, 0, (LONG)windowWidth, (LONG)windowHeight };
+	RECT rc = { 0, 0, (LONG)GraphicsManager::getInstance().getWindowWidth(), (LONG)GraphicsManager::getInstance().getWindowHeight() };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	m_hwnd = CreateWindow(
@@ -30,14 +31,6 @@ WindowManager::WindowManager(HINSTANCE hInstance, WNDPROC WndProc) {
 }
 
 WindowManager::~WindowManager() {
-}
-
-UINT WindowManager::getWindowWidth() {
-	return windowWidth;
-}
-
-UINT WindowManager::getWindowHeight() {
-	return windowHeight;
 }
 
 HWND* WindowManager::getWindowHandle() {
