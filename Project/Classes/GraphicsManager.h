@@ -7,6 +7,7 @@
 #include <mmsystem.h>
 #include <DirectXMath.h>
 #include <string>
+#include <d3d11sdklayers.h>
 
 #include "DataStructures.h"
 #include "ToneMapping.h"
@@ -25,7 +26,7 @@ using namespace DirectX;
 class GraphicsManager {
 private:
 	GraphicsManager() {};
-
+	
 	IDXGISwapChain* gSwapChain = nullptr;
 	ID3D11Device* gDevice = nullptr;
 	ID3D11DeviceContext* gDeviceContext = nullptr;

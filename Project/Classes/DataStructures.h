@@ -36,6 +36,7 @@ struct ThesisData {
 	map<string, ID3D11ComputeShader*> computeShaders;
 	map<string, ID3D11RenderTargetView*> renderTargetViews;
 	map<string, ID3D11ShaderResourceView*> shaderResourceViews;
+	map<string, ID3D11Texture2D*> textures;
 	map<string, ID3D11SamplerState*> samplerStates;
 };
 

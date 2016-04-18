@@ -21,6 +21,14 @@ void renderToneMapping() {
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
 	deviceContext->Draw(4, 0);
+
+	ScratchImage image;
+	HRESULT hr0 = CaptureTexture(device, deviceContext, resources.textures["FirstSRV"], image);
+	const Image* img = image.GetImage(0, 0, 0);
+	assert(img);
+	HRESULT hr1 = SaveToWICFile(*img, WIC_FLAGS_NONE, GUID_WICPixelFormat128bppRGBAFloat, L"hej.open_exr");
+
+	int a = 0;
 }
 
 void initToneMapping() {
@@ -57,7 +65,7 @@ void initToneMapping() {
 
 	manager.createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
-
+	
 
 	// ###########################################################
 	// ######				Other Shaders					######

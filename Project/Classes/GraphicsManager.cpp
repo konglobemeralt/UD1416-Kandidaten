@@ -353,6 +353,8 @@ void GraphicsManager::createTexture2D(
 
 			thesisData.shaderResourceViews[name] = srv;
 		}
+
+		thesisData.textures[name] = texture;
 	}
 }
 
