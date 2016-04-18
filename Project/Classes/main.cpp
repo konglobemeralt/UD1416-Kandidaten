@@ -48,13 +48,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
+	CoInitialize(NULL);
+	setUser();
 	WindowManager windowManager(hInstance, WndProc);
 	GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
-	setUser();
-
-	MSG msg = { 0 };
-
-	CoInitialize(NULL);
+	
+	MSG msg = { 0 };	
 
 	D3D11_VIEWPORT vp;
 	vp.Width = (float)GraphicsManager::getInstance().getWindowWidth();

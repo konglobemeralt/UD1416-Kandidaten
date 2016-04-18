@@ -9,11 +9,14 @@ void renderToneMapping() {
 	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
+	deviceContext->IASetInputLayout(resources.inputLayouts["TM_Layout"]);
 
-	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	deviceContext->VSSetShader(resources.vertexShaders["TM_VertexShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["TM_PixelShader"], nullptr, 0);
+
+	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
+
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
@@ -52,7 +55,7 @@ void initToneMapping() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	manager.createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager.createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -63,7 +66,7 @@ void initToneMapping() {
 	//		string name
 	//			);
 
-	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	manager.createPixelShader("TM_PixelShader"); // Name has to match shader name without .hlsl
 
 
 
@@ -81,7 +84,7 @@ void initToneMapping() {
 
 	// Only RTV
 	manager.createTexture2D(
-		"myRTV",
+		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager.getWindowWidth(),
 		manager.getWindowHeight(),
@@ -91,7 +94,7 @@ void initToneMapping() {
 
 	// Only SRV
 	manager.createTexture2D(
-		"mySRV",
+		"FirstSRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager.getWindowWidth(),
 		manager.getWindowHeight(),
@@ -100,10 +103,10 @@ void initToneMapping() {
 	);
 
 	// Both
-	manager.createTexture2D("myRTVandSRV");
+	manager.createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("ToneMapping/Images/picture.jpg", "mySRV");
+	manager.attachImage("ToneMapping/picture.png", "FirstSRV");
 
 
 
@@ -116,5 +119,5 @@ void initToneMapping() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager.createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }
