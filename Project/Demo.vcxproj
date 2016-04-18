@@ -79,7 +79,6 @@
   <ItemGroup>
     <ClCompile Include="Classes\Camera.cpp" />
     <ClCompile Include="Classes\ContentManager.cpp" />
-    <ClCompile Include="Classes\HeightMap.cpp" />
     <ClCompile Include="Classes\main.cpp" />
     <ClCompile Include="Classes\ObjImporter.cpp" />
     <ClCompile Include="Classes\Particles.cpp" />

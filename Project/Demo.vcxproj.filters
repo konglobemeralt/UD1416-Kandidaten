@@ -60,9 +60,6 @@
     <ClCompile Include="Classes\Camera.cpp">
       <Filter>Resource Files\Classes</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\HeightMap.cpp">
-      <Filter>Resource Files\Classes</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
