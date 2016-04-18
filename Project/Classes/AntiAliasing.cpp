@@ -41,11 +41,11 @@ void initAntiAliasing() {
 	// ###########################################################
 	// ######				Vertex Shader					######
 	// ###########################################################
-	//	void createInputLayout(
-	//		string name, 
+	//	void createVertexShader(
+	//		string shaderName,
+	//		string layoutName,
 	//		D3D11_INPUT_ELEMENT_DESC* desc,
-	//		UINT size
-	//	);
+	//		UINT size);
 
 	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -59,14 +59,9 @@ void initAntiAliasing() {
 	// ###########################################################
 	// ######				Other Shaders					######
 	// ###########################################################
-	//	void createTexture2D(
-	//		string name,
-	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-	//		bool renderTarget = true,
-	//		bool shaderResource = true
-	//	);
+	//	void createPixelShader(
+	//		string name
+	//			);
 
 	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
 
@@ -85,13 +80,13 @@ void initAntiAliasing() {
 	//	);
 
 	manager.createTexture2D(
-		"myRTV", 
-		DXGI_FORMAT_R32G32B32A32_FLOAT, 
+		"myRTV",
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager.getWindowWidth(),
 		manager.getWindowHeight(),
 		true,
 		false
-		);
+	);
 
 	manager.createTexture2D(
 		"mySRV",
