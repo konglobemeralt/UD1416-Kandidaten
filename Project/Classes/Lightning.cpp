@@ -1,18 +1,21 @@
 #include "Lightning.h"
 
 void renderLightning() {
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float clearColor[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
 	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
 	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
 
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	//deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
 	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
 
 	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
+	deviceContext->HSSetShader(resources.hullShaders["LightningHullShader"], nullptr, 0);
+	deviceContext->DSSetShader(resources.domainShaders["LightningDomainShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
 
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
@@ -63,6 +66,8 @@ void initLightning() {
 	//		string name
 	//			);
 
+	manager.createHullShader("LightningHullShader");
+	manager.createDomainShader("LightningDomainShader");
 	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
 
 
