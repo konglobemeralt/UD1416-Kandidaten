@@ -79,6 +79,7 @@ void initAntiAliasing() {
 	//		bool shaderResource = true
 	//	);
 
+	// Only RTV
 	manager.createTexture2D(
 		"myRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -88,6 +89,7 @@ void initAntiAliasing() {
 		false
 	);
 
+	// Only SRV
 	manager.createTexture2D(
 		"mySRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -97,7 +99,11 @@ void initAntiAliasing() {
 		false
 	);
 
+	// Both
 	manager.createTexture2D("myRTVandSRV");
+
+	// Add image on an SRV (base filepath will be set to the assets folder automatically)
+	manager.attachImage("ToneMapping/Images/picture.jpg", "mySRV");
 
 
 

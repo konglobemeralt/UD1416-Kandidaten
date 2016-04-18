@@ -14,6 +14,7 @@
 #include "AntiAliasing.h"
 #include "Compositing.h"
 #include "Lightning.h"
+#include "../DirectXToolkit/Inc/WICTextureLoader.h"
 
 #pragma comment (lib, "WINMM.LIB")
 #pragma comment (lib, "d3d11.lib")
@@ -96,6 +97,7 @@ public:
 		D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
 		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	);
+	void attachImage(string textureName, string srvName);
 };
 
 #endif

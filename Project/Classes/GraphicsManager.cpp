@@ -382,3 +382,7 @@ void GraphicsManager::createSamplerState(
 
 	thesisData.samplerStates[name] = sampler;
 }
+
+void GraphicsManager::attachImage(string textureName, string srvName) {
+	CreateWICTextureFromFile(gDevice, wstring(textureName.begin(), textureName.end()).c_str(), nullptr, &thesisData.shaderResourceViews[srvName]);
+}
