@@ -103,10 +103,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\VertexShader.hlsl">
+    <FxCompile Include="Shaders\TM_PixelShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\PixelShader.hlsl">
+    <FxCompile Include="Shaders\TM_VertexShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\LightningDomainShader.hlsl">
