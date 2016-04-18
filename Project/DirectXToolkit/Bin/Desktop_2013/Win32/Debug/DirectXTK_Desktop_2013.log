@@ -1,1 +1,30 @@
-﻿
+﻿  pch.cpp
+  WICTextureLoader.cpp
+  VertexTypes.cpp
+  SpriteFont.cpp
+  PrimitiveBatch.cpp
+  SpriteBatch.cpp
+  SkinnedEffect.cpp
+  SimpleMath.cpp
+  ScreenGrab.cpp
+  ModelLoadVBO.cpp
+  ModelLoadSDKMESH.cpp
+  ModelLoadCMO.cpp
+  Model.cpp
+  GeometricPrimitive.cpp
+  GamePad.cpp
+  EnvironmentMapEffect.cpp
+  EffectFactory.cpp
+  EffectCommon.cpp
+  BinaryReader.cpp
+  DualTextureEffect.cpp
+  DGSLEffectFactory.cpp
+  Generating Code...
+  Compiling...
+  DGSLEffect.cpp
+  DDSTextureLoader.cpp
+  CommonStates.cpp
+  BasicEffect.cpp
+  AlphaTestEffect.cpp
+  Generating Code...
+  DirectXTK_Desktop_2013.vcxproj -> C:\Users\BTH\Documents\GitHub\UD1416-Kandidaten\Project\DirectXToolkit\Bin\Desktop_2013\Win32\Debug\DirectXTK.lib

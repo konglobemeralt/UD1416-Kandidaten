@@ -224,7 +224,7 @@ void GraphicsManager::createVertexShader(string shaderName, string layoutName, D
 	// Shader
 	ID3DBlob* blob = nullptr;
 	ID3D11VertexShader* shader;
-	wstring catName = L"../Shaders/" + wstring(shaderName.begin(), shaderName.end()) + L".hlsl";
+	wstring catName = L"Shaders/" + wstring(shaderName.begin(), shaderName.end()) + L".hlsl";
 
 	HRESULT HR = D3DCompileFromFile(catName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS_main", "vs_5_0", 0, NULL, &blob, nullptr);
 	HR = gDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
@@ -243,7 +243,7 @@ void GraphicsManager::createVertexShader(string shaderName, string layoutName, D
 void GraphicsManager::createDomainShader(string name) {
 	ID3DBlob* blob = nullptr;
 	ID3D11DomainShader* shader;
-	wstring shaderName = L"../Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
+	wstring shaderName = L"Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
 
 	D3DCompileFromFile(shaderName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "DS_main", "ds_5_0", 0, NULL, &blob, nullptr);
 	gDevice->CreateDomainShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
@@ -255,7 +255,7 @@ void GraphicsManager::createDomainShader(string name) {
 void GraphicsManager::createHullShader(string name) {
 	ID3DBlob* blob = nullptr;
 	ID3D11HullShader* shader;
-	wstring shaderName = L"../Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
+	wstring shaderName = L"Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
 
 	D3DCompileFromFile(shaderName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "HS_main", "hs_5_0", 0, NULL, &blob, nullptr);
 	gDevice->CreateHullShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
@@ -267,7 +267,7 @@ void GraphicsManager::createHullShader(string name) {
 void GraphicsManager::createGeometryShader(string name) {
 	ID3DBlob* blob = nullptr;
 	ID3D11GeometryShader* shader;
-	wstring shaderName = L"../Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
+	wstring shaderName = L"Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
 
 	D3DCompileFromFile(shaderName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "GS_main", "gs_5_0", 0, NULL, &blob, nullptr);
 	gDevice->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
@@ -279,7 +279,7 @@ void GraphicsManager::createGeometryShader(string name) {
 void GraphicsManager::createPixelShader(string name) {
 	ID3DBlob* blob = nullptr;
 	ID3D11PixelShader* shader;
-	wstring shaderName = L"../Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
+	wstring shaderName = L"Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
 
 	HRESULT HR = D3DCompileFromFile(shaderName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS_main", "ps_5_0", 0, NULL, &blob, nullptr);
 	HR = gDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);
@@ -291,7 +291,7 @@ void GraphicsManager::createPixelShader(string name) {
 void GraphicsManager::createComputeShader(string name) {
 	ID3DBlob* blob = nullptr;
 	ID3D11ComputeShader* shader;
-	wstring shaderName = L"../Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
+	wstring shaderName = L"Shaders/" + wstring(name.begin(), name.end()) + L".hlsl";
 
 	D3DCompileFromFile(shaderName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "CS_main", "cs_5_0", 0, NULL, &blob, nullptr);
 	gDevice->CreateComputeShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &shader);

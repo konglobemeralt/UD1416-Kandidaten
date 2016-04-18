@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	GraphicsManager::getInstance().user = TEXT;
+	GraphicsManager::getInstance().user = TONEMAPPING;
 /*		
 		CHOOSE FROM:
 		TEXT
