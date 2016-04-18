@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	GraphicsManager::getInstance().user = TONEMAPPING;
+	GraphicsManager::getInstance().user = LIGHTNING;
 /*		
 		CHOOSE FROM:
 		TEXT
@@ -48,9 +48,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
+	setUser();
 	WindowManager windowManager(hInstance, WndProc);
 	GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
-	setUser();
 
 	MSG msg = { 0 };
 

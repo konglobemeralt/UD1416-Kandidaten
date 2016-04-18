@@ -109,5 +109,17 @@
     <FxCompile Include="Shaders\PixelShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\LightningDomainShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningHullShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningPixelShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningVertexShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
