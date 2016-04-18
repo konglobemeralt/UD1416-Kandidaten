@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	GraphicsManager::getInstance().user = LIGHTNING;
+	GraphicsManager::getInstance().user = TONEMAPPING;
 /*		
 		CHOOSE FROM:
 		TEXT
@@ -48,13 +48,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
+	CoInitialize(NULL);
 	setUser();
 	WindowManager windowManager(hInstance, WndProc);
 	GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
 
 	MSG msg = { 0 };
-
-	CoInitialize(NULL);
 
 	D3D11_VIEWPORT vp;
 	vp.Width = (float)GraphicsManager::getInstance().getWindowWidth();

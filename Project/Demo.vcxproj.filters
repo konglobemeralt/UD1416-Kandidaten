@@ -103,12 +103,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\TM_PixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\TM_VertexShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\LightningDomainShader.hlsl">
       <Filter>Resource Files\Lightning\Shaders</Filter>
     </FxCompile>
@@ -120,6 +114,12 @@
     </FxCompile>
     <FxCompile Include="Shaders\LightningVertexShader.hlsl">
       <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TM_PixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TM_VertexShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
