@@ -1,24 +1,2 @@
-﻿  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\CompositingPixelShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\CompositingVertexShader.cso
-C:\Git\temp\UD1416-Kandidaten\Project\Shaders\FXAA_PS.hlsl(29,16-67): warning X3206: 'dot': implicit truncation of vector type
-C:\Git\temp\UD1416-Kandidaten\Project\Shaders\FXAA_PS.hlsl(56,9): warning X3206: implicit truncation of vector type
-C:\Git\temp\UD1416-Kandidaten\Project\Shaders\FXAA_PS.hlsl(59,16): warning X3206: implicit truncation of vector type
-  
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\FXAA_PS.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\LightningDomainShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\LightningHullShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\LightningPixelShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\LightningVertexShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\SimpleVertexShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\TM_PixelShader.cso
-  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\TM_VertexShader.cso
-  WindowManager.cpp
-  ToneMapping.cpp
-  Text.cpp
-  GraphicsManager.cpp
-  main.cpp
-  Lightning.cpp
-  Compositing.cpp
-  AntiAliasing.cpp
-  Generating Code...
+﻿  Compositing.cpp
   Demo.vcxproj -> C:\Git\temp\UD1416-Kandidaten\Project\Debug\Demo.exe

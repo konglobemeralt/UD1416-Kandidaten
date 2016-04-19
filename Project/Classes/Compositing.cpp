@@ -15,9 +15,14 @@ void renderCompositing() {
 	deviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
+	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["mySRV"]);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
 	deviceContext->Draw(4, 0);
+
+	
 }
 
 void initCompositing() {
@@ -103,7 +108,7 @@ void initCompositing() {
 	manager.createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("ToneMapping/Images/picture.jpg", "mySRV");
+	manager.attachImage("ToneMapping/picture.png", "mySRV");
 
 
 
