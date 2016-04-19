@@ -26,7 +26,7 @@ void renderToneMapping() {
 	HRESULT hr0 = CaptureTexture(device, deviceContext, resources.textures["FirstSRV"], image);
 	const Image* img = image.GetImage(0, 0, 0);
 	assert(img);
-	HRESULT hr1 = SaveToWICFile(*img, WIC_FLAGS_NONE, GUID_WICPixelFormat128bppRGBAFloat, L"hej.open_exr");
+	HRESULT hr1 = SaveToWICFile(*img, WIC_FLAGS_NONE, GUID_ContainerFormatJpeg, L"hej.jpg");
 
 	int a = 0;
 }
