@@ -13,4 +13,7 @@ void initAntiAliasing();
 
 void initExample();
 
+void RenderSSAA();
+void RenderFXAA();
+
 #endif

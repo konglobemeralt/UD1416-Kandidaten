@@ -6,7 +6,8 @@ Texture2D txDiffuse : register(t0);
 cbuffer FXAACBuffer : register(b0)
 {
 	float2 texelSizeXY; //blir ju två stycken coz man dividerar med height o width
-	float2 pad;
+	float FXAA_blur_Texels_Threshhold; //hur många texlar som kommer blurras åt varje håll
+	float pad;
 };
 
 struct VS_OUT
@@ -37,8 +38,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	dir.y = (lumaTR + lumaBR) - (lumaTL + lumaBL);
 
 	float FXAA_reduce_MULTIPLIER = 1.0f / 8.0f;
-	float FXAA_reduce_MIN = 1.0f / 128.0f;
-	float FXAA_blur_Texels_Threshhold = 8.0f;
+	float FXAA_reduce_MIN = 1.0f / 128.0f; //så dirOffset inte ska bli noll
+	//float FXAA_blur_Texels_Threshhold = 8.0f; //hur många texlar som kommer blurras åt varje håll
 
 	float dirOffset = (min((lumaTR + lumaTL + lumaBR + lumaBL) * 0.25f * FXAA_reduce_MULTIPLIER, FXAA_reduce_MIN)); //average värde av luminocityn och sedan offset, men den ska minst vara ett visst värde för att ej bli 0
 

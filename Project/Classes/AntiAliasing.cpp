@@ -5,7 +5,7 @@ void renderAntiAliasing() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr); //hur kommer man göra med rendertargets??
+	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
 	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -44,6 +44,7 @@ void initAntiAliasing() {
 
 	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
 		XMFLOAT2 texelSizeXY;
+		float FXAA_blur_Texels_Threshhold = 8.0f; //hur många texlar som kommer blurras åt varje håll
 	}FXAA_PS_cb;
 
 	manager.createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
