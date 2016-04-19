@@ -121,5 +121,8 @@
     <FxCompile Include="Shaders\TM_VertexShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\LightningGeometryShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
