@@ -8,6 +8,7 @@
 #include <DirectXMath.h>
 #include <string>
 
+//#include "base.h"
 #include "DataStructures.h"
 #include "ToneMapping.h"
 #include "Text.h"
@@ -21,9 +22,15 @@
 
 using namespace DirectX;
 
+//class Compositing;
+//class AntiAliasing;
+//class Text;
+//class ToneMapping;
+//class Lightning;
+
 class GraphicsManager {
 private:
-	GraphicsManager() {};
+	GraphicsManager();
 
 	IDXGISwapChain*				gSwapChain = nullptr;
 	ID3D11Device*				gDevice = nullptr;
@@ -49,6 +56,12 @@ private:
 	ID3D11DepthStencilView*		emptyDSV;
 	ID3D11RenderTargetView*		emptyRTV[4];
 	ID3D11ShaderResourceView*	emptySRV[8];
+
+	AntiAliasing* antiAliasing = nullptr;
+	Compositing* compositing = nullptr;
+	Lightning* lightning = nullptr;
+	Text* text = nullptr;
+	ToneMapping* toneMapping = nullptr;
 	
 public:
 	static GraphicsManager& getInstance(){

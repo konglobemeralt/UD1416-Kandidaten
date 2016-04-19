@@ -78,6 +78,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Classes\AntiAliasing.cpp" />
+    <ClCompile Include="Classes\base.cpp" />
     <ClCompile Include="Classes\Compositing.cpp" />
     <ClCompile Include="Classes\Lightning.cpp" />
     <ClCompile Include="Classes\main.cpp" />
@@ -93,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\AntiAliasing.h" />
+    <ClInclude Include="Classes\base.h" />
     <ClInclude Include="Classes\Compositing.h" />
     <ClInclude Include="Classes\DataStructures.h" />
     <ClInclude Include="Classes\GraphicsManager.h" />

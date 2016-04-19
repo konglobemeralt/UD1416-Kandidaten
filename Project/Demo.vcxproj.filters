@@ -49,6 +49,9 @@
     <Filter Include="Resource Files\Text\Shaders">
       <UniqueIdentifier>{92db16b8-c766-4b81-8105-a986744ca460}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Base">
+      <UniqueIdentifier>{78dd81bb-acb6-4c1b-a27f-2b445f6a6aea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\main.cpp">
@@ -75,6 +78,9 @@
     <ClCompile Include="Classes\ToneMapping.cpp">
       <Filter>Resource Files\ToneMapping</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\base.cpp">
+      <Filter>Resource Files\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\GraphicsManager.h">
@@ -100,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="Classes\ToneMapping.h">
       <Filter>Resource Files\ToneMapping</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\base.h">
+      <Filter>Resource Files\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

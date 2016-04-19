@@ -1,14 +1,15 @@
 #ifndef H_LIGHTNING
 #define H_LIGHTNING
 
-#include "GraphicsManager.h"
+#include "base.h"
 
-#define manager GraphicsManager::getInstance()
-#define resources GraphicsManager::getInstance().thesisData
-#define device GraphicsManager::getInstance().getDevice()
-#define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-void renderLightning();
-void initLightning();
+class Lightning : public Base {
+public:
+	Lightning();
+	~Lightning();
+	void init();
+	void render();
+} lightning;
 
 #endif

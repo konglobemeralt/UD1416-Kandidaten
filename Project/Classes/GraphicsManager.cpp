@@ -1,4 +1,19 @@
 #include "GraphicsManager.h"
+//
+//#include "ToneMapping.h"
+//#include "Text.h"
+//#include "AntiAliasing.h"
+//#include "Compositing.h"
+//#include "Lightning.h"
+
+GraphicsManager::GraphicsManager()
+{
+	antiAliasing = new AntiAliasing();
+	compositing = new Compositing();
+	lightning = new Lightning();
+	text = new Text();
+	toneMapping = new ToneMapping();
+}
 
 GraphicsManager::~GraphicsManager() {
 	this->gDeviceContext->Release();
@@ -28,7 +43,6 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	windowHandle = hwnd;
 	CreateDirect3DContext();
 	setRasterstate(D3D11_CULL_NONE);
-
 
 	struct TriangleVertex
 	{
@@ -63,27 +77,26 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	switch (user)
 	{
 	case TEXT:
-		initText();
+		text->init();
 		break;
 	case COMPOSITING:
-		initCompositing();
+		compositing->init();
 		break;
 	case TONEMAPPING:
-		initToneMapping();
+		toneMapping->init();
 		break;
 	case ANTIALIASING:
-		initAntiAliasing();
+		antiAliasing->init();
 		break;
 	case LIGHTNING:
-		initLightning();
+		lightning->init();
 		break;
-	case ALL:
-		initAntiAliasing();
-		initText();
-		initCompositing();
-		initToneMapping();
-		initLightning();
-		break;
+	//case ALL:
+	//	text.init();
+	//	compositing.init();
+	//	toneMapping.init();
+	//	antiAliasing.init();
+	//	lightning.init();
 	default:
 		break;
 	}
@@ -93,27 +106,26 @@ void GraphicsManager::Render() {
 	switch (user)
 	{
 	case TEXT:
-		renderText();
+		text->render();
 		break;
 	case COMPOSITING:
-		renderCompositing();
+		compositing->render();
 		break;
 	case TONEMAPPING:
-		renderToneMapping();
+		toneMapping->render();
 		break;
 	case ANTIALIASING:
-		renderAntiAliasing();
+		antiAliasing->render();
 		break;
 	case LIGHTNING:
-		renderLightning();
+		lightning->render();
 		break;
-	case ALL:
-		renderText();
-		renderCompositing();
-		renderToneMapping();
-		renderAntiAliasing();
-		renderLightning();
-		break;
+	//case ALL:
+	//	text.render();
+	//	compositing.render();
+	//	toneMapping.render();
+	//	antiAliasing.render();
+	//	lightning.render();
 	default:
 		break;
 	}
@@ -131,6 +143,8 @@ ID3D11Device* GraphicsManager::getDevice() {
 ID3D11DeviceContext* GraphicsManager::getDeviceContext() {
 	return gDeviceContext;
 }
+
+
 
 void GraphicsManager::setRasterstate(D3D11_CULL_MODE cullmode) {
 	D3D11_RASTERIZER_DESC rastDesc;

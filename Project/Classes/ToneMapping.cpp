@@ -1,26 +1,21 @@
 #include "ToneMapping.h"
+#include "GraphicsManager.h"
 
-void renderToneMapping() {
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	UINT vertexSize = sizeof(float) * 5;
-	UINT offset = 0;
+#define manager GraphicsManager::getInstance()
+#define resources GraphicsManager::getInstance().thesisData
+#define device GraphicsManager::getInstance().getDevice()
+#define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
-
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
-
-	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
-
-	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
-
-	deviceContext->Draw(4, 0);
+ToneMapping::ToneMapping()
+{
 }
 
-void initToneMapping() {
+ToneMapping::~ToneMapping()
+{
+}
+
+void ToneMapping::init()
+{
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -72,26 +67,26 @@ void initToneMapping() {
 
 
 
-	// ###########################################################
-	// ######		Render target & shader resource			######
-	// ###########################################################
-	//	void createTexture2D(
-	//		string name,
-	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-	//		bool renderTarget = true,
-	//		bool shaderResource = true
-	//	);
+											  // ###########################################################
+											  // ######		Render target & shader resource			######
+											  // ###########################################################
+											  //	void createTexture2D(
+											  //		string name,
+											  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+											  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+											  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+											  //		bool renderTarget = true,
+											  //		bool shaderResource = true
+											  //	);
 
 	manager.createTexture2D(
-		"myRTV", 
-		DXGI_FORMAT_R32G32B32A32_FLOAT, 
+		"myRTV",
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager.getWindowWidth(),
 		manager.getWindowHeight(),
 		true,
 		false
-		);
+	);
 
 	manager.createTexture2D(
 		"mySRV",
@@ -119,4 +114,25 @@ void initToneMapping() {
 	//	);
 
 	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+}
+
+void ToneMapping::render()
+{
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	UINT vertexSize = sizeof(float) * 5;
+	UINT offset = 0;
+
+	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
+	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
+
+	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+
+	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
+
+	deviceContext->Draw(4, 0);
 }

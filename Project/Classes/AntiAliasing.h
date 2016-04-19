@@ -1,14 +1,16 @@
 #ifndef H_ANTIALIASING
 #define H_ANTIALIASING
 
-#include "GraphicsManager.h"
+#include "base.h"
 
-#define manager GraphicsManager::getInstance()
-#define resources GraphicsManager::getInstance().thesisData
-#define device GraphicsManager::getInstance().getDevice()
-#define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-void renderAntiAliasing();
-void initAntiAliasing();
+class AntiAliasing : public Base{
+public:
+	AntiAliasing();
+	~AntiAliasing();
+
+	void init();
+	void render();
+} antiAliasing;
 
 #endif

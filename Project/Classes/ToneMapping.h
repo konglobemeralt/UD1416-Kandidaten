@@ -1,14 +1,15 @@
 #ifndef H_TONEMAPPING
 #define H_TONEMAPPING
 
-#include "GraphicsManager.h"
+#include "base.h"
 
-#define manager GraphicsManager::getInstance()
-#define resources GraphicsManager::getInstance().thesisData
-#define device GraphicsManager::getInstance().getDevice()
-#define deviceContext GraphicsManager::getInstance().getDeviceContext()
+class ToneMapping : public Base {
+public:
+	ToneMapping();
+	~ToneMapping();
 
-void renderToneMapping();
-void initToneMapping();
+	void init();
+	void render();
+} toneMapping;
 
 #endif
