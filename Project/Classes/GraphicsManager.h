@@ -25,35 +25,37 @@ class GraphicsManager {
 private:
 	GraphicsManager() {};
 
-	IDXGISwapChain* gSwapChain = nullptr;
-	ID3D11Device* gDevice = nullptr;
-	ID3D11DeviceContext* gDeviceContext = nullptr;
-	ID3D11RenderTargetView* gBackbufferRTV = nullptr;
+	IDXGISwapChain*				gSwapChain = nullptr;
+	ID3D11Device*				gDevice = nullptr;
+	ID3D11DeviceContext*		gDeviceContext = nullptr;
+	ID3D11RenderTargetView*		gBackbufferRTV = nullptr;
+	ID3D11Debug*				debug;
 
 	HWND* windowHandle;
-	UINT windowWidth = 1280;
-	UINT windowHeight = 1024;
+	UINT windowWidth	=		1280;
+	UINT windowHeight	=		1024;
 
 	void setRasterstate(D3D11_CULL_MODE cullmode);
 	HRESULT CreateDirect3DContext();
 	void ResetViews();
 
 	// Quad
-	ID3D11Buffer* gQuadBuffer = nullptr;
+	ID3D11Buffer*				gQuadBuffer = nullptr;
 
 	// Rasterstate
-	ID3D11RasterizerState* rasterState;
+	ID3D11RasterizerState*		rasterState;
 
 	//Empty views to clear depth, RTV's and SRV's
-	ID3D11DepthStencilView* emptyDSV;
-	ID3D11RenderTargetView* emptyRTV[4];
-	ID3D11ShaderResourceView* emptySRV[8];
+	ID3D11DepthStencilView*		emptyDSV;
+	ID3D11RenderTargetView*		emptyRTV[4];
+	ID3D11ShaderResourceView*	emptySRV[8];
 	
 public:
 	static GraphicsManager& getInstance(){
 		static GraphicsManager instance;
 		return instance;
 	}
+	~GraphicsManager();
 
 	void Render();
 

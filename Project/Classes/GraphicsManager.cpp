@@ -1,9 +1,34 @@
 #include "GraphicsManager.h"
 
+GraphicsManager::~GraphicsManager() {
+	this->gDeviceContext->Release();
+	this->gDevice->Release();
+	this->gSwapChain->Release();
+	this->gBackbufferRTV->Release();
+
+	// Quad
+	gQuadBuffer->Release();
+
+	// Rasterstate
+	rasterState->Release();
+
+	//Empty views to clear depth, RTV's and SRV's
+	if (emptyDSV != nullptr)
+		emptyDSV->Release();
+	for (UINT i = 0; i < 4; i++)
+		if(emptyRTV[i] != nullptr)
+			emptyRTV[i]->Release();
+	for (UINT i = 0; i < 8; i++)
+		if(emptySRV[i] != nullptr)
+			emptySRV[i]->Release();
+	HRESULT hr = debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+}
+
 void GraphicsManager::initGraphics(HWND* hwnd) {
 	windowHandle = hwnd;
 	CreateDirect3DContext();
 	setRasterstate(D3D11_CULL_NONE);
+
 
 	struct TriangleVertex
 	{
@@ -150,6 +175,8 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 		NULL,
 		&gDeviceContext
 	);
+
+	gDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)&debug);
 
 	if (SUCCEEDED(hr)) {
 		ID3D11Texture2D* pBackBuffer = nullptr;
