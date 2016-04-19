@@ -16,7 +16,10 @@ void renderCompositing() {
 	deviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["mySRV"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+	//deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+
+	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["mySRV2"]);
+	//deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
@@ -104,11 +107,26 @@ void initCompositing() {
 		false
 	);
 
+	// Only SRV
+	manager.createTexture2D(
+		"mySRV2",
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		manager.getWindowWidth(),
+		manager.getWindowHeight(),
+		true,
+		false
+	);
+
+	
+
 	// Both
 	manager.createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("ToneMapping/picture.png", "mySRV");
+	manager.attachImage("UVtorusSpecial4K.png", "mySRV");
+
+	// Add image on an SRV (base filepath will be set to the assets folder automatically)
+	manager.attachImage("dickbutt.png", "mySRV2");
 
 
 
@@ -121,5 +139,7 @@ void initCompositing() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
+	//manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	//manager.createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }
