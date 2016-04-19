@@ -11,4 +11,6 @@
 void renderAntiAliasing();
 void initAntiAliasing();
 
+void initExample();
+
 #endif
