@@ -12,8 +12,8 @@ void renderCompositing() {
 	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
 
-	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	deviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
@@ -52,7 +52,7 @@ void initCompositing() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	manager.createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager.createVertexShader("CompositingVertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -63,7 +63,7 @@ void initCompositing() {
 	//		string name
 	//			);
 
-	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	manager.createPixelShader("CompositingPixelShader"); // Name has to match shader name without .hlsl
 
 
 

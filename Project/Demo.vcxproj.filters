@@ -127,5 +127,11 @@
     <FxCompile Include="Shaders\SimpleVertexShader.hlsl">
       <Filter>Resource Files\AntiAliasing\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\CompositingPixelShader.hlsl">
+      <Filter>Resource Files\Compositing\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CompositingVertexShader.hlsl">
+      <Filter>Resource Files\Compositing\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

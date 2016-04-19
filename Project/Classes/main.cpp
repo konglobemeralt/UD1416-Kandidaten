@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	GraphicsManager::getInstance().user = LIGHTNING;
+	GraphicsManager::getInstance().user = COMPOSITING;
 /*		
 		CHOOSE FROM:
 		TEXT
