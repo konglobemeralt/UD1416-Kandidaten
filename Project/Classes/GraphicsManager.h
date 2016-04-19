@@ -8,24 +8,20 @@
 #include <DirectXMath.h>
 #include <string>
 #include <d3d11sdklayers.h>
-
 #include "DataStructures.h"
-#include "ToneMapping.h"
-#include "Text.h"
-#include "AntiAliasing.h"
-#include "Compositing.h"
-#include "Lightning.h"
+
 #include "../DirectXToolkit/Inc/WICTextureLoader.h"
 
 #pragma comment (lib, "WINMM.LIB")
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
+
 using namespace DirectX;
 
 class GraphicsManager {
 private:
-	GraphicsManager() {};
+	
 	
 	IDXGISwapChain* gSwapChain = nullptr;
 	ID3D11Device* gDevice = nullptr;
@@ -33,8 +29,7 @@ private:
 	ID3D11RenderTargetView* gBackbufferRTV = nullptr;
 
 	HWND* windowHandle;
-	UINT windowWidth = 1280;
-	UINT windowHeight = 1024;
+
 
 	void setRasterstate(D3D11_CULL_MODE cullmode);
 	HRESULT CreateDirect3DContext();
@@ -52,19 +47,20 @@ private:
 	ID3D11ShaderResourceView* emptySRV[8];
 	
 public:
-	static GraphicsManager& getInstance(){
+	/*static GraphicsManager& getInstance(){
 		static GraphicsManager instance;
 		return instance;
-	}
-
+	}*/
+	GraphicsManager() {};
 	void Render();
 
-	int user = TEXT;
-
+	
+	UINT windowWidth = 1280;
+	UINT windowHeight = 1024;
 	ThesisData thesisData;
 
-	GraphicsManager(GraphicsManager const&) = delete;
-	void operator=(GraphicsManager const&) = delete;
+	//GraphicsManager(GraphicsManager const&) = delete;
+	//void operator=(GraphicsManager const&) = delete;
 
 	void initGraphics(HWND* hwnd);
 
@@ -78,23 +74,23 @@ public:
 
 	void setWindowSize(UINT width, UINT height);
 
-	void createConstantBuffer(string name, const void* data, UINT size);
-	void createVertexShader(string shaderName, string layoutName, D3D11_INPUT_ELEMENT_DESC* desc, UINT size);
-	void createDomainShader(string name);
-	void createHullShader(string name);
-	void createGeometryShader(string name);
-	void createPixelShader(string name);
-	void createComputeShader(string name);
+	void createConstantBuffer(std::string name, const void* data, UINT size);
+	void createVertexShader(std::string shaderName, std::string layoutName, D3D11_INPUT_ELEMENT_DESC* desc, UINT size);
+	void createDomainShader(std::string name);
+	void createHullShader(std::string name);
+	void createGeometryShader(std::string name);
+	void createPixelShader(std::string name);
+	void createComputeShader(std::string name);
 	void createTexture2D(
-		string name, 
+		std::string name,
 		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT, 
-		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+		UINT width = 1280,
+		UINT height =1024,
 		bool renderTarget = true,
 		bool shaderResource = true
 	);
 	void createSamplerState(
-		string name, 
+		std::string name, 
 		D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
 		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	);

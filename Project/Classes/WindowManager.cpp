@@ -1,6 +1,6 @@
 #include "WindowManager.h"
 #include "GraphicsManager.h"
-
+#include "..\ApplicationContext.h"
 WindowManager::WindowManager(HINSTANCE hInstance, WNDPROC WndProc) {
 	WNDCLASSEX wcex = { 0 };
 	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
@@ -13,7 +13,7 @@ WindowManager::WindowManager(HINSTANCE hInstance, WNDPROC WndProc) {
 	if (!RegisterClassEx(&wcex))
 		exit(-1);
 
-	RECT rc = { 0, 0, (LONG)GraphicsManager::getInstance().getWindowWidth(), (LONG)GraphicsManager::getInstance().getWindowHeight() };
+	RECT rc = { 0, 0, (LONG)ApplicationContext::GetInstance().GetGraphicsManager()->getWindowWidth(), (LONG)ApplicationContext::GetInstance().GetGraphicsManager()->getWindowHeight() };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	m_hwnd = CreateWindow(
