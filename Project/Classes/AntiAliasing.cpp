@@ -15,6 +15,8 @@ void renderAntiAliasing() {
 	deviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Simple_VS_cb"]);
 	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
 
+	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FXAA_Test"]);
+
 	deviceContext->VSSetShader(resources.vertexShaders["SimpleVertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
 
@@ -81,16 +83,16 @@ void initAntiAliasing() {
 	//		bool shaderResource = true
 	//	);
 
-	manager.createTexture2D(
+	manager.createTexture2D( //shaderresource
 		"FXAA_Test",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager.getWindowWidth(),
 		manager.getWindowHeight(),
-		true,
-		false
+		false,
+		true
 	);
 
-
+	manager.attachImage("AntiAliasing/Images/AATest.png", "FXAA_Test"); //attachea till shaderresourcen
 	// ###########################################################
 	// ######		Render target & shader resource			######
 	// ###########################################################
