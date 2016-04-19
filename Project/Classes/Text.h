@@ -10,6 +10,6 @@ public:
 
 	void init();
 	void render();
-} text;
+};
 
 #endif

@@ -1,5 +1,6 @@
-#include "AntiAliasing.h"
 #include "GraphicsManager.h"
+#include "AntiAliasing.h"
+#include "ToneMapping.h"
 
 #define manager GraphicsManager::getInstance()
 #define resources GraphicsManager::getInstance().thesisData

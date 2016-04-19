@@ -1,5 +1,6 @@
-#include "ToneMapping.h"
 #include "GraphicsManager.h"
+#include "ToneMapping.h"
+#include "AntiAliasing.h"
 
 #define manager GraphicsManager::getInstance()
 #define resources GraphicsManager::getInstance().thesisData
@@ -16,6 +17,7 @@ ToneMapping::~ToneMapping()
 
 void ToneMapping::init()
 {
+
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

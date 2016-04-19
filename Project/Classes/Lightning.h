@@ -10,6 +10,6 @@ public:
 	~Lightning();
 	void init();
 	void render();
-} lightning;
+};
 
 #endif

@@ -1,18 +1,35 @@
 #include "GraphicsManager.h"
 //
-//#include "ToneMapping.h"
-//#include "Text.h"
-//#include "AntiAliasing.h"
-//#include "Compositing.h"
-//#include "Lightning.h"
+#include "ToneMapping.h"
+#include "Text.h"
+#include "AntiAliasing.h"
+#include "Compositing.h"
+#include "Lightning.h"
+GraphicsManager* GraphicsManager::graphicsManager = nullptr;
+
+void GraphicsManager::Startup()
+{
+	if (graphicsManager == nullptr)
+	{
+		graphicsManager = new GraphicsManager();
+	}
+}
+void GraphicsManager::Shutdown()
+{
+	if (graphicsManager != nullptr)
+	{
+		delete graphicsManager;
+		graphicsManager = nullptr;
+	}
+}
 
 GraphicsManager::GraphicsManager()
 {
-	antiAliasing = new AntiAliasing();
-	compositing = new Compositing();
-	lightning = new Lightning();
-	text = new Text();
-	toneMapping = new ToneMapping();
+	m_antiAliasing = new AntiAliasing();
+	m_compositing = new Compositing();
+	m_lightning = new Lightning();
+	m_text = new Text();
+	m_toneMapping = new ToneMapping();
 }
 
 GraphicsManager::~GraphicsManager() {
@@ -27,16 +44,29 @@ GraphicsManager::~GraphicsManager() {
 	// Rasterstate
 	rasterState->Release();
 
+	
+
 	//Empty views to clear depth, RTV's and SRV's
-	if (emptyDSV != nullptr)
-		emptyDSV->Release();
-	for (UINT i = 0; i < 4; i++)
-		if(emptyRTV[i] != nullptr)
-			emptyRTV[i]->Release();
-	for (UINT i = 0; i < 8; i++)
-		if(emptySRV[i] != nullptr)
-			emptySRV[i]->Release();
+	//if (emptyDSV != nullptr)
+	//	emptyDSV->Release();
+	//for (UINT i = 0; i < 4; i++)
+	//	if(emptyRTV[i] != nullptr)
+	//		emptyRTV[i]->Release();
+	//for (UINT i = 0; i < 8; i++)
+	//	if(emptySRV[i] != nullptr)
+	//		emptySRV[i]->Release();
 	HRESULT hr = debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+
+	delete m_antiAliasing;
+	m_antiAliasing = nullptr;
+	delete m_toneMapping;
+	m_toneMapping = nullptr;
+	delete m_compositing;
+	m_compositing = nullptr;
+	delete m_text;
+	m_text = nullptr;
+	delete m_lightning;
+	m_lightning = nullptr;
 }
 
 void GraphicsManager::initGraphics(HWND* hwnd) {
@@ -77,19 +107,19 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	switch (user)
 	{
 	case TEXT:
-		text->init();
+		m_text->init();
 		break;
 	case COMPOSITING:
-		compositing->init();
+		m_compositing->init();
 		break;
 	case TONEMAPPING:
-		toneMapping->init();
+		m_toneMapping->init();
 		break;
 	case ANTIALIASING:
-		antiAliasing->init();
+		m_antiAliasing->init();
 		break;
 	case LIGHTNING:
-		lightning->init();
+		m_lightning->init();
 		break;
 	//case ALL:
 	//	text.init();
@@ -106,19 +136,19 @@ void GraphicsManager::Render() {
 	switch (user)
 	{
 	case TEXT:
-		text->render();
+		m_text->render();
 		break;
 	case COMPOSITING:
-		compositing->render();
+		m_compositing->render();
 		break;
 	case TONEMAPPING:
-		toneMapping->render();
+		m_toneMapping->render();
 		break;
 	case ANTIALIASING:
-		antiAliasing->render();
+		m_antiAliasing->render();
 		break;
 	case LIGHTNING:
-		lightning->render();
+		m_lightning->render();
 		break;
 	//case ALL:
 	//	text.render();

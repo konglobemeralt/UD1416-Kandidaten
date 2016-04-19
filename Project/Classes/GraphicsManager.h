@@ -8,13 +8,13 @@
 #include <DirectXMath.h>
 #include <string>
 
-//#include "base.h"
+#include "base.h"
 #include "DataStructures.h"
-#include "ToneMapping.h"
-#include "Text.h"
-#include "AntiAliasing.h"
-#include "Compositing.h"
-#include "Lightning.h"
+//#include "ToneMapping.h"
+//#include "Text.h"
+//#include "AntiAliasing.h"
+//#include "Compositing.h"
+//#include "Lightning.h"
 
 #pragma comment (lib, "WINMM.LIB")
 #pragma comment (lib, "d3d11.lib")
@@ -22,15 +22,21 @@
 
 using namespace DirectX;
 
-//class Compositing;
-//class AntiAliasing;
-//class Text;
-//class ToneMapping;
-//class Lightning;
+class Compositing;
+class AntiAliasing;
+class Text;
+class ToneMapping;
+class Lightning;
 
 class GraphicsManager {
 private:
 	GraphicsManager();
+	~GraphicsManager();
+	GraphicsManager(GraphicsManager const&) = delete;
+	void operator=(GraphicsManager const&) = delete;
+	static GraphicsManager* graphicsManager;
+
+
 
 	IDXGISwapChain*				gSwapChain = nullptr;
 	ID3D11Device*				gDevice = nullptr;
@@ -57,27 +63,30 @@ private:
 	ID3D11RenderTargetView*		emptyRTV[4];
 	ID3D11ShaderResourceView*	emptySRV[8];
 
-	AntiAliasing* antiAliasing = nullptr;
-	Compositing* compositing = nullptr;
-	Lightning* lightning = nullptr;
-	Text* text = nullptr;
-	ToneMapping* toneMapping = nullptr;
+	AntiAliasing* m_antiAliasing = nullptr;
+	Compositing* m_compositing = nullptr;
+	Lightning* m_lightning = nullptr;
+	Text* m_text = nullptr;
+	ToneMapping* m_toneMapping = nullptr;
 	
 public:
 	static GraphicsManager& getInstance(){
-		static GraphicsManager instance;
-		return instance;
+		return *graphicsManager;
 	}
-	~GraphicsManager();
 
+	AntiAliasing* GetAntiAliasing() const { return m_antiAliasing; }
+
+	
+	static void Startup();
+	static void Shutdown();
 	void Render();
 
 	int user = TEXT;
 
 	ThesisData thesisData;
 
-	GraphicsManager(GraphicsManager const&) = delete;
-	void operator=(GraphicsManager const&) = delete;
+	/*GraphicsManager(GraphicsManager const&) = delete;
+	void operator=(GraphicsManager const&) = delete;*/
 
 	void initGraphics(HWND* hwnd);
 
@@ -111,6 +120,8 @@ public:
 		D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
 		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	);
+
+
 };
 
 #endif

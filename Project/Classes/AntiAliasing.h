@@ -3,7 +3,7 @@
 
 #include "base.h"
 
-
+class ToneMapping;
 class AntiAliasing : public Base{
 public:
 	AntiAliasing();
@@ -11,6 +11,6 @@ public:
 
 	void init();
 	void render();
-} antiAliasing;
+};
 
 #endif

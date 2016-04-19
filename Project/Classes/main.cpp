@@ -53,8 +53,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
+	GraphicsManager::Startup();
 	WindowManager windowManager(hInstance, WndProc);
+	
 	GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
 	setUser();
 
@@ -107,6 +108,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	}
 
 	DestroyWindow(*windowManager.getWindowHandle());
-
+	GraphicsManager::Shutdown();
 	return (int) msg.wParam;
 }

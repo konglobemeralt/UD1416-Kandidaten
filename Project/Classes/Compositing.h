@@ -11,6 +11,6 @@ public:
 
 	void init();
 	void render();
-} compositing;
+};
 
 #endif
