@@ -21,14 +21,8 @@ void renderToneMapping() {
 	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
 	deviceContext->Draw(4, 0);
-
-	ScratchImage image;
-	HRESULT hr0 = CaptureTexture(device, deviceContext, resources.textures["FirstSRV"], image);
-	const Image* img = image.GetImage(0, 0, 0);
-	assert(img);
-	HRESULT hr1 = SaveToWICFile(*img, WIC_FLAGS_NONE, GUID_ContainerFormatJpeg, L"hej.jpg");
-
-	int a = 0;
+	
+	manager.saveImage("ToneMapping/OutputImages/image.png", manager.pBackBuffer);
 }
 
 void initToneMapping() {
@@ -50,7 +44,7 @@ void initToneMapping() {
 
 
 	// ###########################################################
-	// ######				Vertex Shader					######
+	// ######				Vertex shader					######
 	// ###########################################################
 	//	void createVertexShader(
 	//		string shaderName,
@@ -65,10 +59,10 @@ void initToneMapping() {
 
 	manager.createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
-	
+
 
 	// ###########################################################
-	// ######				Other Shaders					######
+	// ######				Other shaders					######
 	// ###########################################################
 	//	void createPixelShader(
 	//		string name
@@ -106,8 +100,8 @@ void initToneMapping() {
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager.getWindowWidth(),
 		manager.getWindowHeight(),
-		true,
-		false
+		false,
+		true
 	);
 
 	// Both
@@ -119,7 +113,7 @@ void initToneMapping() {
 
 
 	// ###########################################################
-	// ######		Render target & shader resource			######
+	// ######					Sampler						######
 	// ###########################################################
 	//	void createSamplerState(
 	//		string name,
@@ -128,4 +122,17 @@ void initToneMapping() {
 	//	);
 
 	manager.createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+
+
+
+	// ###########################################################
+	// ######			Save texture to file				######
+	// ###########################################################
+	//	void saveImage(
+	//		string fileName,
+	//		ID3D11Texture2D* texture2d,
+	//		GUID fileType = GUID_ContainerFormatPng
+	//	);
+
+	// manager.saveImage("ToneMapping/OutputImages/image.png", manager.pBackBuffer);
 }

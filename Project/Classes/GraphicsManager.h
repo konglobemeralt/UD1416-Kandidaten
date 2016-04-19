@@ -16,6 +16,7 @@
 #include "Compositing.h"
 #include "Lightning.h"
 #include "../DirectXToolkit/Inc/WICTextureLoader.h"
+#include "../DirectXTex/DirectXTexP.h"
 
 #pragma comment (lib, "WINMM.LIB")
 #pragma comment (lib, "d3d11.lib")
@@ -61,6 +62,7 @@ public:
 
 	int user = TEXT;
 
+	ID3D11Texture2D* pBackBuffer = nullptr;
 	ThesisData thesisData;
 
 	GraphicsManager(GraphicsManager const&) = delete;
@@ -99,6 +101,7 @@ public:
 		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	);
 	void attachImage(string textureName, string srvName);
+	void saveImage(string fileName, ID3D11Texture2D* texture2d, const GUID &fileType = GUID_ContainerFormatPng);
 };
 
 #endif

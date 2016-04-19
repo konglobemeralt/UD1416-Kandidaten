@@ -152,11 +152,11 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 	);
 
 	if (SUCCEEDED(hr)) {
-		ID3D11Texture2D* pBackBuffer = nullptr;
+		//ID3D11Texture2D* pBackBuffer = nullptr;
 		gSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
 		gDevice->CreateRenderTargetView(pBackBuffer, NULL, &gBackbufferRTV);
-		pBackBuffer->Release();
+		//pBackBuffer->Release();
 	};
 
 	return hr;
@@ -325,6 +325,11 @@ void GraphicsManager::createTexture2D(
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = 0;
 
+		if(renderTarget == false)
+			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		if(shaderResource == false)
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+
 		gDevice->CreateTexture2D(&desc, nullptr, &texture);
 
 		if (renderTarget == true) {
@@ -388,4 +393,12 @@ void GraphicsManager::createSamplerState(
 void GraphicsManager::attachImage(string textureName, string srvName) {
 	string cat = "Assets/" + textureName;
 	HRESULT HR = CreateWICTextureFromFile(gDevice, wstring(cat.begin(), cat.end()).c_str(), nullptr, &thesisData.shaderResourceViews[srvName]);
+}
+
+void GraphicsManager::saveImage(string fileName, ID3D11Texture2D* texture2d, const GUID &fileType) {
+	string cat = "Assets/" + fileName;
+	ScratchImage image;
+	CaptureTexture(device, deviceContext, texture2d, image);
+	const Image* img = image.GetImage(0, 0, 0);
+	SaveToWICFile(*img, WIC_FLAGS_NONE, fileType, wstring(cat.begin(), cat.end()).c_str());
 }
