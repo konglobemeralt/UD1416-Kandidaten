@@ -123,10 +123,10 @@ void initCompositing() {
 	manager.createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("UVtorusSpecial4K.png", "mySRV");
+	manager.attachImage("complex.png", "mySRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("dickbutt.png", "mySRV2");
+	manager.attachImage("testbild.png", "mySRV2");
 
 
 
