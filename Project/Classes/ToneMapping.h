@@ -19,6 +19,7 @@ public:
 	~ToneMapping();
 private:
 	GraphicsManager* m_graphicsManager;
+int a;
 };
 
 #endif
