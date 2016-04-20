@@ -38,26 +38,26 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	switch (user)
 	{
 	case TEXT:
-		text->initialize();
+		text->Initialize();
 		break;
 	case COMPOSITING:
-		compositing->initialize();
+		compositing->Initialize();
 		break;
 	case TONEMAPPING:
-		toneMapping->initialize();
+		toneMapping->Initialize();
 		break;
 	case ANTIALIASING:
-		antiAliasing->initialize();
+		antiAliasing->Initialize();
 		break;
 	case LIGHTNING:
-		lightning->initialize();
+		lightning->Initialize();
 		break;
 	case ALL:
-		text->initialize();
-		compositing->initialize();
-		toneMapping->initialize();
-		antiAliasing->initialize();
-		lightning->initialize();
+		text->Initialize();
+		compositing->Initialize();
+		toneMapping->Initialize();
+		antiAliasing->Initialize();
+		lightning->Initialize();
 		break;
 	default:
 		break;
@@ -68,26 +68,26 @@ void GraphicsManager::Render() {
 	switch (user)
 	{
 	case TEXT:
-		text->render();
+		text->Render();
 		break;
 	case COMPOSITING:
-		compositing->render();
+		compositing->Render();
 		break;
 	case TONEMAPPING:
-		toneMapping->render();
+		toneMapping->Render();
 		break;
 	case ANTIALIASING:
-		antiAliasing->render();
+		antiAliasing->Render();
 		break;
 	case LIGHTNING:
-		lightning->render();
+		lightning->Render();
 		break;
 	case ALL:
-		text->render();
-		compositing->render();
-		toneMapping->render();
-		antiAliasing->render();
-		lightning->render();
+		text->Render();
+		compositing->Render();
+		toneMapping->Render();
+		antiAliasing->Render();
+		lightning->Render();
 		break;
 	default:
 		break;

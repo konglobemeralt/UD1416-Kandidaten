@@ -4,7 +4,7 @@ Text::Text() {}
 
 Text::~Text() {}
 
-void Text::render() {
+void Text::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -24,7 +24,7 @@ void Text::render() {
 	deviceContext->Draw(4, 0);
 }
 
-void Text::initialize() {
+void Text::Initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

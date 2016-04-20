@@ -17,8 +17,13 @@ public:
 	AntiAliasing();
 	~AntiAliasing();
 
-	void render();
-	void initialize();
+	void Render();
+	void Initialize();
+
+	void InitExample();
+
+	void RenderSSAA();
+	void RenderFXAA();
 };
 
 #endif

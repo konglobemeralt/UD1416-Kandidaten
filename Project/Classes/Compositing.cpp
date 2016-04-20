@@ -4,7 +4,7 @@ Compositing::Compositing() {}
 
 Compositing::~Compositing() {}
 
-void Compositing::render() {
+void Compositing::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -24,7 +24,7 @@ void Compositing::render() {
 	deviceContext->Draw(4, 0);
 }
 
-void Compositing::initialize() {
+void Compositing::Initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

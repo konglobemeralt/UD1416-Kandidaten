@@ -17,8 +17,8 @@ public:
 	Text();
 	~Text();
 
-	void render();
-	void initialize();
+	void Render();
+	void Initialize();
 };
 
 #endif
