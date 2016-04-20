@@ -123,7 +123,7 @@ void initCompositing() {
 	manager.createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("complex.png", "mySRV");
+	manager.attachImage("complex2.png", "mySRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	manager.attachImage("testbild.png", "mySRV2");
@@ -141,5 +141,5 @@ void initCompositing() {
 
 	//manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 	//manager.createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager.createSamplerState("CoolSampler", D3D11_FILTER_MINIMUM_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP);
 }

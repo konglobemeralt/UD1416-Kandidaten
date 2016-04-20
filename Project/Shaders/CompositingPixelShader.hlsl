@@ -25,7 +25,15 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	//tex.y =  0.299 * tempUV.x + 0.587 * tempUV.y + 0.114 * tempUV.z;
 	//tex.z = -0.147 * tempUV.x - 0.289 * tempUV.y + 0.436 * tempUV.z;
 	//tex.x =  0.615 * tempUV.x - 0.515 * tempUV.y - 0.100 * tempUV.z;
+	if (tempUV.w > 0)
+	{
+		return mySRV2.Sample(SamplerWrap, saturate(tempUV));
+	}
+
+	else
+	{
+		return float4(0.0f, 1.0f, 0.0f, 0.0f);
+	}
 
 
-	return mySRV2.Sample(SamplerWrap, tempUV);
 }

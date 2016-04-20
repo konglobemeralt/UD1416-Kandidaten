@@ -1,2 +1,4 @@
-﻿  Compositing.cpp
+﻿C:\Git\temp\UD1416-Kandidaten\Project\Shaders\CompositingPixelShader.hlsl(30,10-53): warning X3206: 'Sample': implicit truncation of vector type
+  
+  compilation object save succeeded; see C:\Git\temp\UD1416-Kandidaten\Project\Debug\CompositingPixelShader.cso
   Demo.vcxproj -> C:\Git\temp\UD1416-Kandidaten\Project\Debug\Demo.exe
