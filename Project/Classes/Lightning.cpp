@@ -1,6 +1,7 @@
 #include "Lightning.h"
 #include "GraphicsManager.h"
 #include "..\ApplicationContext.h"
+
 Lightning::Lightning()
 {
 
@@ -36,6 +37,9 @@ void Lightning::Render() {
 }
 
 void Lightning::Initialize() {
+	float lineWidth;
+	lineWidth = 1.0f;
+
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -47,9 +51,12 @@ void Lightning::Initialize() {
 	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
 
 	struct cBuffer {
-		XMMATRIX WVP;
-		XMMATRIX World;
+		XMFLOAT4X4 WVP;
+		XMFLOAT4X4 World;
+		XMFLOAT4 camPos;
+		float lineWidth;
 		XMFLOAT4X4 matrix;
+		XMFLOAT3 padding;
 	}constantBuffer;
 
 	m_graphicsManager->createConstantBuffer("constantBuffer", &constantBuffer, sizeof(cBuffer));
@@ -59,18 +66,21 @@ void Lightning::Initialize() {
 	XMVECTOR camPos, camLook, camUp;
 	XMMATRIX WVP, World, ViewSpace, Projection;
 
-	camPos = XMVectorSet(0.0f, 7.5f, -5.0f, 0.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
+	camPos = XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
 	camLook = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	ViewSpace = XMMatrixLookAtLH(camPos, camLook, camUp);
-	Projection = XMMatrixPerspectiveFovLH(3.14*0.45, m_graphicsManager->getWindowWidth() / m_graphicsManager->getWindowHeight(), 0.5f, 20.0f); //	FLOAT FovAngleY, FLOAT AspectRatio, FLOAT NearZ, FLOAT FarZ
-
-	World = XMMatrixIdentity();
+	//Projection = XMMatrixPerspectiveFovLH(3.14*0.45, m_graphicsManager->getWindowWidth() / m_graphicsManager->getWindowHeight(), 0.5f, 20.0f); //	FLOAT FovAngleY, FLOAT AspectRatio, FLOAT NearZ, FLOAT FarZ
+	Projection = XMMatrixOrthographicLH(20, 20, 0.5f, 20.0f);
+	//World = XMMatrixIdentity();
 	WVP = World * ViewSpace * Projection;
 
-	constantBuffer.World = XMMatrixTranspose(World);
-	constantBuffer.WVP = XMMatrixTranspose(WVP);
+	//constantBuffer.WVP = XMMatrixTranspose(WVP);	//OLD Version
+	XMStoreFloat4x4(&constantBuffer.World, XMMatrixTranspose(World));
+	XMStoreFloat4x4(&constantBuffer.WVP, XMMatrixTranspose(WVP));
+	XMStoreFloat4(&constantBuffer.camPos, camPos);
+	constantBuffer.lineWidth = lineWidth;
 
 	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["constantBuffer"], 0, NULL, &constantBuffer, 0, 0);	//NOT WORKING
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["constantBuffer"]);	//NOT WORKING
