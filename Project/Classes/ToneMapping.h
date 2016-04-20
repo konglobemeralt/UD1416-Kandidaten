@@ -4,6 +4,8 @@
 #include "GraphicsManager.h"
 #include "../DirectXTex/DirectXTex.h"
 #include "../DirectXTex/DirectXTexP.h"
+#include <opencv2\core\core.hpp>
+#include <opencv2\highgui\highgui.hpp>
 
 //#define manager GraphicsManager::getInstance()
 //#define resources GraphicsManager::getInstance().thesisData
