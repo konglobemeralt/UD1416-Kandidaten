@@ -28,6 +28,10 @@ private:
 
 	UINT imageCount = 1;
 	string imageWithZero;
+
+	vector<ID3D11ShaderResourceView*> testViews;
+
+	void setViews();
 };
 
 #endif

@@ -379,4 +379,5 @@ void GraphicsManager::saveImage(string fileName, ID3D11Texture2D* texture2d, con
 	CaptureTexture(gDevice, gDeviceContext, texture2d, image);
 	const Image* img = image.GetImage(0, 0, 0);
 	SaveToWICFile(*img, WIC_FLAGS_NONE, fileType, wstring(cat.begin(), cat.end()).c_str());
+	
 }

@@ -73,8 +73,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	AppContext.GetGraphicsManager()->getDeviceContext()->RSSetViewports(1, &vp);
 
 	ShowWindow(*windowManager.getWindowHandle(), nCmdShow);
-	static int fps = 0;
-	static int uptime = 1;
+	static float fps = 1;
+	static float uptime = 0;
 	DWORD currentFrame = timeGetTime();
 	static DWORD lastFrame = currentFrame;
 
@@ -89,18 +89,20 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		{
 			currentFrame = timeGetTime();
 
-			if (currentFrame - lastFrame >= 1000) {
-				wstring headerMessage;
-				headerMessage.append(L"Uptime: " + to_wstring(uptime) + L"   FPS: " + to_wstring(fps));
-				SetWindowText(*windowManager.getWindowHandle(), headerMessage.c_str());
+			float fps = 1 / ((currentFrame - lastFrame) * 0.001);
+			int seconds = 1500 / fps;
+			int hh = (seconds / 60) / 60;
+			seconds -= (hh * 60) * 60;
+			int mm = seconds / 60;
+			seconds -= mm * 60;
 
-				lastFrame = currentFrame;
-				uptime++;
-				fps = 0;
-			}
-			else
-				fps++;
-
+			wstring headerMessage;
+			headerMessage.append(L"Uptime: " + to_wstring((unsigned int)uptime) + L"   FPS: " + to_wstring(fps) + L"    (Time to render 25 players á 60 frames: " + to_wstring(hh) + L"h " + to_wstring(mm) + L"m " + to_wstring(seconds) + L"s)");
+			SetWindowText(*windowManager.getWindowHandle(), headerMessage.c_str());
+			
+			uptime += ((currentFrame - lastFrame) * 0.001);
+			lastFrame = currentFrame;
+			
 			AppContext.GetGraphicsManager()->Render();
 			AppContext.GetGraphicsManager()->getSwapChain()->Present(0, 0);
 		}
