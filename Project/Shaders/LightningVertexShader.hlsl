@@ -14,6 +14,9 @@ cbuffer cBuffer : register(b0)
 {
 	float4x4 WVP;
 	float4x4 World;		//World Matrix, used for light calculations
+	float lineWidth;
+	float3 camPos;
+	float3 padding;
 };
 
 VS_OUT VS_main(VS_IN input)

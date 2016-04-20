@@ -8,8 +8,14 @@ struct DS_OUT
 void GS_main(line DS_OUT input[2], inout TriangleStream<DS_OUT> OutputStream)
 {
 	float4 lineDirVec; //Line Direction Vector
+	float4 perpendicularVec;
 
-	lineDirVec = normalize(input[0].Pos - input[1].Pos);
+	float4 startPos = input[0].Pos;
+	float4 endPos = input[1].Pos;
+
+	lineDirVec = normalize(input[0].Pos - input[1].Pos); //Is normalize needed?
+
+	//perpendicularVec = XMVector3Orthogonal(lineDirVec);	//Not working in HLSL
 
 	float4 v[4];
 	v[0] = float4(input[1].Pos + float3(0.1f, -0.1f, 0.0f), 1.0f);
