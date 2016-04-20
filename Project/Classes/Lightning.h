@@ -1,14 +1,23 @@
 #ifndef H_LIGHTNING
 #define H_LIGHTNING
 
-#include "GraphicsManager.h"
 
-#define manager GraphicsManager::getInstance()
-#define resources GraphicsManager::getInstance().thesisData
-#define device GraphicsManager::getInstance().getDevice()
-#define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-void renderLightning();
-void initLightning();
+//#define manager GraphicsManager::getInstance()
+//#define resources GraphicsManager::getInstance().thesisData
+#define gdevice m_graphicsManager->getDevice()
+#define gdeviceContext m_graphicsManager->getDeviceContext()
+
+class GraphicsManager;
+class Lightning
+{
+public:
+	Lightning();
+	~Lightning();
+	void Render();
+	void Initialize();
+private:
+	GraphicsManager* m_graphicsManager;
+};
 
 #endif

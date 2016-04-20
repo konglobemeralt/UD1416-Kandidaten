@@ -1,31 +1,49 @@
 #include "ToneMapping.h"
+#include "..\ApplicationContext.h"
+#include "GraphicsManager.h"
 
-void renderToneMapping() {
+ToneMapping::ToneMapping()
+{
+
+}
+
+ToneMapping::~ToneMapping()
+{
+
+}
+
+void ToneMapping::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
+	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
 
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["TM_Layout"]);
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["TM_Layout"]);
 
-	deviceContext->VSSetShader(resources.vertexShaders["TM_VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["TM_PixelShader"], nullptr, 0);
+	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["TM_VertexShader"], nullptr, 0);
+	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["TM_PixelShader"], nullptr, 0);
 
-	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["FirstSRV"]);
 
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["SamplerWrap"]);
 
-	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
+	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
-	deviceContext->Draw(4, 0);
-	
-	manager.saveImage("ToneMapping/OutputImages/image.png", manager.pBackBuffer);
+	gdeviceContext->Draw(4, 0);
+
+	ScratchImage image;
+	HRESULT hr0 = CaptureTexture(gdevice, gdeviceContext, m_graphicsManager->thesisData.textures["FirstSRV"], image);
+	const Image* img = image.GetImage(0, 0, 0);
+	assert(img);
+	HRESULT hr1 = SaveToWICFile(*img, WIC_FLAGS_NONE, GUID_ContainerFormatJpeg, L"hej.jpg");
+
+	int a = 0;
 }
 
-void initToneMapping() {
+void ToneMapping::Initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -34,17 +52,17 @@ void initToneMapping() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-
+	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 
-	manager.createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	m_graphicsManager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
 
 	// ###########################################################
-	// ######				Vertex shader					######
+	// ######				Vertex Shader					######
 	// ###########################################################
 	//	void createVertexShader(
 	//		string shaderName,
@@ -57,18 +75,18 @@ void initToneMapping() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	manager.createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
+	m_graphicsManager->createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
-
+	
 
 	// ###########################################################
-	// ######				Other shaders					######
+	// ######				Other Shaders					######
 	// ###########################################################
 	//	void createPixelShader(
 	//		string name
 	//			);
 
-	manager.createPixelShader("TM_PixelShader"); // Name has to match shader name without .hlsl
+	m_graphicsManager->createPixelShader("TM_PixelShader"); // Name has to match shader name without .hlsl
 
 
 
@@ -85,35 +103,35 @@ void initToneMapping() {
 	//	);
 
 	// Only RTV
-	manager.createTexture2D(
+	m_graphicsManager->createTexture2D(
 		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager.getWindowWidth(),
-		manager.getWindowHeight(),
+		m_graphicsManager->getWindowWidth(),
+		m_graphicsManager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	manager.createTexture2D(
+	m_graphicsManager->createTexture2D(
 		"FirstSRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager.getWindowWidth(),
-		manager.getWindowHeight(),
-		false,
-		true
+		m_graphicsManager->getWindowWidth(),
+		m_graphicsManager->getWindowHeight(),
+		true,
+		false
 	);
 
 	// Both
-	manager.createTexture2D("FirstSRVRTV");
+	m_graphicsManager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("ToneMapping/picture.png", "FirstSRV");
+	m_graphicsManager->attachImage("ToneMapping/picture.png", "FirstSRV");
 
 
 
 	// ###########################################################
-	// ######					Sampler						######
+	// ######		Render target & shader resource			######
 	// ###########################################################
 	//	void createSamplerState(
 	//		string name,
@@ -121,18 +139,5 @@ void initToneMapping() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager.createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-
-
-
-	// ###########################################################
-	// ######			Save texture to file				######
-	// ###########################################################
-	//	void saveImage(
-	//		string fileName,
-	//		ID3D11Texture2D* texture2d,
-	//		GUID fileType = GUID_ContainerFormatPng
-	//	);
-
-	// manager.saveImage("ToneMapping/OutputImages/image.png", manager.pBackBuffer);
+	m_graphicsManager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }

@@ -1,26 +1,37 @@
 #include "Compositing.h"
+#include "..\ApplicationContext.h"
+#include "GraphicsManager.h"
+Compositing::Compositing()
+{
 
-void renderCompositing() {
+}
+
+Compositing::~Compositing()
+{
+
+}
+
+void Compositing::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
+	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
 
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
+	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
 
-	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["VertexShader"], nullptr, 0);
+	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["PixelShader"], nullptr, 0);
 
-	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
+	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
-	deviceContext->Draw(4, 0);
+	gdeviceContext->Draw(4, 0);
 }
 
-void initCompositing() {
+void Compositing::Initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -29,12 +40,14 @@ void initCompositing() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
+	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
+
 
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 
-	manager.createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	m_graphicsManager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
 
@@ -52,7 +65,7 @@ void initCompositing() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	manager.createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	m_graphicsManager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -63,7 +76,7 @@ void initCompositing() {
 	//		string name
 	//			);
 
-	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	m_graphicsManager->createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
 
 
 
@@ -80,30 +93,30 @@ void initCompositing() {
 	//	);
 
 	// Only RTV
-	manager.createTexture2D(
+	m_graphicsManager->createTexture2D(
 		"myRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager.getWindowWidth(),
-		manager.getWindowHeight(),
+		m_graphicsManager->getWindowWidth(),
+		m_graphicsManager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	manager.createTexture2D(
+	m_graphicsManager->createTexture2D(
 		"mySRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager.getWindowWidth(),
-		manager.getWindowHeight(),
+		m_graphicsManager->getWindowWidth(),
+		m_graphicsManager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Both
-	manager.createTexture2D("myRTVandSRV");
+	m_graphicsManager->createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager.attachImage("ToneMapping/Images/picture.jpg", "mySRV");
+	m_graphicsManager->attachImage("ToneMapping/Images/picture.jpg", "mySRV");
 
 
 
@@ -116,5 +129,5 @@ void initCompositing() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	m_graphicsManager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }

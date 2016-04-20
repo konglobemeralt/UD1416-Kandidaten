@@ -1,5 +1,12 @@
 #include "GraphicsManager.h"
+#include "..\ApplicationContext.h"
+#include "AntiAliasing.h"
+#include "Compositing.h"
+#include "Lightning.h"
+#include "Text.h"
+#include "ToneMapping.h"
 
+using namespace std;
 void GraphicsManager::initGraphics(HWND* hwnd) {
 	windowHandle = hwnd;
 	CreateDirect3DContext();
@@ -35,59 +42,33 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	data.pSysMem = triangleVertices;
 	gDevice->CreateBuffer(&bufferDesc, &data, &gQuadBuffer);
 
-	switch (user)
-	{
-	case TEXT:
-		initText();
-		break;
-	case COMPOSITING:
-		initCompositing();
-		break;
-	case TONEMAPPING:
-		initToneMapping();
-		break;
-	case ANTIALIASING:
-		initAntiAliasing();
-		break;
-	case LIGHTNING:
-		initLightning();
-		break;
-	case ALL:
-		initAntiAliasing();
-		initText();
-		initCompositing();
-		initToneMapping();
-		initLightning();
-		break;
-	default:
-		break;
-	}
+	
 }
 
 void GraphicsManager::Render() {
-	switch (user)
+	switch (ApplicationContext::GetInstance().GetUser())
 	{
 	case TEXT:
-		renderText();
+		ApplicationContext::GetInstance().GetTextObject()->Render();
 		break;
 	case COMPOSITING:
-		renderCompositing();
+		ApplicationContext::GetInstance().GetCompositingObject()->Render();
 		break;
 	case TONEMAPPING:
-		renderToneMapping();
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
 		break;
 	case ANTIALIASING:
-		renderAntiAliasing();
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
 		break;
 	case LIGHTNING:
-		renderLightning();
+		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	case ALL:
-		renderText();
-		renderCompositing();
-		renderToneMapping();
-		renderAntiAliasing();
-		renderLightning();
+		ApplicationContext::GetInstance().GetTextObject()->Render();
+		ApplicationContext::GetInstance().GetCompositingObject()->Render();
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
+		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:
 		break;
@@ -152,11 +133,11 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 	);
 
 	if (SUCCEEDED(hr)) {
-		//ID3D11Texture2D* pBackBuffer = nullptr;
+		ID3D11Texture2D* pBackBuffer = nullptr;
 		gSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
 		gDevice->CreateRenderTargetView(pBackBuffer, NULL, &gBackbufferRTV);
-		//pBackBuffer->Release();
+		pBackBuffer->Release();
 	};
 
 	return hr;
@@ -325,11 +306,6 @@ void GraphicsManager::createTexture2D(
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = 0;
 
-		if(renderTarget == false)
-			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		if(shaderResource == false)
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET;
-
 		gDevice->CreateTexture2D(&desc, nullptr, &texture);
 
 		if (renderTarget == true) {
@@ -393,12 +369,4 @@ void GraphicsManager::createSamplerState(
 void GraphicsManager::attachImage(string textureName, string srvName) {
 	string cat = "Assets/" + textureName;
 	HRESULT HR = CreateWICTextureFromFile(gDevice, wstring(cat.begin(), cat.end()).c_str(), nullptr, &thesisData.shaderResourceViews[srvName]);
-}
-
-void GraphicsManager::saveImage(string fileName, ID3D11Texture2D* texture2d, const GUID &fileType) {
-	string cat = "Assets/" + fileName;
-	ScratchImage image;
-	CaptureTexture(device, deviceContext, texture2d, image);
-	const Image* img = image.GetImage(0, 0, 0);
-	SaveToWICFile(*img, WIC_FLAGS_NONE, fileType, wstring(cat.begin(), cat.end()).c_str());
 }
