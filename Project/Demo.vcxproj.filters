@@ -49,6 +49,9 @@
     <Filter Include="Resource Files\Text\Shaders">
       <UniqueIdentifier>{92db16b8-c766-4b81-8105-a986744ca460}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Application">
+      <UniqueIdentifier>{57e42e96-1d9e-4c75-9580-d31c265b2dc3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\main.cpp">
@@ -74,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="Classes\ToneMapping.cpp">
       <Filter>Resource Files\ToneMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplicationContext.cpp">
+      <Filter>Source Files\Application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +107,9 @@
     <ClInclude Include="Classes\ToneMapping.h">
       <Filter>Resource Files\ToneMapping</Filter>
     </ClInclude>
+    <ClInclude Include="ApplicationContext.h">
+      <Filter>Source Files\Application</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\LightningDomainShader.hlsl">
@@ -120,6 +129,17 @@
     </FxCompile>
     <FxCompile Include="Shaders\TM_VertexShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningGeometryShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FXAA_PS.hlsl" />
+    <FxCompile Include="Shaders\SimpleVertexShader.hlsl" />
+    <FxCompile Include="Shaders\PixelShader.hlsl">
+      <Filter>Resource Files\Text\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\VertexShader.hlsl">
+      <Filter>Resource Files\Text\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

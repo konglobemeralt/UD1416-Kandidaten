@@ -1,5 +1,12 @@
 #include "GraphicsManager.h"
+#include "..\ApplicationContext.h"
+#include "AntiAliasing.h"
+#include "Compositing.h"
+#include "Lightning.h"
+#include "Text.h"
+#include "ToneMapping.h"
 
+using namespace std;
 void GraphicsManager::initGraphics(HWND* hwnd) {
 	windowHandle = hwnd;
 	CreateDirect3DContext();
@@ -35,59 +42,33 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	data.pSysMem = triangleVertices;
 	gDevice->CreateBuffer(&bufferDesc, &data, &gQuadBuffer);
 
-	switch (user)
-	{
-	case TEXT:
-		initText();
-		break;
-	case COMPOSITING:
-		initCompositing();
-		break;
-	case TONEMAPPING:
-		initToneMapping();
-		break;
-	case ANTIALIASING:
-		initAntiAliasing();
-		break;
-	case LIGHTNING:
-		initLightning();
-		break;
-	case ALL:
-		initAntiAliasing();
-		initText();
-		initCompositing();
-		initToneMapping();
-		initLightning();
-		break;
-	default:
-		break;
-	}
+	
 }
 
 void GraphicsManager::Render() {
-	switch (user)
+	switch (ApplicationContext::GetInstance().GetUser())
 	{
 	case TEXT:
-		renderText();
+		ApplicationContext::GetInstance().GetTextObject()->Render();
 		break;
 	case COMPOSITING:
-		renderCompositing();
+		ApplicationContext::GetInstance().GetCompositingObject()->Render();
 		break;
 	case TONEMAPPING:
-		renderToneMapping();
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
 		break;
 	case ANTIALIASING:
-		renderAntiAliasing();
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
 		break;
 	case LIGHTNING:
-		renderLightning();
+		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	case ALL:
-		renderText();
-		renderCompositing();
-		renderToneMapping();
-		renderAntiAliasing();
-		renderLightning();
+		ApplicationContext::GetInstance().GetTextObject()->Render();
+		ApplicationContext::GetInstance().GetCompositingObject()->Render();
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
+		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:
 		break;
