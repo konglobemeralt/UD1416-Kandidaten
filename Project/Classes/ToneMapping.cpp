@@ -13,10 +13,6 @@ ToneMapping::~ToneMapping()
 }
 
 void ToneMapping::Render() {
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	UINT vertexSize = sizeof(float) * 5;
-	UINT offset = 0;
-
 	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -35,11 +31,9 @@ void ToneMapping::Render() {
 
 	string cat = imageWithZero + to_string(imageCount) + ".png";
 
-	manager->attachImage(cat, "FirstSRV");
+	manager->attachImage("ToneMapping/asdfg.tif", "FirstSRV");
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
-
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
-
 	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
 	deviceContext->Draw(4, 0);
@@ -47,7 +41,8 @@ void ToneMapping::Render() {
 	imageCount++;
 	if (imageCount == 56)
 		imageCount = 0;
-	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
+
+	manager->saveImage("ToneMapping/HDRTESTLOL.png", manager->pBackBuffer);
 }
 
 void ToneMapping::Initialize() {
@@ -133,7 +128,7 @@ void ToneMapping::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("ToneMapping/picture.png", "FirstSRV");
+	//manager->attachImage("ToneMapping/test8k.jpg", "FirstSRV");
 
 
 
