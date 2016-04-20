@@ -1,44 +1,26 @@
 #include "AntiAliasing.h"
-#include "GraphicsManager.h"
-#include "..\ApplicationContext.h"
 
-AntiAliasing::AntiAliasing()
-{
-
-}
-AntiAliasing::~AntiAliasing()
-{
-
-}
-
-
-
-void AntiAliasing::Render() {
+void renderAntiAliasing() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
+	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["AAClampSampler"]);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
 
-	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["Simple_VS_cb"]);
-	gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
+	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["FXAA_Test"]);
+	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
-
-	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
-
-	gdeviceContext->Draw(4, 0);
+	deviceContext->Draw(4, 0);
 }
 
-void AntiAliasing::Initialize() {
+void initAntiAliasing() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -47,95 +29,12 @@ void AntiAliasing::Initialize() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
-	struct Simple_VS_ConstantBuffer { //view space typ
-		XMFLOAT4X4 matrix;
-	}Simple_VS_cb;
 
-	m_graphicsManager->createConstantBuffer("Simple_VS_cb", &Simple_VS_cb, sizeof(Simple_VS_ConstantBuffer));
-
-
-	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
-		XMFLOAT2 texelSizeXY;
-		float FXAA_blur_Texels_Threshhold = 8.0f; //hur många texlar som kommer blurras åt varje håll
-	}FXAA_PS_cb;
-
-	m_graphicsManager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
-
-
-
-	// ###########################################################
-	// ######				Vertex Shader					######
-	// ###########################################################
-	//	void createVertexShader(
-	//		string shaderName,
-	//		string layoutName,
-	//		D3D11_INPUT_ELEMENT_DESC* desc,
-	//		UINT size);
-
-	D3D11_INPUT_ELEMENT_DESC AASimpleLayout[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	m_graphicsManager->createVertexShader("SimpleVertexShader", "AASimpleLayout", AASimpleLayout, ARRAYSIZE(AASimpleLayout)); //vertexshader och och layout
-
-
-	m_graphicsManager->createPixelShader("FXAA_PS"); // Name has to match shader name without .hlsl
-
-
-
-	// ###########################################################
-	// ######		Render target & shader resource			######
-	// ###########################################################
-	//	void createTexture2D(
-	//		string name,
-	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-	//		bool renderTarget = true,
-	//		bool shaderResource = true
-	//	);
-
-	m_graphicsManager->createTexture2D( //shaderresource
-		"FXAA_Test",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
-		false,
-		true
-	);
-
-	m_graphicsManager->attachImage("AntiAliasing/Images/AATest.png", "FXAA_Test"); //attachea till shaderresourcen
-	// ###########################################################
-	// ######		Render target & shader resource			######
-	// ###########################################################
-	//	void createSamplerState(
-	//		string name,
-	//		D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT,
-	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
-	//	);
-
-	m_graphicsManager->createSamplerState("AAWrapSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-	m_graphicsManager->createSamplerState("AAClampSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
-}
-
-void AntiAliasing::InitExample()
-{
-	// ###########################################################
-	// ######				Constant buffer					######
-	// ###########################################################
-	//	void createConstantBuffer(
-	//		string name,
-	//		D3D11_BUFFER_DESC desc,
-	//		const void* data
-	//	);
-	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 
-	m_graphicsManager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	manager.createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
 
@@ -153,7 +52,7 @@ void AntiAliasing::InitExample()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	m_graphicsManager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager.createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -164,47 +63,47 @@ void AntiAliasing::InitExample()
 	//		string name
 	//			);
 
-	m_graphicsManager->createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
 
 
 
-											  // ###########################################################
-											  // ######		Render target & shader resource			######
-											  // ###########################################################
-											  //	void createTexture2D(
-											  //		string name,
-											  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-											  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-											  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-											  //		bool renderTarget = true,
-											  //		bool shaderResource = true
-											  //	);
+	// ###########################################################
+	// ######		Render target & shader resource			######
+	// ###########################################################
+	//	void createTexture2D(
+	//		string name,
+	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+	//		bool renderTarget = true,
+	//		bool shaderResource = true
+	//	);
 
 	// Only RTV
-	m_graphicsManager->createTexture2D(
+	manager.createTexture2D(
 		"myRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager.getWindowWidth(),
+		manager.getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	m_graphicsManager->createTexture2D(
+	manager.createTexture2D(
 		"mySRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager.getWindowWidth(),
+		manager.getWindowHeight(),
 		true,
 		false
 	);
 
 	// Both
-	m_graphicsManager->createTexture2D("myRTVandSRV");
+	manager.createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	m_graphicsManager->attachImage("ToneMapping/Images/picture.jpg", "mySRV");
+	manager.attachImage("ToneMapping/Images/picture.jpg", "mySRV");
 
 
 
@@ -217,5 +116,5 @@ void AntiAliasing::InitExample()
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	m_graphicsManager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }

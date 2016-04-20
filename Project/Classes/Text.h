@@ -1,24 +1,14 @@
 #ifndef H_TEXT
 #define H_TEXT
 
-//#include "GraphicsManager.h"
+#include "GraphicsManager.h"
 
-//#define manager GraphicsManager::getInstance()
-//#define resources GraphicsManager::getInstance().thesisData
-#define gdevice m_graphicsManager->getDevice()
-#define gdeviceContext m_graphicsManager->getDeviceContext()
-class GraphicsManager;
-class Text
-{
-public:
-	Text();
-	~Text();
-	void Render();
-	void Initialize();
+#define manager GraphicsManager::getInstance()
+#define resources GraphicsManager::getInstance().thesisData
+#define device GraphicsManager::getInstance().getDevice()
+#define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-
-private:
-	GraphicsManager* m_graphicsManager;
-};
+void renderText();
+void initText();
 
 #endif

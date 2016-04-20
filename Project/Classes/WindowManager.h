@@ -2,7 +2,7 @@
 #define H_WINDOWMANAGER
 
 #include <d3d11.h>
-class GraphicsHandler;
+
 class WindowManager {
 private:
 	HWND m_hwnd;

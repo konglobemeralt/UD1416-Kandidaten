@@ -1,12 +1,5 @@
 #include "GraphicsManager.h"
-#include "..\ApplicationContext.h"
-#include "AntiAliasing.h"
-#include "Compositing.h"
-#include "Lightning.h"
-#include "Text.h"
-#include "ToneMapping.h"
 
-using namespace std;
 void GraphicsManager::initGraphics(HWND* hwnd) {
 	windowHandle = hwnd;
 	CreateDirect3DContext();
@@ -42,33 +35,59 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	data.pSysMem = triangleVertices;
 	gDevice->CreateBuffer(&bufferDesc, &data, &gQuadBuffer);
 
-	
+	switch (user)
+	{
+	case TEXT:
+		initText();
+		break;
+	case COMPOSITING:
+		initCompositing();
+		break;
+	case TONEMAPPING:
+		initToneMapping();
+		break;
+	case ANTIALIASING:
+		initAntiAliasing();
+		break;
+	case LIGHTNING:
+		initLightning();
+		break;
+	case ALL:
+		initAntiAliasing();
+		initText();
+		initCompositing();
+		initToneMapping();
+		initLightning();
+		break;
+	default:
+		break;
+	}
 }
 
 void GraphicsManager::Render() {
-	switch (ApplicationContext::GetInstance().GetUser())
+	switch (user)
 	{
 	case TEXT:
-		ApplicationContext::GetInstance().GetTextObject()->Render();
+		renderText();
 		break;
 	case COMPOSITING:
-		ApplicationContext::GetInstance().GetCompositingObject()->Render();
+		renderCompositing();
 		break;
 	case TONEMAPPING:
-		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
+		renderToneMapping();
 		break;
 	case ANTIALIASING:
-		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
+		renderAntiAliasing();
 		break;
 	case LIGHTNING:
-		ApplicationContext::GetInstance().GetLightningObject()->Render();
+		renderLightning();
 		break;
 	case ALL:
-		ApplicationContext::GetInstance().GetTextObject()->Render();
-		ApplicationContext::GetInstance().GetCompositingObject()->Render();
-		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
-		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
-		ApplicationContext::GetInstance().GetLightningObject()->Render();
+		renderText();
+		renderCompositing();
+		renderToneMapping();
+		renderAntiAliasing();
+		renderLightning();
 		break;
 	default:
 		break;

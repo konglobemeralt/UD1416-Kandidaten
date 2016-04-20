@@ -2,16 +2,14 @@
 #include "WindowManager.h"
 #include "GraphicsManager.h"
 #include "DataStructures.h"
-#include "..\ApplicationContext.h"
-#define PI (3.141592653589793)
 
-#define AppContext ApplicationContext::GetInstance()
+#define PI (3.141592653589793)
 
 using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	ApplicationContext::GetInstance().SetUser(ANTIALIASING);
+	GraphicsManager::getInstance().user = TONEMAPPING;
 /*		
 		CHOOSE FROM:
 		TEXT
@@ -51,26 +49,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
 	CoInitialize(NULL);
-	ApplicationContext::Startup();
 	setUser();
 	WindowManager windowManager(hInstance, WndProc);
-	ApplicationContext::GetInstance().GetGraphicsManager()->initGraphics(windowManager.getWindowHandle());
-	ApplicationContext::Initialize();
-	
-	
-	//GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
+	GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
 
 	MSG msg = { 0 };
 
 	D3D11_VIEWPORT vp;
-	vp.Width = (float)AppContext.GetGraphicsManager()->getWindowWidth();
-	vp.Height = (float)AppContext.GetGraphicsManager()->getWindowHeight();
+	vp.Width = (float)GraphicsManager::getInstance().getWindowWidth();
+	vp.Height = (float)GraphicsManager::getInstance().getWindowHeight();
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
 
-	AppContext.GetGraphicsManager()->getDeviceContext()->RSSetViewports(1, &vp);
+	GraphicsManager::getInstance().getDeviceContext()->RSSetViewports(1, &vp);
 
 	ShowWindow(*windowManager.getWindowHandle(), nCmdShow);
 	static int fps = 0;
@@ -101,8 +94,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			else
 				fps++;
 
-			AppContext.GetGraphicsManager()->Render();
-			AppContext.GetGraphicsManager()->getSwapChain()->Present(0, 0);
+			GraphicsManager::getInstance().Render();
+			GraphicsManager::getInstance().getSwapChain()->Present(0, 0);
 		}
 	}
 

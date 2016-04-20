@@ -1,41 +1,29 @@
 #include "Lightning.h"
-#include "GraphicsManager.h"
-#include "..\ApplicationContext.h"
-Lightning::Lightning()
-{
 
-}
-Lightning::~Lightning()
-{
-
-}
-
-
-void Lightning::Render() {
+void renderLightning() {
 	float clearColor[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	deviceContext->OMSetRenderTargets(1, manager.getBackbuffer(), nullptr);
+	deviceContext->ClearRenderTargetView(*manager.getBackbuffer(), clearColor);
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
-	//deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+	//deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
+	deviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
 
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
-	//deviceContext->HSSetShader(resources.hullShaders["LightningHullShader"], nullptr, 0);
-	//deviceContext->DSSetShader(resources.domainShaders["LightningDomainShader"], nullptr, 0);
-	gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["LightningPixelShader"], nullptr, 0);
+	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
+	deviceContext->HSSetShader(resources.hullShaders["LightningHullShader"], nullptr, 0);
+	deviceContext->DSSetShader(resources.domainShaders["LightningDomainShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
 
-	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+	deviceContext->IASetVertexBuffers(0, 1, manager.getQuad(), &vertexSize, &offset);
 
-	gdeviceContext->Draw(4, 0);
+	deviceContext->Draw(4, 0);
 }
 
-void Lightning::Initialize() {
+void initLightning() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -44,37 +32,14 @@ void Lightning::Initialize() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
 
 	struct cBuffer {
-		XMMATRIX WVP;
-		XMMATRIX World;
 		XMFLOAT4X4 matrix;
-	}constantBuffer;
+	}myMatrix;
 
-	m_graphicsManager->createConstantBuffer("constantBuffer", &constantBuffer, sizeof(cBuffer));
+	manager.createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
-	///////////___________NEW_________________/////////////
-	XMVECTOR camPos, camLook, camUp;
-	XMMATRIX WVP, World, ViewSpace, Projection;
-
-	camPos = XMVectorSet(0.0f, 7.5f, -5.0f, 0.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
-	camLook = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	ViewSpace = XMMatrixLookAtLH(camPos, camLook, camUp);
-	Projection = XMMatrixPerspectiveFovLH(3.14*0.45, m_graphicsManager->getWindowWidth() / m_graphicsManager->getWindowHeight(), 0.5f, 20.0f); //	FLOAT FovAngleY, FLOAT AspectRatio, FLOAT NearZ, FLOAT FarZ
-
-	World = XMMatrixIdentity();
-	WVP = World * ViewSpace * Projection;
-
-	constantBuffer.World = XMMatrixTranspose(World);
-	constantBuffer.WVP = XMMatrixTranspose(WVP);
-
-	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["constantBuffer"], 0, NULL, &constantBuffer, 0, 0);	//NOT WORKING
-	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["constantBuffer"]);	//NOT WORKING
-	///////////___________NEW_________________/////////////
 
 	// ###########################################################
 	// ######				Vertex Shader					######
@@ -90,7 +55,7 @@ void Lightning::Initialize() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	m_graphicsManager->createVertexShader("LightningVertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager.createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -101,10 +66,9 @@ void Lightning::Initialize() {
 	//		string name
 	//			);
 
-	m_graphicsManager->createHullShader("LightningHullShader");
-	m_graphicsManager->createDomainShader("LightningDomainShader");
-	m_graphicsManager->createGeometryShader("LightningGeometryShader");
-	m_graphicsManager->createPixelShader("LightningPixelShader"); // Name has to match shader name without .hlsl
+	manager.createHullShader("LightningHullShader");
+	manager.createDomainShader("LightningDomainShader");
+	manager.createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
 
 
 
@@ -121,30 +85,30 @@ void Lightning::Initialize() {
 	//	);
 
 	// Only RTV
-	m_graphicsManager->createTexture2D(
+	manager.createTexture2D(
 		"myRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager.getWindowWidth(),
+		manager.getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	m_graphicsManager->createTexture2D(
+	manager.createTexture2D(
 		"mySRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager.getWindowWidth(),
+		manager.getWindowHeight(),
 		true,
 		false
 	);
 
 	// Both
-	m_graphicsManager->createTexture2D("myRTVandSRV");
+	manager.createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	m_graphicsManager->attachImage("ToneMapping/Images/picture.jpg", "mySRV");
+	manager.attachImage("ToneMapping/Images/picture.jpg", "mySRV");
 
 
 
@@ -157,5 +121,5 @@ void Lightning::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	m_graphicsManager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager.createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }

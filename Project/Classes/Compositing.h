@@ -1,23 +1,14 @@
 #ifndef H_COMPOSITING
 #define H_COMPOSITING
 
-//#include "GraphicsManager.h"
+#include "GraphicsManager.h"
 
-//#define manager GraphicsManager::getInstance()
-//#define resources GraphicsManager::getInstance().thesisData
-#define gdevice m_graphicsManager->getDevice()
-#define gdeviceContext m_graphicsManager->getDeviceContext()
-class GraphicsManager;
-class Compositing
-{
-public:
-	Compositing();
-	~Compositing();
-	void Render();
-	void Initialize();
-private:
-	GraphicsManager* m_graphicsManager;
+#define manager GraphicsManager::getInstance()
+#define resources GraphicsManager::getInstance().thesisData
+#define device GraphicsManager::getInstance().getDevice()
+#define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-};
+void renderCompositing();
+void initCompositing();
 
 #endif
