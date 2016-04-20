@@ -141,5 +141,11 @@
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <Filter>Resource Files\Text\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\CompositingPixelShader.hlsl">
+      <Filter>Resource Files\Compositing\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CompositingVertexShader.hlsl">
+      <Filter>Resource Files\Compositing\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

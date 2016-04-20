@@ -1,6 +1,7 @@
 #include "Compositing.h"
 #include "..\ApplicationContext.h"
 #include "GraphicsManager.h"
+
 Compositing::Compositing()
 {
 
@@ -16,19 +17,38 @@ void Compositing::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	deviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
 
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["VertexShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["PixelShader"], nullptr, 0);
+	deviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
-	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+	if (imageCount < 9)
+		imageWithZero = "UVTEST/UVTEST_00";
+	else if (imageCount > 9 && imageCount < 100)
+		imageWithZero = "UVTEST/UVTEST_0";
+	else
+		imageWithZero = "UVTEST/UVTEST_";
 
-	gdeviceContext->Draw(4, 0);
+	string cat = imageWithZero + to_string(imageCount) + ".png";
+
+	manager->attachImage(cat, "FirstSRV");
+	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
+	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
+
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+
+	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+
+	deviceContext->Draw(4, 0);
+
+	imageCount++;
+	if (imageCount == 270)
+		imageCount = 0;
+	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
 }
 
 void Compositing::Initialize() {
@@ -40,14 +60,12 @@ void Compositing::Initialize() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
-
-
+	manager = ApplicationContext::GetInstance().GetGraphicsManager();
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 
-	m_graphicsManager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	manager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
 
@@ -65,7 +83,7 @@ void Compositing::Initialize() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	m_graphicsManager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager->createVertexShader("CompositingVertexShader", "CompositingLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -76,47 +94,47 @@ void Compositing::Initialize() {
 	//		string name
 	//			);
 
-	m_graphicsManager->createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	manager->createPixelShader("CompositingPixelShader"); // Name has to match shader name without .hlsl
 
 
 
-	// ###########################################################
-	// ######		Render target & shader resource			######
-	// ###########################################################
-	//	void createTexture2D(
-	//		string name,
-	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-	//		bool renderTarget = true,
-	//		bool shaderResource = true
-	//	);
+												  // ###########################################################
+												  // ######		Render target & shader resource			######
+												  // ###########################################################
+												  //	void createTexture2D(
+												  //		string name,
+												  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+												  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+												  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+												  //		bool renderTarget = true,
+												  //		bool shaderResource = true
+												  //	);
 
-	// Only RTV
-	m_graphicsManager->createTexture2D(
-		"myRTV",
+												  // Only RTV
+	manager->createTexture2D(
+		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	m_graphicsManager->createTexture2D(
-		"mySRV",
+	manager->createTexture2D(
+		"FirstSRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Both
-	m_graphicsManager->createTexture2D("myRTVandSRV");
+	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	m_graphicsManager->attachImage("ToneMapping/Images/picture.jpg", "mySRV");
+	manager->attachImage("dickbutt.png", "SecondSRV");
 
 
 
@@ -129,5 +147,5 @@ void Compositing::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	m_graphicsManager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }
