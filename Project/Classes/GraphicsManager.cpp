@@ -368,7 +368,8 @@ void GraphicsManager::createSamplerState(
 
 void GraphicsManager::attachImage(string textureName, string srvName) {
 	string cat = "Assets/" + textureName;
-
+	if (thesisData.shaderResourceViews[srvName] != nullptr)
+		thesisData.shaderResourceViews[srvName]->Release();
 	HRESULT HR = CreateWICTextureFromFile(gDevice, wstring(cat.begin(), cat.end()).c_str(), nullptr, &thesisData.shaderResourceViews[srvName]);
 }
 

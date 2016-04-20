@@ -16,7 +16,7 @@ void ToneMapping::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
-	Sleep(1000);
+
 	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -26,7 +26,7 @@ void ToneMapping::Render() {
 	deviceContext->VSSetShader(resources.vertexShaders["TM_VertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["TM_PixelShader"], nullptr, 0);
 
-	if (imageCount < 9)
+	if (imageCount < 10)
 		imageWithZero = "ToneMapping/KHK/SceneWithLightning.00";
 	else if (imageCount > 9 && imageCount < 100)
 		imageWithZero = "ToneMapping/KHK/SceneWithLightning.0";
