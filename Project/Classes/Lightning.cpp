@@ -1,6 +1,10 @@
 #include "Lightning.h"
 
-void renderLightning() {
+Lightning::Lightning() {}
+
+Lightning::~Lightning() {}
+
+void Lightning::render() {
 	float clearColor[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -23,7 +27,7 @@ void renderLightning() {
 	deviceContext->Draw(4, 0);
 }
 
-void initLightning() {
+void Lightning::initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

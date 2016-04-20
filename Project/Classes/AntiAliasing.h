@@ -2,13 +2,23 @@
 #define H_ANTIALIASING
 
 #include "GraphicsManager.h"
+#include "../DirectXTex/DirectXTex.h"
+#include "../DirectXTex/DirectXTexP.h"
 
 #define manager GraphicsManager::getInstance()
 #define resources GraphicsManager::getInstance().thesisData
 #define device GraphicsManager::getInstance().getDevice()
 #define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-void renderAntiAliasing();
-void initAntiAliasing();
+class AntiAliasing {
+private:
+
+public:
+	AntiAliasing();
+	~AntiAliasing();
+
+	void render();
+	void initialize();
+};
 
 #endif

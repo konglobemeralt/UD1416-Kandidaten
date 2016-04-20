@@ -1,6 +1,14 @@
 #include "ToneMapping.h"
 
-void renderToneMapping() {
+ToneMapping::ToneMapping() {
+
+}
+
+ToneMapping::~ToneMapping() {
+
+}
+
+void ToneMapping::render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -25,7 +33,7 @@ void renderToneMapping() {
 	manager.saveImage("ToneMapping/OutputImages/image.png", manager.pBackBuffer);
 }
 
-void initToneMapping() {
+void ToneMapping::initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

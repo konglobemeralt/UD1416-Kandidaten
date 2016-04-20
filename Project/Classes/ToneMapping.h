@@ -10,7 +10,15 @@
 #define device GraphicsManager::getInstance().getDevice()
 #define deviceContext GraphicsManager::getInstance().getDeviceContext()
 
-void renderToneMapping();
-void initToneMapping();
+class ToneMapping {
+private:
+
+public:
+	ToneMapping();
+	~ToneMapping();
+
+	void render();
+	void initialize();
+};
 
 #endif

@@ -1,6 +1,10 @@
 #include "AntiAliasing.h"
 
-void renderAntiAliasing() {
+AntiAliasing::AntiAliasing() {}
+
+AntiAliasing::~AntiAliasing() {}
+
+void AntiAliasing::render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -20,7 +24,7 @@ void renderAntiAliasing() {
 	deviceContext->Draw(4, 0);
 }
 
-void initAntiAliasing() {
+void AntiAliasing::initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

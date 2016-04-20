@@ -24,10 +24,23 @@
 
 using namespace DirectX;
 
+class AntiAliasing;
+class Compositing;
+class Lightning;
+class Text;
+class ToneMapping;
+
 class GraphicsManager {
 private:
 	GraphicsManager() {};
 	
+	// Forward declarations
+	AntiAliasing* antiAliasing;
+	Compositing* compositing;
+	Lightning* lightning;
+	Text* text;
+	ToneMapping* toneMapping;
+
 	IDXGISwapChain* gSwapChain = nullptr;
 	ID3D11Device* gDevice = nullptr;
 	ID3D11DeviceContext* gDeviceContext = nullptr;
@@ -47,7 +60,7 @@ private:
 	// Rasterstate
 	ID3D11RasterizerState* rasterState;
 
-	//Empty views to clear depth, RTV's and SRV's
+	// Empty views to clear depth, RTV's and SRV's
 	ID3D11DepthStencilView* emptyDSV;
 	ID3D11RenderTargetView* emptyRTV[4];
 	ID3D11ShaderResourceView* emptySRV[8];

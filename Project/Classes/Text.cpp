@@ -1,6 +1,10 @@
 #include "Text.h"
 
-void renderText() {
+Text::Text() {}
+
+Text::~Text() {}
+
+void Text::render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -20,7 +24,7 @@ void renderText() {
 	deviceContext->Draw(4, 0);
 }
 
-void initText() {
+void Text::initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

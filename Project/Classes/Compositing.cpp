@@ -1,6 +1,10 @@
 #include "Compositing.h"
 
-void renderCompositing() {
+Compositing::Compositing() {}
+
+Compositing::~Compositing() {}
+
+void Compositing::render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -20,7 +24,7 @@ void renderCompositing() {
 	deviceContext->Draw(4, 0);
 }
 
-void initCompositing() {
+void Compositing::initialize() {
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################

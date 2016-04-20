@@ -3,10 +3,8 @@
   ToneMapping.cpp
   Text.cpp
   Lightning.cpp
+  GraphicsManager.cpp
   Compositing.cpp
   AntiAliasing.cpp
-  Generating Code...
-  Compiling...
-  GraphicsManager.cpp
   Generating Code...
   Demo.vcxproj -> C:\Users\BTH\Documents\GitHub\UD1416-Kandidaten\Project\Debug\Demo.exe
