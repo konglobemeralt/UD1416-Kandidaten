@@ -16,7 +16,7 @@ void ToneMapping::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
-
+	Sleep(1000);
 	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -125,8 +125,8 @@ void ToneMapping::Initialize() {
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager->getWindowWidth(),
 		manager->getWindowHeight(),
-		true,
-		false
+		false,
+		true
 	);
 
 	// Both

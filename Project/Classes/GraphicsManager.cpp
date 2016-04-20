@@ -121,7 +121,7 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 		NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
-		D3D11_CREATE_DEVICE_DEBUG,
+		D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_SINGLETHREADED,
 		NULL,
 		NULL,
 		D3D11_SDK_VERSION,
@@ -368,6 +368,7 @@ void GraphicsManager::createSamplerState(
 
 void GraphicsManager::attachImage(string textureName, string srvName) {
 	string cat = "Assets/" + textureName;
+
 	HRESULT HR = CreateWICTextureFromFile(gDevice, wstring(cat.begin(), cat.end()).c_str(), nullptr, &thesisData.shaderResourceViews[srvName]);
 }
 
