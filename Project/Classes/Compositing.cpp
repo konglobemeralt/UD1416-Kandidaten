@@ -47,10 +47,12 @@ void Compositing::Render() {
 	}
 
 
-	if (imageCount == 220)
+	if (imageCount == 235)
 	{
 		manager->attachImage("trump.jpg", "SecondSRV");
 	}
+
+
 
 	string cat = imageWithZero + to_string(imageCount) + ".png";
 
