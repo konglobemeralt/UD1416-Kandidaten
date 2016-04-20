@@ -9,7 +9,7 @@ ToneMapping::ToneMapping()
 
 ToneMapping::~ToneMapping()
 {
-
+	
 }
 
 void ToneMapping::Render() {
@@ -17,30 +17,37 @@ void ToneMapping::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["TM_Layout"]);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	deviceContext->IASetInputLayout(resources.inputLayouts["TM_Layout"]);
 
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["TM_VertexShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["TM_PixelShader"], nullptr, 0);
+	deviceContext->VSSetShader(resources.vertexShaders["TM_VertexShader"], nullptr, 0);
+	deviceContext->PSSetShader(resources.pixelShaders["TM_PixelShader"], nullptr, 0);
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["FirstSRV"]);
+	if (imageCount < 9)
+		imageWithZero = "ToneMapping/KHK/SceneWithLightning.00";
+	else if (imageCount > 9 && imageCount < 100)
+		imageWithZero = "ToneMapping/KHK/SceneWithLightning.0";
+	else
+		imageWithZero = "ToneMapping/KHK/SceneWithLightning.";
 
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["SamplerWrap"]);
+	string cat = imageWithZero + to_string(imageCount) + ".png";
 
-	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+	manager->attachImage(cat, "FirstSRV");
+	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
 
-	gdeviceContext->Draw(4, 0);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
-	ScratchImage image;
-	HRESULT hr0 = CaptureTexture(gdevice, gdeviceContext, m_graphicsManager->thesisData.textures["FirstSRV"], image);
-	const Image* img = image.GetImage(0, 0, 0);
-	assert(img);
-	HRESULT hr1 = SaveToWICFile(*img, WIC_FLAGS_NONE, GUID_ContainerFormatJpeg, L"hej.jpg");
+	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
-	int a = 0;
+	deviceContext->Draw(4, 0);
+
+	imageCount++;
+	if (imageCount == 56)
+		imageCount = 0;
+	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
 }
 
 void ToneMapping::Initialize() {
@@ -52,12 +59,12 @@ void ToneMapping::Initialize() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
+	manager = ApplicationContext::GetInstance().GetGraphicsManager();
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 
-	m_graphicsManager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	manager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
 
@@ -75,7 +82,7 @@ void ToneMapping::Initialize() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	m_graphicsManager->createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager->createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 	
 
@@ -86,7 +93,7 @@ void ToneMapping::Initialize() {
 	//		string name
 	//			);
 
-	m_graphicsManager->createPixelShader("TM_PixelShader"); // Name has to match shader name without .hlsl
+	manager->createPixelShader("TM_PixelShader"); // Name has to match shader name without .hlsl
 
 
 
@@ -103,30 +110,30 @@ void ToneMapping::Initialize() {
 	//	);
 
 	// Only RTV
-	m_graphicsManager->createTexture2D(
+	manager->createTexture2D(
 		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	m_graphicsManager->createTexture2D(
+	manager->createTexture2D(
 		"FirstSRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Both
-	m_graphicsManager->createTexture2D("FirstSRVRTV");
+	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	m_graphicsManager->attachImage("ToneMapping/picture.png", "FirstSRV");
+	manager->attachImage("ToneMapping/picture.png", "FirstSRV");
 
 
 
@@ -139,5 +146,5 @@ void ToneMapping::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	m_graphicsManager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 }
