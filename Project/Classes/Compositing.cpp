@@ -26,12 +26,31 @@ void Compositing::Render() {
 	deviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
+
+	if (imageCount == 0)
+	{
+		manager->attachImage("dickbutt.png", "SecondSRV");
+	}
+
+
 	if (imageCount < 9)
 		imageWithZero = "UVTEST/UVTEST_00";
 	else if (imageCount > 9 && imageCount < 100)
 		imageWithZero = "UVTEST/UVTEST_0";
 	else
 		imageWithZero = "UVTEST/UVTEST_";
+
+
+	if (imageCount == 120)
+	{
+		manager->attachImage("putin.jpg", "SecondSRV");
+	}
+
+
+	if (imageCount == 220)
+	{
+		manager->attachImage("trump.jpg", "SecondSRV");
+	}
 
 	string cat = imageWithZero + to_string(imageCount) + ".png";
 
@@ -46,9 +65,10 @@ void Compositing::Render() {
 	deviceContext->Draw(4, 0);
 
 	imageCount++;
-	if (imageCount == 270)
+	if (imageCount == 400)
 		imageCount = 0;
 	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
+	Sleep(10);
 }
 
 void Compositing::Initialize() {
