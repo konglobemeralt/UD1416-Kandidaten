@@ -65,9 +65,9 @@ void Lightning::Render() {
 	XMCamLook = XMLoadFloat4(&camLook);
 	XMCamUp = XMLoadFloat4(&camUp);
 
-	XMVECTOR camPos2 = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
-	XMVECTOR camLook2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR camUp2 = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	//XMVECTOR camPos2 = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
+	//XMVECTOR camLook2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//XMVECTOR camUp2 = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	//XMViewSpace = XMMatrixLookAtLH(camPos2, camLook2, camUp2);
 	XMViewSpace = XMMatrixLookAtLH(XMCamPos, XMCamLook, XMCamUp);
@@ -126,9 +126,7 @@ void Lightning::Initialize() {
 
 	///////////___________NEW_________________/////////////
 
-	camPos = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
-	camLook = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	camUp = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
+
 
 
 	m_graphicsManager->createConstantBuffer("lightningCBuffer", &lightningCBuffer, sizeof(cBuffer));
@@ -227,7 +225,8 @@ void Lightning::updateFreeLookCamera()
 	XMVECTOR camForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 	XMVECTOR camRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 	//Convert to XM!
-	XMMATRIX camRotation, XMViewSpace = XMLoadFloat4x4(&ViewSpace);
+	XMMATRIX camRotation;
+	XMMATRIX XMViewSpace = XMLoadFloat4x4(&ViewSpace);
 	XMVECTOR XMCamLook = XMLoadFloat4(&camLook);
 	XMVECTOR XMCamUp = XMLoadFloat4(&camUp);
 	XMVECTOR XMCamPos = XMLoadFloat4(&camPos);
@@ -267,6 +266,7 @@ void Lightning::detectInput()
 	moveLR = 0.0f;
 	moveFB = 0.0f;
 
+
 	//float speed = 0.01;
 
 	if (keyboardState[DIK_ESCAPE] & 0x80)						//Shuts the window when the ESCAPE key is pressed
@@ -280,11 +280,13 @@ void Lightning::detectInput()
 	}
 	if (keyboardState[DIK_RIGHT] || keyboardState[DIK_D])		//Moves right when the D key or the RIGHT arrow is pressed
 	{
-		moveLR = speed;
+		//moveLR = speed;
+		camYaw += 0.0001f;
 	}
 	if (keyboardState[DIK_UP] || keyboardState[DIK_W])			//Moves forward when the W key or the UP arrow is pressed
 	{
-		moveFB = speed;
+		//moveFB = speed;
+		camPitch += 0.0001f;
 	}
 	if (keyboardState[DIK_DOWN] || keyboardState[DIK_S])		//Moves backwards when the S key or the DOWN arrow is pressed
 	{

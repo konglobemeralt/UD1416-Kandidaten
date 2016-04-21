@@ -34,7 +34,10 @@ private:
 
 	XMFLOAT4 worldForward, worldRight, camForward, camRight;
 	XMFLOAT4X4 ViewSpace;
-	XMFLOAT4 camPos, camLook, camUp;
+	//XMFLOAT4 camPos, camLook, camUp;
+	XMFLOAT4 camPos = XMFLOAT4(0.0f, 0.0f, 5.0f, 1.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
+	XMFLOAT4 camLook = XMFLOAT4(-5.0f, -5.0f, -5.0f, 1.0f);
+	XMFLOAT4 camUp = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
 	float moveLR = 0.0f;	//MOVE LEFT AND RIGHT
 	float moveFB = 0.0f;	//MOVE FORWARD AND BACK
 	float camYaw = 0.0f;	//CAMERA ROTATION
