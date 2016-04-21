@@ -288,12 +288,12 @@ void GraphicsManager::createTexture2D(
 	UINT height,
 	bool renderTarget,
 	bool shaderResource,
-	ID3D11Texture2D* texture,
-	D3D11_TEXTURE2D_DESC desc)
+	ID3D11Texture2D* texture)
 {
 
 	if (renderTarget == true || shaderResource == true) {
-		if (texture != nullptr) {
+		if (texture == nullptr) {
+			D3D11_TEXTURE2D_DESC desc;
 			ZeroMemory(&desc, sizeof(desc));
 			desc.Width = width;
 			desc.Height = height;
@@ -313,7 +313,7 @@ void GraphicsManager::createTexture2D(
 			ID3D11RenderTargetView* rtv;
 
 			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-			rtvDesc.Format = desc.Format;
+			rtvDesc.Format = format;
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			rtvDesc.Texture2D.MipSlice = 0;
 
@@ -326,7 +326,7 @@ void GraphicsManager::createTexture2D(
 			ID3D11ShaderResourceView* srv;
 
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-			srvDesc.Format = desc.Format;
+			srvDesc.Format = format;
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MostDetailedMip = 0;
 			srvDesc.Texture2D.MipLevels = 1;

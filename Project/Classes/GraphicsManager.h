@@ -88,8 +88,7 @@ public:
 		UINT height = 1024,
 		bool renderTarget = true,
 		bool shaderResource = true,
-		ID3D11Texture2D* texture = nullptr,
-		D3D11_TEXTURE2D_DESC desc = D3D11_TEXTURE2D_DESC()
+		ID3D11Texture2D* texture = nullptr
 	);
 	void createSamplerState(
 		std::string name, 

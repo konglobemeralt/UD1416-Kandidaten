@@ -196,9 +196,15 @@ void Text::InitializeDirect2D()
 	renderTargetViewDesc.Format = texDesc.Format;
 	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
-	ID3D11RenderTargetView* rtv;
-	CheckStatus(gdevice->CreateRenderTargetView(d2dTextureTarget, &renderTargetViewDesc, &rtv), L"CreateRenderTargetView");
-	m_graphicsManager->thesisData.renderTargetViews["Text"] = rtv;
+	m_graphicsManager->createTexture2D(
+		"Text",
+		texDesc.Format,
+		m_graphicsManager->getWindowWidth(),
+		m_graphicsManager->getWindowHeight(),
+		true,
+		false,
+		d2dTextureTarget
+	);
 
 	// Setup the description of the shader resource view.
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
@@ -206,9 +212,15 @@ void Text::InitializeDirect2D()
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-	ID3D11ShaderResourceView* srv;
-	CheckStatus(gdevice->CreateShaderResourceView(d2dTextureTarget, &shaderResourceViewDesc, &srv), L"CreateShaderResourceView");
-	m_graphicsManager->thesisData.shaderResourceViews["Text"] = srv;
+	m_graphicsManager->createTexture2D(
+		"Text",
+		texDesc.Format,
+		m_graphicsManager->getWindowWidth(),
+		m_graphicsManager->getWindowHeight(),
+		false,
+		true,
+		d2dTextureTarget
+	);
 }
 
 void Text::InitializeDirectWrite()
