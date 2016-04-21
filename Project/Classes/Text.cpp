@@ -263,7 +263,7 @@ void Text::RenderText()
 {
 	m_d2dRenderTarget->BeginDraw();
 	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(m_graphicsManager->getWindowWidth(), 0));
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));
 	m_d2dRenderTarget->Clear(NULL);
 	// Call the DrawText method of this class.
 	m_d2dRenderTarget->DrawText(

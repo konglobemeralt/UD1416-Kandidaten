@@ -27,57 +27,76 @@ void Compositing::Render() {
 	gdeviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
 
-	if (imageCount == 0)
-	{
-		manager->attachImage("dickbutt.png", "SecondSRV");
-	}
-
-
+	//Find correct background and UV images to sample from
 	if (imageCount < 9)
 	{
-		imageWithZero = "UVTEST/UVTEST_00";
-		imageWithZeroBGR = "background/Backgrnd_00";
+		UVFrame = "UVTEST/UVTEST_00";
+		BgrFrame = "background/Backgrnd_00";
 	}
 	else if (imageCount > 9 && imageCount < 100)
 		{
-			imageWithZero = "UVTEST/UVTEST_0";
-			imageWithZeroBGR = "background/Backgrnd_0";
+			UVFrame = "UVTEST/UVTEST_0";
+			BgrFrame = "background/Backgrnd_0";
 		}
-	
 	else
 	{
-		imageWithZero = "UVTEST/UVTEST_";
-		imageWithZeroBGR = "background/Backgrnd_";
+		UVFrame = "UVTEST/UVTEST_";
+		BgrFrame = "background/Backgrnd_";
 	}
 		
 
+	//Switch image to composit depending on frame
+	if (imageCount == 0)
+	{
+		manager->attachImage("dickbutt.png", "PlayerSRV");
+	}
+
+	if (imageCount == 79)
+	{
+		manager->attachImage("Pepe.png", "PlayerSRV");
+	}
 
 	if (imageCount == 120)
 	{
-		manager->attachImage("bert.png", "SecondSRV");
+		manager->attachImage("bert.png", "PlayerSRV");
 	}
 
 
 	if (imageCount == 175)
 	{
-		manager->attachImage("trump.png", "SecondSRV");
+		manager->attachImage("trump.png", "PlayerSRV");
 	}
 
 	if (imageCount == 242)
 	{
-		manager->attachImage("putin.png", "SecondSRV");
+		manager->attachImage("putin.png", "PlayerSRV");
 		
 	}
 
+	if (imageCount == 284)
+	{
+		manager->attachImage("putin2.png", "PlayerSRV");
+
+	}
+
+	if (imageCount == 329)
+	{
+		manager->attachImage("putin.png", "PlayerSRV");
+	}
 
 
-	string cat = imageWithZero + to_string(imageCount) + ".png";
-	string cat2 = imageWithZeroBGR + to_string(imageCount) + ".png";
-	manager->attachImage(cat, "FirstSRV");
+	//Concatenate to filename to find correct UV and Backgroudn image.
+	string cat = UVFrame + to_string(imageCount) + ".png";
+	string cat2 = BgrFrame + to_string(imageCount) + ".png";
+	
+	manager->attachImage(cat, "UVSRV");
 	manager->attachImage(cat2, "BackgroundSRV");
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
+	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
+	
+	//Attach shader resources
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
 	gdeviceContext->PSSetShaderResources(1, 1, &text);
-	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
 
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
@@ -86,11 +105,13 @@ void Compositing::Render() {
 
 	gdeviceContext->Draw(4, 0);
 
+	//Add 1 to image count and if 400 reset to 0 to create a loop.
+	Sleep(50);
 	imageCount++;
 	if (imageCount == 400)
 		imageCount = 0;
 	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
-	Sleep(50);
+	Sleep(0);
 }
 
 void Compositing::Initialize() {
@@ -176,7 +197,7 @@ void Compositing::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("dickbutt.png", "SecondSRV");
+	manager->attachImage("dickbutt.png", "PlayerSRV");
 
 
 
