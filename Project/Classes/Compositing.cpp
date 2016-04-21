@@ -34,11 +34,22 @@ void Compositing::Render() {
 
 
 	if (imageCount < 9)
+	{
 		imageWithZero = "UVTEST/UVTEST_00";
+		imageWithZeroBGR = "background/Backgrnd_00";
+	}
 	else if (imageCount > 9 && imageCount < 100)
-		imageWithZero = "UVTEST/UVTEST_0";
+		{
+			imageWithZero = "UVTEST/UVTEST_0";
+			imageWithZeroBGR = "background/Backgrnd_0";
+		}
+	
 	else
+	{
 		imageWithZero = "UVTEST/UVTEST_";
+		imageWithZeroBGR = "background/Backgrnd_";
+	}
+		
 
 
 	if (imageCount == 120)
@@ -49,22 +60,24 @@ void Compositing::Render() {
 
 	if (imageCount == 175)
 	{
-		manager->attachImage("trump.jpg", "SecondSRV");
+		manager->attachImage("trump.png", "SecondSRV");
 	}
 
 	if (imageCount == 242)
 	{
-		manager->attachImage("putin.jpg", "SecondSRV");
+		manager->attachImage("putin.png", "SecondSRV");
 		
 	}
 
 
 
 	string cat = imageWithZero + to_string(imageCount) + ".png";
-
+	string cat2 = imageWithZeroBGR + to_string(imageCount) + ".png";
 	manager->attachImage(cat, "FirstSRV");
+	manager->attachImage(cat2, "BackgroundSRV");
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
 	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
+	deviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
 
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 

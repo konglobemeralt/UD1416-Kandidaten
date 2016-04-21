@@ -22,6 +22,7 @@ private:
 	GraphicsManager* m_graphicsManager;
 	UINT imageCount = 1;
 	string imageWithZero;
+	string imageWithZeroBGR;
 };
 
 #endif
