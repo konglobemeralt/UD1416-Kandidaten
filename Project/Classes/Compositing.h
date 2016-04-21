@@ -21,8 +21,8 @@ public:
 private:
 	GraphicsManager* m_graphicsManager;
 	UINT imageCount = 1;
-	string imageWithZero;
-	string imageWithZeroBGR;
+	string UVFrame;
+	string BgrFrame;
 };
 
 #endif
