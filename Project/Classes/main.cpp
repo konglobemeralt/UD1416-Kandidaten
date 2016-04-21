@@ -53,8 +53,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CoInitialize(NULL);
 	ApplicationContext::Startup();
 	setUser();
-	WindowManager windowManager(hInstance, WndProc);
-	ApplicationContext::GetInstance().GetGraphicsManager()->initGraphics(windowManager.getWindowHandle());
+	//WindowManager windowManager(hInstance, WndProc);
+	ApplicationContext::GetInstance().GetWindowManager()->Initialize(hInstance, WndProc);
+	WindowManager* windowManager = ApplicationContext::GetInstance().GetWindowManager();
+	ApplicationContext::GetInstance().GetGraphicsManager()->initGraphics(windowManager->getWindowHandle());
 	ApplicationContext::Initialize();
 	
 	
@@ -72,7 +74,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	AppContext.GetGraphicsManager()->getDeviceContext()->RSSetViewports(1, &vp);
 
-	ShowWindow(*windowManager.getWindowHandle(), nCmdShow);
+	ShowWindow(*windowManager->getWindowHandle(), nCmdShow);
 	static int fps = 0;
 	static int uptime = 1;
 	DWORD currentFrame = timeGetTime();
@@ -92,7 +94,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			if (currentFrame - lastFrame >= 1000) {
 				wstring headerMessage;
 				headerMessage.append(L"Uptime: " + to_wstring(uptime) + L"   FPS: " + to_wstring(fps));
-				SetWindowText(*windowManager.getWindowHandle(), headerMessage.c_str());
+				SetWindowText(*windowManager->getWindowHandle(), headerMessage.c_str());
 
 				lastFrame = currentFrame;
 				uptime++;
@@ -106,7 +108,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		}
 	}
 
-	DestroyWindow(*windowManager.getWindowHandle());
+	DestroyWindow(*windowManager->getWindowHandle());
 	AppContext.Shutdown();
 
 	return (int) msg.wParam;

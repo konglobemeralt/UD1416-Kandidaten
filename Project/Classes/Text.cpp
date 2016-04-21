@@ -40,7 +40,7 @@ void Text::Render() {
 
 	RenderText();
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["mySRV"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["Text"]);
 
 	gdeviceContext->Draw(4, 0);
 
