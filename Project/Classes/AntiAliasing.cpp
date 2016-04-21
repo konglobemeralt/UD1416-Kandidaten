@@ -60,11 +60,16 @@ void AntiAliasing::Initialize() {
 	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
 		XMFLOAT2 texelSizeXY;
 		float FXAA_blur_Texels_Threshhold = 8.0f; //hur många texlar som kommer blurras åt varje håll
-	}FXAA_PS_cb;
+		float pad;
+	}FXAA_PS_cb;	
 
 	m_graphicsManager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
 
+	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_graphicsManager->getWindowWidth();
+	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_graphicsManager->getWindowHeight();
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 8.0f;
 
+	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"], 0, NULL, &FXAA_PS_cb, 0, 0);
 
 	// ###########################################################
 	// ######				Vertex Shader					######
@@ -76,7 +81,7 @@ void AntiAliasing::Initialize() {
 	//		UINT size);
 
 	D3D11_INPUT_ELEMENT_DESC AASimpleLayout[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 

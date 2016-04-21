@@ -1,5 +1,5 @@
-SamplerState sampWrap : register(s0);
-SamplerState  sampClamp: register(s1);
+sampler sampWrap : register(s0);
+sampler  sampClamp: register(s1);
 
 Texture2D txDiffuse : register(t0);
 
@@ -27,7 +27,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float lumaTL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, -1.0f) * texelSizeXY).xyz);
 	float lumaBR = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(1.0f, 1.0f) * texelSizeXY).xyz);
 	float lumaBL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, 1.0f) * texelSizeXY).xyz);
-	float lumaM = dot(luma, txDiffuse.Sample(sampClamp, input.Tex.xyz));
+	float lumaM = dot(luma, txDiffuse.Sample(sampClamp, input.Tex.xy).xyz);
 
 	float2 dir;
 
@@ -64,11 +64,13 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float lumaRes2Min = min(lumaM, min(min(lumaBR, lumaBL), min(lumaTR, lumaTL)));
 	float lumaRes2 = dot(luma, res2);
 
+	return float4(dir.x, 0,0, 1);
 	if (lumaRes2 < lumaRes2Min || lumaRes2 > lumaRes2Max) //check if sampled to far
 	{
 		return float4(res1.xyz, 1.0f);
 	}
 
+	
 	return float4(res2.xyz, 1.0f);
 
 }
