@@ -41,15 +41,13 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	D3D11_SUBRESOURCE_DATA data;
 	data.pSysMem = triangleVertices;
 	gDevice->CreateBuffer(&bufferDesc, &data, &gQuadBuffer);
-
-	
 }
 
 void GraphicsManager::Render() {
 	switch (ApplicationContext::GetInstance().GetUser())
 	{
 	case TEXT:
-		ApplicationContext::GetInstance().GetTextObject()->Render();
+		//ApplicationContext::GetInstance().GetTextObject()->Render();
 		break;
 	case COMPOSITING:
 		ApplicationContext::GetInstance().GetCompositingObject()->Render();
@@ -66,9 +64,9 @@ void GraphicsManager::Render() {
 	case ALL:
 		ApplicationContext::GetInstance().GetTextObject()->Render();
 		ApplicationContext::GetInstance().GetCompositingObject()->Render();
-		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
-		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
-		ApplicationContext::GetInstance().GetLightningObject()->Render();
+		//ApplicationContext::GetInstance().GetToneMappingObject()->Render();
+		//ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
+		//ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:
 		break;

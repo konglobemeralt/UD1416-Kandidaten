@@ -18,11 +18,13 @@ public:
 	~Compositing();
 	void Render();
 	void Initialize();
+	void SetText(ID3D11ShaderResourceView* text);
 private:
 	GraphicsManager* m_graphicsManager;
 	UINT imageCount = 1;
 	string imageWithZero;
 	string imageWithZeroBGR;
+	ID3D11ShaderResourceView* text = nullptr;
 };
 
 #endif

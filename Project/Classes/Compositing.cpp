@@ -76,7 +76,8 @@ void Compositing::Render() {
 	manager->attachImage(cat, "FirstSRV");
 	manager->attachImage(cat2, "BackgroundSRV");
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &text);
+	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
 
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
@@ -89,7 +90,7 @@ void Compositing::Render() {
 	if (imageCount == 400)
 		imageCount = 0;
 	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
-	Sleep(10);
+	Sleep(50);
 }
 
 void Compositing::Initialize() {
@@ -189,4 +190,9 @@ void Compositing::Initialize() {
 	//	);
 
 	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MAXIMUM_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP);
+}
+
+void Compositing::SetText(ID3D11ShaderResourceView * text)
+{
+	this->text = text;
 }

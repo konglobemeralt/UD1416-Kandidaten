@@ -8,8 +8,8 @@
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "Dwrite")
 
-//#include "GraphicsManager.h"
-
+#include "GraphicsManager.h"
+//
 //#define manager GraphicsManager::getInstance()
 //#define resources GraphicsManager::getInstance().thesisData
 #define gdevice m_graphicsManager->getDevice()
@@ -22,7 +22,7 @@ public:
 	~Text();
 	void Render();
 	void Initialize();
-
+	ID3D11ShaderResourceView* GetText();
 
 private:
 	GraphicsManager* m_graphicsManager;

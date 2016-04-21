@@ -1,5 +1,5 @@
 #include "Text.h"
-#include "GraphicsManager.h"
+
 #include "..\ApplicationContext.h"
 Text::Text()
 {
@@ -232,7 +232,7 @@ void Text::InitializeDirectWrite()
 		L"DWriteCreateFactory");
 
 	// Font
-	m_text = L"KHK";
+	m_text = L"Erik";
 	m_textLength = (UINT32)wcslen(m_text);
 
 	CheckStatus(m_writeFactory->CreateTextFormat(
@@ -263,7 +263,8 @@ void Text::RenderText()
 {
 	m_d2dRenderTarget->BeginDraw();
 	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-	m_d2dRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(m_graphicsManager->getWindowWidth(), 0));
+	m_d2dRenderTarget->Clear(NULL);
 	// Call the DrawText method of this class.
 	m_d2dRenderTarget->DrawText(
 		m_text,				// The string to render.
@@ -273,6 +274,11 @@ void Text::RenderText()
 		m_orangeBrush			// The brush used to draw the text.
 	);
 	m_d2dRenderTarget->EndDraw();
+}
+
+ID3D11ShaderResourceView * Text::GetText()
+{
+	return m_graphicsManager->thesisData.shaderResourceViews["Text"];
 }
 
 void Text::CheckStatus(HRESULT hr, LPCTSTR titel)
