@@ -10,6 +10,13 @@
 #define device m_graphicsManager->getDevice()
 #define deviceContext m_graphicsManager->getDeviceContext()
 
+enum Technique
+{
+	GAO,
+	MEYLAN,
+	REINHARD
+};
+
 class GraphicsManager;
 
 class ToneMapping
@@ -26,12 +33,15 @@ private:
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	UINT imageCount = 1;
-	string imageWithZero;
+	UINT technique;
 
-	vector<ID3D11ShaderResourceView*> testViews;
+	void initGao();
+	void initMeylan();
+	void initReinhard();
 
-	void setViews();
+	void renderGao();
+	void renderMeylan();
+	void renderReinhard();
 };
 
 #endif
