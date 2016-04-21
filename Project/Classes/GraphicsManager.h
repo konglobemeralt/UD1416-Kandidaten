@@ -11,6 +11,7 @@
 #include "DataStructures.h"
 
 #include "../DirectXToolkit/Inc/WICTextureLoader.h"
+#include "../DirectXTex/DirectXTexP.h"
 
 #pragma comment (lib, "WINMM.LIB")
 #pragma comment (lib, "d3d11.lib")
@@ -21,8 +22,6 @@ using namespace DirectX;
 
 class GraphicsManager {
 private:
-	
-	
 	IDXGISwapChain* gSwapChain = nullptr;
 	ID3D11Device* gDevice = nullptr;
 	ID3D11DeviceContext* gDeviceContext = nullptr;
@@ -53,10 +52,11 @@ public:
 	}*/
 	GraphicsManager() {};
 	void Render();
-
 	
 	UINT windowWidth = 1280;
 	UINT windowHeight = 1024;
+
+	ID3D11Texture2D* pBackBuffer = nullptr;
 	ThesisData thesisData;
 
 	//GraphicsManager(GraphicsManager const&) = delete;
@@ -95,6 +95,7 @@ public:
 		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	);
 	void attachImage(string textureName, string srvName);
+	void saveImage(string fileName, ID3D11Texture2D* texture2d, const GUID &fileType = GUID_ContainerFormatPng);
 };
 
 #endif
