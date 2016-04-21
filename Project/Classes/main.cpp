@@ -11,7 +11,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	ApplicationContext::GetInstance().SetUser(LIGHTNING);
+	ApplicationContext::GetInstance().SetUser(TONEMAPPING);
 /*		
 		CHOOSE FROM:
 		TEXT
