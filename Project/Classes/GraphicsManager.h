@@ -84,10 +84,11 @@ public:
 	void createTexture2D(
 		std::string name,
 		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT, 
-		UINT width = 1280,
+		UINT width = 1024,
 		UINT height =1024,
 		bool renderTarget = true,
-		bool shaderResource = true
+		bool shaderResource = true,
+		bool mipMap = false
 	);
 	void createSamplerState(
 		std::string name, 

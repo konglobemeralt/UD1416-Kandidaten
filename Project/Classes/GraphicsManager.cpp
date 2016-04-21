@@ -287,7 +287,8 @@ void GraphicsManager::createTexture2D(
 	UINT width,
 	UINT height,
 	bool renderTarget,
-	bool shaderResource)
+	bool shaderResource,
+	bool mipMap)
 {
 
 	if (renderTarget == true || shaderResource == true) {
@@ -297,16 +298,31 @@ void GraphicsManager::createTexture2D(
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = 0;
+		desc.MipLevels = 10;
 		desc.ArraySize = 1;
 		desc.Format = format;
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = 0;
 
-		gDevice->CreateTexture2D(&desc, nullptr, &texture);
+		if (mipMap == true){
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE | D3D11_RESOURCE_MISC_GENERATE_MIPS;
+			if (renderTarget == false)
+				desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_RESOURCE_MISC_GENERATE_MIPS;
+			if (shaderResource == false)
+				desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		}
+
+		if (mipMap == false) {
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			if (renderTarget == false)
+				desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			if (shaderResource == false)
+				desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+		}
+
+		HRESULT iasdf = gDevice->CreateTexture2D(&desc, nullptr, &texture); // add subresource
 
 		if (renderTarget == true) {
 			ID3D11RenderTargetView* rtv;
@@ -314,9 +330,9 @@ void GraphicsManager::createTexture2D(
 			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
 			rtvDesc.Format = desc.Format;
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-			rtvDesc.Texture2D.MipSlice = 0;
+			rtvDesc.Texture2D.MipSlice = 10;
 
-			gDevice->CreateRenderTargetView(texture, &rtvDesc, &rtv);
+			HRESULT hrr = gDevice->CreateRenderTargetView(texture, &rtvDesc, &rtv);
 
 			thesisData.renderTargetViews[name] = rtv;
 		}
@@ -327,10 +343,10 @@ void GraphicsManager::createTexture2D(
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 			srvDesc.Format = desc.Format;
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-			srvDesc.Texture2D.MostDetailedMip = 0;
+			srvDesc.Texture2D.MostDetailedMip = 10;
 			srvDesc.Texture2D.MipLevels = 1;
 
-			gDevice->CreateShaderResourceView(texture, &srvDesc, &srv);
+			HRESULT qweq = gDevice->CreateShaderResourceView(texture, &srvDesc, &srv);
 
 			thesisData.shaderResourceViews[name] = srv;
 		}

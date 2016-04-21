@@ -162,5 +162,8 @@
     <FxCompile Include="Shaders\GAO_VertexShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -34,6 +34,7 @@ private:
 	UINT offset = 0;
 
 	UINT technique;
+	ID3D11Texture2D* mipTexture;
 
 	void initGao();
 	void initMeylan();
