@@ -185,9 +185,9 @@ void GraphicsManager::createConstantBuffer(string name, const void* data, UINT s
 
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = size;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 	desc.StructureByteStride = 0;
 
