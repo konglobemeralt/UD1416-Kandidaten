@@ -9,7 +9,7 @@ ToneMapping::ToneMapping()
 
 ToneMapping::~ToneMapping()
 {
-	
+
 }
 
 void ToneMapping::Render() {
@@ -84,7 +84,7 @@ void ToneMapping::Initialize() {
 
 	manager->createVertexShader("TM_VertexShader", "TM_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
-	
+
 
 	// ###########################################################
 	// ######				Other Shaders					######
@@ -97,19 +97,19 @@ void ToneMapping::Initialize() {
 
 
 
-	// ###########################################################
-	// ######		Render target & shader resource			######
-	// ###########################################################
-	//	void createTexture2D(
-	//		string name,
-	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-	//		bool renderTarget = true,
-	//		bool shaderResource = true
-	//	);
+												  // ###########################################################
+												  // ######		Render target & shader resource			######
+												  // ###########################################################
+												  //	void createTexture2D(
+												  //		string name,
+												  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+												  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+												  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+												  //		bool renderTarget = true,
+												  //		bool shaderResource = true
+												  //	);
 
-	// Only RTV
+												  // Only RTV
 	manager->createTexture2D(
 		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
