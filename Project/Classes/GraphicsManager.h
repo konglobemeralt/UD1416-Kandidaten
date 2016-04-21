@@ -31,7 +31,7 @@ private:
 	HWND* windowHandle;
 
 
-	void setRasterstate(D3D11_CULL_MODE cullmode);
+	
 	HRESULT CreateDirect3DContext();
 	void ResetViews();
 
@@ -73,7 +73,7 @@ public:
 	ID3D11RenderTargetView** getBackbuffer();
 
 	void setWindowSize(UINT width, UINT height);
-
+	void setRasterstate(D3D11_CULL_MODE cullmode = D3D11_CULL_NONE, D3D11_FILL_MODE fillmode = D3D11_FILL_SOLID);
 	void createConstantBuffer(std::string name, const void* data, UINT size);
 	void createVertexShader(std::string shaderName, std::string layoutName, D3D11_INPUT_ELEMENT_DESC* desc, UINT size);
 	void createDomainShader(std::string name);

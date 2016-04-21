@@ -88,10 +88,10 @@ ID3D11DeviceContext* GraphicsManager::getDeviceContext() {
 	return gDeviceContext;
 }
 
-void GraphicsManager::setRasterstate(D3D11_CULL_MODE cullmode) {
+void GraphicsManager::setRasterstate(D3D11_CULL_MODE cullmode, D3D11_FILL_MODE fillmode) {
 	D3D11_RASTERIZER_DESC rastDesc;
 
-	rastDesc.FillMode = D3D11_FILL_SOLID;
+	rastDesc.FillMode = fillmode;
 	rastDesc.CullMode = cullmode;
 	rastDesc.FrontCounterClockwise = FALSE;
 	rastDesc.DepthBias = 0;

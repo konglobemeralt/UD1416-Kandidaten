@@ -51,8 +51,8 @@ void Lightning::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	float lineWidth;
-	lineWidth = 1.0f;
+	//float lineWidth;
+	//lineWidth = 0.1f;
 
 	detectInput();
 	updateFreeLookCamera();
@@ -80,24 +80,21 @@ void Lightning::Render() {
 	XMStoreFloat4x4(&lightningCBuffer.World, XMMatrixTranspose(World));
 	XMStoreFloat4x4(&lightningCBuffer.WVP, XMMatrixTranspose(WVP));
 	lightningCBuffer.camPos = camPos;
-	lightningCBuffer.lineWidth = lineWidth;
-	//gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
-	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);	//NOT WORKING
-	
-	//gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["constantBuffer"], 0, NULL, &constantBuffer, 0, 0);	//NOT WORKING
-	//gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["constantBuffer"]);
+	lightningCBuffer.lineWidth = 0.1f;
 
+	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);
+	
 	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
 
-	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
+	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
 	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
 
 	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
-	//deviceContext->HSSetShader(resources.hullShaders["LightningHullShader"], nullptr, 0);
-	//deviceContext->DSSetShader(resources.domainShaders["LightningDomainShader"], nullptr, 0);
+	gdeviceContext->HSSetShader(m_graphicsManager->thesisData.hullShaders["LightningHullShader"], nullptr, 0);
+	gdeviceContext->DSSetShader(m_graphicsManager->thesisData.domainShaders["LightningDomainShader"], nullptr, 0);
 	gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
 	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["LightningPixelShader"], nullptr, 0);
 
@@ -108,6 +105,12 @@ void Lightning::Render() {
 
 void Lightning::Initialize() {
 	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
+
+	//WIREFRAME //WIREFRAME //WIREFRAME
+	m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_WIREFRAME);
+
+	//SOLID //SOLID  //SOLID //SOLID 
+	//m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_SOLID);
 
 	createVertexBuffer();
 	wndHandle = ApplicationContext::GetInstance().GetWindowManager()->getWindowHandle();
@@ -126,12 +129,12 @@ void Lightning::Initialize() {
 
 	///////////___________NEW_________________/////////////
 
-
-
-
 	m_graphicsManager->createConstantBuffer("lightningCBuffer", &lightningCBuffer, sizeof(cBuffer));
-	//gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["constantBuffer"], 0, NULL, &constantBuffer, 0, 0);	//NOT WORKING
+
+
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
+	//gdeviceContext->GSGetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
+
 	///////////___________NEW_________________/////////////
 
 	// ###########################################################
@@ -266,9 +269,6 @@ void Lightning::detectInput()
 	moveLR = 0.0f;
 	moveFB = 0.0f;
 
-
-	//float speed = 0.01;
-
 	if (keyboardState[DIK_ESCAPE] & 0x80)						//Shuts the window when the ESCAPE key is pressed
 	{
 		PostMessage(*wndHandle, WM_DESTROY, 0, 0);
@@ -280,13 +280,11 @@ void Lightning::detectInput()
 	}
 	if (keyboardState[DIK_RIGHT] || keyboardState[DIK_D])		//Moves right when the D key or the RIGHT arrow is pressed
 	{
-		//moveLR = speed;
-		camYaw += 0.0001f;
+		moveLR = speed;
 	}
 	if (keyboardState[DIK_UP] || keyboardState[DIK_W])			//Moves forward when the W key or the UP arrow is pressed
 	{
-		//moveFB = speed;
-		camPitch += 0.0001f;
+		moveFB = speed;
 	}
 	if (keyboardState[DIK_DOWN] || keyboardState[DIK_S])		//Moves backwards when the S key or the DOWN arrow is pressed
 	{
@@ -294,7 +292,7 @@ void Lightning::detectInput()
 	}
 	if ((mouseCurrentState.lX != mouseLastState.lX) || (mouseCurrentState.lY != mouseLastState.lY))		//Rotates the camera with the mouse input!
 	{
-		camYaw += mouseLastState.lX * 0.001f;					//Rotates camera to the right and left
+		camYaw += mouseCurrentState.lX * 0.001f;					//Rotates camera to the right and left
 
 		camPitch += mouseCurrentState.lY * 0.001f;				//Rotates camera up and down
 
