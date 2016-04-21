@@ -8,9 +8,18 @@ Text::Text()
 
 Text::~Text()
 {
+	m_d2dFactory->Release();
+	m_dxgiDevice->Release();
+	m_d2dDev->Release();
+	m_d2dDevcon->Release();
+	m_idxgSurface->Release();
+	m_d2dRenderTarget->Release();
+	m_blackBrush->Release();
+	m_orangeBrush->Release();
 
+	m_writeFactory->Release();
+	m_writeTextFormat->Release();
 }
-
 
 void Text::Render() {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -31,7 +40,7 @@ void Text::Render() {
 
 	RenderText();
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["Text"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["mySRV"]);
 
 	gdeviceContext->Draw(4, 0);
 
@@ -168,6 +177,7 @@ void Text::InitializeDirect2D()
 	CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget), L"CreateTexture2D");
 
 	d2dTextureTarget->QueryInterface(&m_idxgSurface);
+	d2dTextureTarget->Release();
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,

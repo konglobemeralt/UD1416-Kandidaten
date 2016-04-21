@@ -287,26 +287,27 @@ void GraphicsManager::createTexture2D(
 	UINT width,
 	UINT height,
 	bool renderTarget,
-	bool shaderResource)
+	bool shaderResource,
+	ID3D11Texture2D* texture,
+	D3D11_TEXTURE2D_DESC desc)
 {
 
 	if (renderTarget == true || shaderResource == true) {
-		ID3D11Texture2D* texture;
+		if (texture != nullptr) {
+			ZeroMemory(&desc, sizeof(desc));
+			desc.Width = width;
+			desc.Height = height;
+			desc.MipLevels = 0;
+			desc.ArraySize = 1;
+			desc.Format = format;
+			desc.SampleDesc.Count = 1;
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			desc.CPUAccessFlags = 0;
+			desc.MiscFlags = 0;
 
-		D3D11_TEXTURE2D_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Width = width;
-		desc.Height = height;
-		desc.MipLevels = 0;
-		desc.ArraySize = 1;
-		desc.Format = format;
-		desc.SampleDesc.Count = 1;
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
-
-		gDevice->CreateTexture2D(&desc, nullptr, &texture);
+			gDevice->CreateTexture2D(&desc, nullptr, &texture);
+		}
 
 		if (renderTarget == true) {
 			ID3D11RenderTargetView* rtv;

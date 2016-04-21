@@ -107,6 +107,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	}
 
 	DestroyWindow(*windowManager.getWindowHandle());
+	AppContext.Shutdown();
 
 	return (int) msg.wParam;
 }

@@ -49,6 +49,10 @@ private:
 	D2D1_RECT_F m_layoutRect;
 	IDWriteTextFormat* m_writeTextFormat;
 	RECT rc;
+
+	//// Helper functions
+	//template<typename T> 
+	//void SafeDelete(T*& a);
 };
 
 #endif

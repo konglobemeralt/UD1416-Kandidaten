@@ -83,11 +83,13 @@ public:
 	void createComputeShader(std::string name);
 	void createTexture2D(
 		std::string name,
-		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT, 
+		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
 		UINT width = 1280,
-		UINT height =1024,
+		UINT height = 1024,
 		bool renderTarget = true,
-		bool shaderResource = true
+		bool shaderResource = true,
+		ID3D11Texture2D* texture = nullptr,
+		D3D11_TEXTURE2D_DESC desc = D3D11_TEXTURE2D_DESC()
 	);
 	void createSamplerState(
 		std::string name, 
