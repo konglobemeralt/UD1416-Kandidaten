@@ -5,11 +5,13 @@
 #include "../DirectXTex/DirectXTex.h"
 #include "../DirectXTex/DirectXTexP.h"
 
-//#define manager GraphicsManager::getInstance()
-//#define resources GraphicsManager::getInstance().thesisData
-#define gdevice m_graphicsManager->getDevice()
-#define gdeviceContext m_graphicsManager->getDeviceContext()
+#define manager m_graphicsManager
+#define resources m_graphicsManager->thesisData
+#define device m_graphicsManager->getDevice()
+#define deviceContext m_graphicsManager->getDeviceContext()
+
 class GraphicsManager;
+
 class ToneMapping
 {
 public:
@@ -19,6 +21,8 @@ public:
 	~ToneMapping();
 private:
 	GraphicsManager* m_graphicsManager;
+	UINT imageCount = 1;
+	string imageWithZero;
 };
 
 #endif
