@@ -19,8 +19,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	
 
-	float4 playerAmbient = float4(0.6f, 8.6f, 0.6f, 1.0f);
-	float4 funkyLight = float4(1.6f, 0.6f, 9.6f, 1.0f);
+	float4 playerAmbient = float4(1.1f, 1.1f, 0.7f, 1.0f);
+	float4 funkyLight = float4(1.6f, 1.6f, 0.6f, 1.0f);
 
 
 	if (!(tempUV2.w < 0.5) && !(tempUV.z > 0))
