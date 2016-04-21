@@ -18,10 +18,10 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 tempUVBackground = BackgroundSRV.Sample(SamplerWrap, input.Tex);
 
 
-	if (!(tempUV2.w == 0) && !(tempUV.z > 0))
+	if (!(tempUV2.w < 0.5) && !(tempUV.z > 0))
 	{
-
-		return SecondSRV.Sample(SamplerWrap, saturate(tempUV));
+		return (SecondSRV.Sample(SamplerWrap, saturate(tempUV)));
+		return (float4(1.5f, 1.5f, 1.5f, 1.0f) * (SecondSRV.Sample(SamplerWrap, saturate(tempUV))) * tempUVBackground);
 	}
 	else
 		return tempUVBackground;

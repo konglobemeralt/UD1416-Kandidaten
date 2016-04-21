@@ -17,14 +17,14 @@ void Compositing::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
 
-	deviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
+	gdeviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
+	gdeviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
 
 	if (imageCount == 0)
@@ -51,6 +51,10 @@ void Compositing::Render() {
 	}
 		
 
+	if (imageCount == 79)
+	{
+		manager->attachImage("Pepe.png", "SecondSRV");
+	}
 
 	if (imageCount == 120)
 	{
@@ -69,27 +73,37 @@ void Compositing::Render() {
 		
 	}
 
+	if (imageCount == 284)
+	{
+		manager->attachImage("putin2.png", "SecondSRV");
 
+	}
+
+	if (imageCount == 329)
+	{
+		manager->attachImage("putin.png", "SecondSRV");
+
+	}
 
 	string cat = imageWithZero + to_string(imageCount) + ".png";
 	string cat2 = imageWithZeroBGR + to_string(imageCount) + ".png";
 	manager->attachImage(cat, "FirstSRV");
 	manager->attachImage(cat2, "BackgroundSRV");
-	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
-	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
-	deviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["FirstSRV"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["SecondSRV"]);
+	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
 
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
-	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
-	deviceContext->Draw(4, 0);
+	gdeviceContext->Draw(4, 0);
 
 	imageCount++;
 	if (imageCount == 400)
 		imageCount = 0;
 	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
-	Sleep(10);
+
 }
 
 void Compositing::Initialize() {

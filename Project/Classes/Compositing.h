@@ -7,8 +7,8 @@
 
 #define manager m_graphicsManager
 #define resources m_graphicsManager->thesisData
-#define device m_graphicsManager->getDevice()
-#define deviceContext m_graphicsManager->getDeviceContext()
+#define gdevice m_graphicsManager->getDevice()
+#define gdeviceContext m_graphicsManager->getDeviceContext()
 
 class GraphicsManager;
 class Compositing
