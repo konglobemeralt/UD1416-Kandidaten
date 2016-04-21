@@ -6,12 +6,15 @@ class GraphicsHandler;
 class WindowManager {
 private:
 	HWND m_hwnd;
+	HINSTANCE m_hInstance;
 
 public:
 	WindowManager(HINSTANCE hInstance, WNDPROC WndProc);
+	WindowManager();
 	~WindowManager();
-
+	void Initialize(HINSTANCE hInstance, WNDPROC WndProc);
 	HWND* getWindowHandle();
+	HINSTANCE* getHinstance();
 };
 
 #endif
