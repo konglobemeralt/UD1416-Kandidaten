@@ -27,7 +27,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float lumaTL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, -1.0f) * texelSizeXY).xyz);
 	float lumaBR = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(1.0f, 1.0f) * texelSizeXY).xyz);
 	float lumaBL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, 1.0f) * texelSizeXY).xyz);
-	float lumaM = dot(luma, txDiffuse.Sample(sampClamp, input.Tex.xy));
+	float lumaM = dot(luma, txDiffuse.Sample(sampClamp, input.Tex.xyz));
 
 	float2 dir;
 

@@ -23,7 +23,9 @@ void AntiAliasing::Render() {
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["AAClampSampler"]);
+
+	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["AAWrapSampler"]);
+	gdeviceContext->PSSetSamplers(1, 1, &m_graphicsManager->thesisData.samplerStates["AAClampSampler"]);
 
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["Simple_VS_cb"]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
