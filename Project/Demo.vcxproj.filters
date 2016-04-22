@@ -162,5 +162,14 @@
     <FxCompile Include="Shaders\GAO_VertexShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
     </FxCompile>
+<<<<<<< ToneMapping
+=======
+    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\REINHARD_FinalPixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Reinhard</Filter>
+    </FxCompile>
+>>>>>>> local
   </ItemGroup>
 </Project>

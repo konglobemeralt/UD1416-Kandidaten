@@ -4,6 +4,12 @@
 
 ToneMapping::ToneMapping()
 {
+<<<<<<< ToneMapping
+=======
+	// ########################################################
+	// ## Change width/height on SRV/RTV to match image size ##
+	// ########################################################
+>>>>>>> local
 	technique = REINHARD;
 }
 
@@ -121,33 +127,47 @@ void ToneMapping::initMeylan() {
 }
 
 void ToneMapping::renderReinhard() {
-	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+	deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["REINHARD_Luminance_RTV"], nullptr);
+	//deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	deviceContext->IASetInputLayout(resources.inputLayouts["REINHARD_Layout"]);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
 
 	deviceContext->VSSetShader(resources.vertexShaders["REINHARD_VertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["REINHARD_PixelShader"], nullptr, 0);
 
 	manager->attachImage("ToneMapping/Reinhard/inputImage.tif", "REINHARD_SRV");
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_SRV"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
 	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
 	deviceContext->Draw(4, 0);
 
-	manager->saveImage("ToneMapping/Reinhard/outputImage.png", manager->pBackBuffer);
+	// MIPS
+	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+
+	manager->generateMips("REINHARD_Luminance_RTV", "REINHARD_Luminance_SRV");
+
+	XMINT4 newMip = { textureWidth, 0, 0, 0 };
+	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &newMip, 0, 0);
+
+	deviceContext->PSSetShader(resources.pixelShaders["REINHARD_FinalPixelShader"], nullptr, 0);
+	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_Luminance_SRV"]);
+	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["REINHARD_ConstantBuffer"]);
+
+	deviceContext->Draw(4, 0);
 }
 
 void ToneMapping::initReinhard() {
-	// #### CONSTANT BUFFER
 	manager = ApplicationContext::GetInstance().GetGraphicsManager();
-	struct cBuffer {
-		XMFLOAT4X4 matrix;
-	}myMatrix;
+	textureWidth = int32_t(log(manager->windowWidth) / log(2));
 
-	manager->createConstantBuffer("REINHARD_constantBuffer", &myMatrix, sizeof(cBuffer));
+	// #### CONSTANT BUFFER
+	struct cBuffer {
+		XMINT4 mipLevel;
+	}mipBuffer;
+
+	manager->createConstantBuffer("REINHARD_ConstantBuffer", &mipBuffer, sizeof(cBuffer));
 
 	// #### VERTEX SHADER
 	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
@@ -159,19 +179,21 @@ void ToneMapping::initReinhard() {
 
 	// #### PIXEL SHADER
 	manager->createPixelShader("REINHARD_PixelShader"); // Name has to match shader name without .hlsl
+	manager->createPixelShader("REINHARD_FinalPixelShader"); // Name has to match shader name without .hlsl
 
-													  // #### SRV
-	manager->createTexture2D(
-		"REINHARD_SRV",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
-		false,
-		true
-	);
+	// #### SRV
+	manager->createTexture2D("REINHARD_SRV", DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), false, true);
+	manager->createTexture2D("REINHARD_Luminance_SRV", DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), false, true);
+	manager->createTexture2D("REINHARD_Luminance_RTV", DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), true, true);
 
 	// #### SAMPLER
 	manager->createSamplerState("REINHARD_SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+
+	// #### OTHER
+	//deviceContext->GenerateMips(resources.shaderResourceViews["GAO_Luminance_RTVSRVMIP"]);
+
+	//D3D11_MAPPED_SUBRESOURCE mipSubresource;
+	//deviceContext->Map(resources.textures["GAO_Luminance_RTVSRVMIP"], log(manager->windowWidth) / log(2), D3D11_MAP_READ, 0, &mipSubresource);
 }
 
 void ToneMapping::Initialize() {
