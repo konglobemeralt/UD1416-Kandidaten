@@ -59,8 +59,11 @@ void AntiAliasing::Initialize() {
 
 	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
 		XMFLOAT2 texelSizeXY;
-		float FXAA_blur_Texels_Threshhold = 8.0f; //hur många texlar som kommer blurras åt varje håll
-		float pad;
+		float FXAA_blur_Texels_Threshhold; //hur många texlar som kommer blurras åt varje håll
+		float minimumBlurThreshhold; //hur mycket som krävs för att den ens ska blurra
+		float FXAA_reduce_MULTIPLIER;
+		float FXAA_reduce_MIN; //så dirOffset inte ska bli noll
+		XMFLOAT2 pad;
 	}FXAA_PS_cb;	
 
 	m_graphicsManager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
@@ -68,6 +71,10 @@ void AntiAliasing::Initialize() {
 	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_graphicsManager->getWindowWidth();
 	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_graphicsManager->getWindowHeight();
 	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 8.0f;
+	FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
+	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 2.0f;
+	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
+	
 
 	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"], 0, NULL, &FXAA_PS_cb, 0, 0);
 
