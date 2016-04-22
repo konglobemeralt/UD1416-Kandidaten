@@ -16,5 +16,5 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	//float blue = inColor.b / L;
 	//L = log(L);
 
-	return float4(L, 0.0f, 0.0f, 1.0f);
+	return float4(L, L, L, 1.0f);
 }

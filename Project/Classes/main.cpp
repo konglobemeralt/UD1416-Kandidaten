@@ -57,9 +57,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	ApplicationContext::GetInstance().GetGraphicsManager()->initGraphics(windowManager.getWindowHandle());
 	ApplicationContext::Initialize();
 	
-	
-	//GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
-
 	MSG msg = { 0 };
 
 	D3D11_VIEWPORT vp;

@@ -34,6 +34,7 @@ private:
 	UINT offset = 0;
 
 	UINT technique;
+	int32_t textureWidth = 1024;
 	ID3D11Texture2D* mipTexture;
 
 	void initGao();
