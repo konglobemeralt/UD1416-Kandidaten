@@ -10,6 +10,13 @@
 #define device m_graphicsManager->getDevice()
 #define deviceContext m_graphicsManager->getDeviceContext()
 
+enum Technique
+{
+	GAO,
+	MEYLAN,
+	REINHARD
+};
+
 class GraphicsManager;
 
 class ToneMapping
@@ -21,8 +28,22 @@ public:
 	~ToneMapping();
 private:
 	GraphicsManager* m_graphicsManager;
-	UINT imageCount = 1;
-	string imageWithZero;
+
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	UINT vertexSize = sizeof(float) * 5;
+	UINT offset = 0;
+
+	UINT technique;
+	int32_t textureWidth = 1024;
+	ID3D11Texture2D* mipTexture;
+
+	void initGao();
+	void initMeylan();
+	void initReinhard();
+
+	void renderGao();
+	void renderMeylan();
+	void renderReinhard();
 };
 
 #endif

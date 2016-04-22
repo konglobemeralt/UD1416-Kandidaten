@@ -45,8 +45,6 @@ private:
 	~ApplicationContext();
 	ApplicationContext(ApplicationContext const&) = delete;
 	void operator=(ApplicationContext const&) = delete;
-
-
 };
 
 

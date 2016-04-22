@@ -20,6 +20,7 @@ ApplicationContext::ApplicationContext()
 	m_graphicsManager = new GraphicsManager;
 	m_windowManager = new WindowManager;
 }
+
 ApplicationContext::~ApplicationContext()
 {
 	delete m_antiAliasing;
@@ -37,6 +38,7 @@ ApplicationContext::~ApplicationContext()
 	delete m_windowManager;
 	m_windowManager = nullptr;
 }
+
 void ApplicationContext::Startup()
 {
 	if (applicationContext == nullptr)

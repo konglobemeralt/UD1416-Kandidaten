@@ -52,6 +52,15 @@
     <Filter Include="Source Files\Application">
       <UniqueIdentifier>{57e42e96-1d9e-4c75-9580-d31c265b2dc3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\ToneMapping\Shaders\Gao">
+      <UniqueIdentifier>{27a6a5b1-de8d-46c4-89cd-c571cb5e765c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\ToneMapping\Shaders\Meylan">
+      <UniqueIdentifier>{819fbfc5-bf4a-4a4b-90ca-cf1fbc488e80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\ToneMapping\Shaders\Reinhard">
+      <UniqueIdentifier>{1cf03b44-4b0b-4f6a-a99f-608af025d05e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\main.cpp">
@@ -124,12 +133,6 @@
     <FxCompile Include="Shaders\LightningVertexShader.hlsl">
       <Filter>Resource Files\Lightning\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\TM_PixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\TM_VertexShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\LightningGeometryShader.hlsl">
       <Filter>Resource Files\Lightning\Shaders</Filter>
     </FxCompile>
@@ -140,6 +143,27 @@
     </FxCompile>
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <Filter>Resource Files\Text\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\REINHARD_PixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Reinhard</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\REINHARD_VertexShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Reinhard</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MEYLAN_PixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Meylan</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Meylan</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GAO_PixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GAO_VertexShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
+      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\CompositingPixelShader.hlsl">
       <Filter>Resource Files\Compositing\Shaders</Filter>

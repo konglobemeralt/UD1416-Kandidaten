@@ -8,17 +8,30 @@ Text::Text()
 
 Text::~Text()
 {
-	m_d2dFactory->Release();
-	m_dxgiDevice->Release();
-	m_d2dDev->Release();
-	m_d2dDevcon->Release();
-	m_idxgSurface->Release();
-	m_d2dRenderTarget->Release();
-	m_blackBrush->Release();
-	m_orangeBrush->Release();
+	// Direct2D
+	m_d2dFactory ? m_d2dFactory->Release() : 0;
+	m_dxgiDevice ? m_dxgiDevice->Release() : 0;
+	m_d2dDev ? m_d2dDev->Release() : 0;
+	m_d2dDevcon ? m_d2dDevcon->Release() : 0;
+	m_idxgSurface ? m_idxgSurface->Release() : 0;
+	m_d2dRenderTarget ? m_d2dRenderTarget->Release() : 0;
+	m_blackBrush ? m_blackBrush->Release() : 0;
+	m_orangeBrush ? m_orangeBrush->Release() : 0;
 
-	m_writeFactory->Release();
-	m_writeTextFormat->Release();
+	// DirectWrite
+	m_writeFactory ? m_writeFactory->Release() : 0;
+	m_writeTextFormat ? m_writeTextFormat->Release() : 0;
+
+	// EdgeTesting
+	m_pathGeometry ? m_pathGeometry->Release() : 0;
+	m_geometrySink ? m_geometrySink->Release() : 0;
+	m_fontFaceBeginning ? m_fontFaceBeginning->Release() : 0;
+	m_fontFace ? m_fontFace->Release() : 0;
+	m_fontFiles ? m_fontFiles->Release() : 0;
+	m_strokeStyle ? m_strokeStyle->Release() : 0;
+	m_codePoints ? delete[] m_codePoints : 0;
+	m_glyphIndices ? delete[] m_glyphIndices : 0;
+	m_advances ? delete[] m_advances : 0;
 }
 
 void Text::Render() {
@@ -38,7 +51,8 @@ void Text::Render() {
 
 	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
-	RenderText();
+	//RenderText();
+	EdgeRender();
 
 	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["Text"]);
 
@@ -153,6 +167,10 @@ void Text::Initialize() {
 
 void Text::InitializeDirect2D()
 {
+	// Get values
+	m_height = m_graphicsManager->getWindowHeight();
+	m_width = m_graphicsManager->getWindowWidth();
+
 	// Factory
 	CheckStatus(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory), L"D2D1CreateFactory");
 
@@ -233,16 +251,14 @@ void Text::InitializeDirectWrite()
 		L"DWriteCreateFactory");
 
 	// Font
-	m_text = L"Erik";
 	m_textLength = (UINT32)wcslen(m_text);
-
 	CheckStatus(m_writeFactory->CreateTextFormat(
 		L"Arial",
 		NULL,
 		DWRITE_FONT_WEIGHT_REGULAR,
 		DWRITE_FONT_STYLE_NORMAL,
 		DWRITE_FONT_STRETCH_NORMAL,
-		500.0f,
+		m_textSize,
 		L"en-us",
 		&m_writeTextFormat),
 		L"CreateTextFormat");
@@ -292,47 +308,111 @@ void Text::DirectWriteEdge()
 	strPath.ReleaseBuffer();
 
 	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
-	strPath += L"DINNextLTPro-Regular.otf";
+	strPath = strPath.Left(strPath.ReverseFind(L'\\'));
+	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
+	strPath += L"Assets\\Fonts\\" + m_font;
 
-	m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles);
+	CheckStatus(m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles), L"CreateFontFileReference");
 
-	IDWriteFontFile* fontFileArray[] = { m_fontFiles };
-
-	m_writeFactory->CreateFontFace(
-		DWRITE_FONT_FACE_TYPE_CFF,
+	CheckStatus(m_writeFactory->CreateFontFace(
+		DWRITE_FONT_FACE_TYPE_TRUETYPE,
 		1,
-		fontFileArray,
+		&m_fontFiles,
 		0,
 		DWRITE_FONT_SIMULATIONS_NONE,
-		&m_fontFace);
+		&m_fontFaceBeginning),
+		L"CreateFontFace");
+	m_fontFaceBeginning->QueryInterface<IDWriteFontFace1>(&m_fontFace);
 
-	std::string text = "Erik";
-	m_codePoints = new UINT[text.length()];
-	m_glyphIndices = new UINT16[text.length()];
-	ZeroMemory(m_codePoints, sizeof(UINT) * text.length());
-	ZeroMemory(m_glyphIndices, sizeof(UINT16) * text.length());
-	for (int i = 0; i<text.length(); ++i)
+	m_textLength = (UINT32)wcslen(m_text);
+	m_codePoints = new UINT[m_textLength];
+	m_glyphIndices = new UINT16[m_textLength];
+	ZeroMemory(m_codePoints, sizeof(UINT) * m_textLength);
+	ZeroMemory(m_glyphIndices, sizeof(UINT16) * m_textLength);
+	for (int i = 0; i<m_textLength; ++i)
 	{
-		m_codePoints[i] = text.at(i);
+		m_codePoints[i] = m_text[i];
 	}
-	m_fontFace->GetGlyphIndices(m_codePoints, text.length(), m_glyphIndices);
+	CheckStatus(m_fontFace->GetGlyphIndices(m_codePoints, m_textLength, m_glyphIndices), L"GetGlyphIndices");
 
 	//Create the path geometry
-	m_d2dFactory->CreatePathGeometry(&m_pathGeometry);
-	m_pathGeometry->Open((ID2D1GeometrySink**)&m_geometrySink);
+	CheckStatus(m_d2dFactory->CreatePathGeometry(&m_pathGeometry), L"CreatePathGeometry");
+	CheckStatus(m_pathGeometry->Open((ID2D1GeometrySink**)&m_geometrySink), L"Open");
 
+	DWRITE_GLYPH_OFFSET glyphOffset = { 100.0f, 1.0f };
+	FLOAT glyphAdvances = 250.0f;
 	// (48.0f / 72.0f)*96.0f
-	m_fontFace->GetGlyphRunOutline(
-		500.0f,
+	CheckStatus(m_fontFace->GetGlyphRunOutline(
+		m_textSize,
 		m_glyphIndices,
 		NULL,
 		NULL,
-		text.length(),
+		m_textLength,
 		false,
 		false,
-		m_geometrySink);
+		m_geometrySink),
+		L"GetGlyphRunOutline");
 
-	m_geometrySink->Close();
+	// Getting advances
+	m_advances = new int[m_textLength];
+	m_fontFace->GetDesignGlyphAdvances(m_textLength, m_glyphIndices, m_advances);
+	for (size_t i = 0; i < m_textLength; i++)
+	{
+		int hej = m_advances[i];
+		int asd = 0;
+	}
+
+	CheckStatus(m_geometrySink->Close(), L"Close");
+
+	// Stroke style
+	float dashes[] = { 0.0f };
+	CheckStatus(m_d2dFactory->CreateStrokeStyle(
+		D2D1::StrokeStyleProperties(
+			D2D1_CAP_STYLE_FLAT,
+			D2D1_CAP_STYLE_FLAT,
+			D2D1_CAP_STYLE_FLAT,
+			D2D1_LINE_JOIN_MITER,
+			10.0f,
+			D2D1_DASH_STYLE_SOLID,
+			0.0f),
+			NULL,
+			NULL,
+			&m_strokeStyle),
+			L"CreateStrokeStyle");
+
+	// Glyphrun
+	m_glyphRun.fontFace = m_fontFace;
+	m_glyphRun.fontEmSize = m_textSize;
+	m_glyphRun.glyphCount = m_textLength;
+	m_glyphRun.glyphIndices = m_glyphIndices;
+	//m_glyphRun.glyphAdvances = ;
+	//m_glyphRun.glyphOffsets = ;
+	m_glyphRun.isSideways = false;
+	//m_glyphRun.bidiLevel = ;
+
+	m_edgeSize = 60.0f;
+}
+
+void Text::EdgeRender()
+{
+	// Clear
+	m_d2dRenderTarget->BeginDraw();
+	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
+	m_d2dRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
+
+	// // Draw text with outline
+	//m_d2dRenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(0.0f, m_height / 2.0f));
+	m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize, m_strokeStyle);
+	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_orangeBrush);
+
+	//// Draw with Glyph function
+	//D2D1_POINT_2F baseline;
+	//baseline.x = 0;
+	//baseline.y = 0;
+	//m_d2dRenderTarget->DrawGlyphRun(baseline, &m_glyphRun, m_orangeBrush);
+
+	m_d2dRenderTarget->EndDraw();
 }
 
 ID3D11ShaderResourceView * Text::GetText()

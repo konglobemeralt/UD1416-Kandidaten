@@ -84,7 +84,7 @@ public:
 	void createTexture2D(
 		std::string name,
 		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-		UINT width = 1280,
+		UINT width = 1024,
 		UINT height = 1024,
 		bool renderTarget = true,
 		bool shaderResource = true,
@@ -97,6 +97,7 @@ public:
 	);
 	void attachImage(string textureName, string srvName);
 	void saveImage(string fileName, ID3D11Texture2D* texture2d, const GUID &fileType = GUID_ContainerFormatPng);
+	void GraphicsManager::generateMips(string inputTexture, string outputSRV);
 };
 
 #endif
