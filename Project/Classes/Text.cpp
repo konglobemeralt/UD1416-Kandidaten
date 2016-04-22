@@ -147,7 +147,8 @@ void Text::Initialize() {
 
 	// Initialize Systems
 	InitializeDirect2D();
-	InitializeDirectWrite();
+	//InitializeDirectWrite();
+	DirectWriteEdge();
 }
 
 void Text::InitializeDirect2D()
@@ -263,7 +264,7 @@ void Text::RenderText()
 {
 	m_d2dRenderTarget->BeginDraw();
 	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));
+	//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
 	m_d2dRenderTarget->Clear(NULL);
 	// Call the DrawText method of this class.
 	m_d2dRenderTarget->DrawText(
@@ -274,6 +275,64 @@ void Text::RenderText()
 		m_orangeBrush			// The brush used to draw the text.
 	);
 	m_d2dRenderTarget->EndDraw();
+}
+
+void Text::DirectWriteEdge()
+{
+	// Factory
+	CheckStatus(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown**>(&m_writeFactory)),
+		L"DWriteCreateFactory");
+
+	CString strPath;
+	TCHAR* pstrExePath = strPath.GetBuffer(MAX_PATH);
+
+	::GetModuleFileName(0, pstrExePath, MAX_PATH);
+	strPath.ReleaseBuffer();
+
+	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
+	strPath += L"DINNextLTPro-Regular.otf";
+
+	m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles);
+
+	IDWriteFontFile* fontFileArray[] = { m_fontFiles };
+
+	m_writeFactory->CreateFontFace(
+		DWRITE_FONT_FACE_TYPE_CFF,
+		1,
+		fontFileArray,
+		0,
+		DWRITE_FONT_SIMULATIONS_NONE,
+		&m_fontFace);
+
+	std::string text = "Erik";
+	m_codePoints = new UINT[text.length()];
+	m_glyphIndices = new UINT16[text.length()];
+	ZeroMemory(m_codePoints, sizeof(UINT) * text.length());
+	ZeroMemory(m_glyphIndices, sizeof(UINT16) * text.length());
+	for (int i = 0; i<text.length(); ++i)
+	{
+		m_codePoints[i] = text.at(i);
+	}
+	m_fontFace->GetGlyphIndices(m_codePoints, text.length(), m_glyphIndices);
+
+	//Create the path geometry
+	m_d2dFactory->CreatePathGeometry(&m_pathGeometry);
+	m_pathGeometry->Open((ID2D1GeometrySink**)&m_geometrySink);
+
+	// (48.0f / 72.0f)*96.0f
+	m_fontFace->GetGlyphRunOutline(
+		500.0f,
+		m_glyphIndices,
+		NULL,
+		NULL,
+		text.length(),
+		false,
+		false,
+		m_geometrySink);
+
+	m_geometrySink->Close();
 }
 
 ID3D11ShaderResourceView * Text::GetText()

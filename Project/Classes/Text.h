@@ -50,6 +50,15 @@ private:
 	IDWriteTextFormat* m_writeTextFormat;
 	RECT rc;
 
+	// Testing
+	ID2D1PathGeometry* m_pathGeometry;
+	ID2D1GeometrySink* m_geometrySink;
+	IDWriteFontFace* m_fontFace;
+	IDWriteFontFile* m_fontFiles;
+	UINT* m_codePoints;
+	UINT16* m_glyphIndices;
+	void DirectWriteEdge();
+
 	//// Helper functions
 	//template<typename T> 
 	//void SafeDelete(T*& a);
