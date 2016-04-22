@@ -47,7 +47,7 @@ void Lightning::createVertexBuffer()
 }
 
 void Lightning::Render() {
-	float clearColor[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float clearColor[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
@@ -83,11 +83,12 @@ void Lightning::Render() {
 	lightningCBuffer.lineWidth = 0.1f;
 
 	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);
-	
+
 	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);	//PATCHLIST 2 POINTS
+	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
 	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
 	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
@@ -116,7 +117,7 @@ void Lightning::Initialize() {
 	wndHandle = ApplicationContext::GetInstance().GetWindowManager()->getWindowHandle();
 	InitDirectInput(*ApplicationContext::GetInstance().GetWindowManager()->getHinstance());			//Initiates the keyboard/mouse input function thingies
 
-	
+	lightningCBuffer.tessLevel = 1.0f;
 
 	// ###########################################################
 	// ######				Constant buffer					######
@@ -133,7 +134,8 @@ void Lightning::Initialize() {
 
 
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
-	//gdeviceContext->GSGetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
+	gdeviceContext->HSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
+	gdeviceContext->GSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
 
 	///////////___________NEW_________________/////////////
 
@@ -297,6 +299,14 @@ void Lightning::detectInput()
 		camPitch += mouseCurrentState.lY * 0.001f;				//Rotates camera up and down
 
 		mouseLastState = mouseCurrentState;
+	}
+	if (keyboardState[DIK_R])		//Moves backwards when the S key or the DOWN arrow is pressed
+	{
+		lightningCBuffer.tessLevel += 0.005f;
+	}
+	if (keyboardState[DIK_F])		//Moves backwards when the S key or the DOWN arrow is pressed
+	{
+		lightningCBuffer.tessLevel -= 0.005f;
 	}
 }
 

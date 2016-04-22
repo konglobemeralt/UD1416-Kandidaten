@@ -4,6 +4,16 @@ struct DS_OUT
 	float2 Tex : TEXCOORD;
 };
 
+cbuffer cBuffer : register(b0)
+{
+	float4x4 WVP;
+	float4x4 World;
+	float4 camPos;
+	float lineWidth;
+	float tessLevel;
+	float2 padding;
+};
+
 float4 crossProduct(float4 v1, float4 v2)
 {
 	//[ V1.y*V2.z - V1.z*V2.y, V1.z*V2.x - V1.x*V2.z, V1.x*V2.y - V1.y*V2.x ]
@@ -23,7 +33,7 @@ void GS_main(line DS_OUT input[2], inout TriangleStream<DS_OUT> OutputStream)
 	float4 lineDirVec; //Line Direction Vector
 	float4 perpendicularVec;
 
-	float lineWidth = 0.15f;
+	float lineWidth = 0.05f;
 
 	float4 startPos = input[0].Pos;
 	float4 endPos = input[1].Pos;
@@ -34,10 +44,20 @@ void GS_main(line DS_OUT input[2], inout TriangleStream<DS_OUT> OutputStream)
 	//perpendicularVec = XMVector3Orthogonal(lineDirVec);	//Not working in HLSL
 	float4 v[4];
 
-	v[0] = (input[1].Pos + float4(lineWidth, -lineWidth, 0.0f, 1.0f));
-	v[1] = (input[1].Pos + float4(lineWidth, lineWidth, 0.0f, 1.0f));
-	v[2] = (input[0].Pos + float4(-lineWidth, -lineWidth, 0.0f, 1.0f));
-	v[3] = (input[0].Pos + float4(-lineWidth, lineWidth, 0.0f, 1.0f));
+	v[0] = (input[1].Pos);
+	v[1] = (input[1].Pos);
+	v[2] = (input[0].Pos);
+	v[3] = (input[0].Pos);
+
+	//v[0] = (input[1].Pos + float4(lineWidth, -lineWidth, 0.0f, 1.0f));
+	//v[1] = (input[1].Pos + float4(lineWidth, lineWidth, 0.0f, 1.0f));
+	//v[2] = (input[0].Pos + float4(-lineWidth, -lineWidth, 0.0f, 1.0f));
+	//v[3] = (input[0].Pos + float4(-lineWidth, lineWidth, 0.0f, 1.0f));
+
+	v[0] = (input[1].Pos + float4(0, -lineWidth, 0.0f, 1.0f));
+	v[1] = (input[1].Pos + float4(0, lineWidth, 0.0f, 1.0f));
+	v[2] = (input[0].Pos + float4(-0, -lineWidth, 0.0f, 1.0f));
+	v[3] = (input[0].Pos + float4(-0, lineWidth, 0.0f, 1.0f));
 
 	//v[0] = (input[1].Pos + (float4(lineWidth, -lineWidth, 0.0f, 1.0f) - lineDirVec));
 	//v[1] = (input[1].Pos + (float4(lineWidth, lineWidth, 0.0f, 1.0f) - lineDirVec));
@@ -48,7 +68,7 @@ void GS_main(line DS_OUT input[2], inout TriangleStream<DS_OUT> OutputStream)
 	{
 		DS_OUT output; //Output of type "struct DS_OUT"
 
-		output.Pos = v[i];
+		output.Pos = mul(v[i], WVP);
 		output.Tex = input[0].Tex;
 
 		OutputStream.Append(output);
