@@ -53,13 +53,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CoInitialize(NULL);
 	ApplicationContext::Startup();
 	setUser();
-	WindowManager windowManager(hInstance, WndProc);
-	ApplicationContext::GetInstance().GetGraphicsManager()->initGraphics(windowManager.getWindowHandle());
+	//WindowManager windowManager(hInstance, WndProc);
+	ApplicationContext::GetInstance().GetWindowManager()->Initialize(hInstance, WndProc);
+	WindowManager* windowManager = ApplicationContext::GetInstance().GetWindowManager();
+	ApplicationContext::GetInstance().GetGraphicsManager()->initGraphics(windowManager->getWindowHandle());
 	ApplicationContext::Initialize();
 	
-	
-	//GraphicsManager::getInstance().initGraphics(windowManager.getWindowHandle());
-
 	MSG msg = { 0 };
 
 	D3D11_VIEWPORT vp;
@@ -72,7 +71,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	AppContext.GetGraphicsManager()->getDeviceContext()->RSSetViewports(1, &vp);
 
-	ShowWindow(*windowManager.getWindowHandle(), nCmdShow);
+	ShowWindow(*windowManager->getWindowHandle(), nCmdShow);
 	static float fps = 1;
 	static float uptime = 0;
 	DWORD currentFrame = timeGetTime();
@@ -98,7 +97,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 			wstring headerMessage;
 			headerMessage.append(L"Uptime: " + to_wstring((unsigned int)uptime) + L"   FPS: " + to_wstring(fps) + L"    (Time to render 25 players á 60 frames: " + to_wstring(hh) + L"h " + to_wstring(mm) + L"m " + to_wstring(seconds) + L"s)");
-			SetWindowText(*windowManager.getWindowHandle(), headerMessage.c_str());
+			SetWindowText(*windowManager->getWindowHandle(), headerMessage.c_str());
 			
 			uptime += ((currentFrame - lastFrame) * 0.001);
 			lastFrame = currentFrame;
@@ -108,7 +107,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		}
 	}
 
-	DestroyWindow(*windowManager.getWindowHandle());
+	DestroyWindow(*windowManager->getWindowHandle());
+	AppContext.Shutdown();
 
 	return (int) msg.wParam;
 }

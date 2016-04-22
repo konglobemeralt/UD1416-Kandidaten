@@ -18,7 +18,9 @@ ApplicationContext::ApplicationContext()
 	m_compositing = new Compositing;
 	m_toneMapping = new ToneMapping;
 	m_graphicsManager = new GraphicsManager;
+	m_windowManager = new WindowManager;
 }
+
 ApplicationContext::~ApplicationContext()
 {
 	delete m_antiAliasing;
@@ -33,7 +35,10 @@ ApplicationContext::~ApplicationContext()
 	m_toneMapping = nullptr;
 	delete m_graphicsManager;
 	m_graphicsManager = nullptr;
+	delete m_windowManager;
+	m_windowManager = nullptr;
 }
+
 void ApplicationContext::Startup()
 {
 	if (applicationContext == nullptr)

@@ -9,7 +9,7 @@ class Compositing;
 class AntiAliasing;
 class ToneMapping;
 class GraphicsManager;
-
+class WindowManager;
 class ApplicationContext
 {
 public:
@@ -24,6 +24,7 @@ public:
 	AntiAliasing* GetAntiAliasingObject() const { return m_antiAliasing; }
 	ToneMapping* GetToneMappingObject() const { return m_toneMapping; }
 	GraphicsManager* GetGraphicsManager() const { return m_graphicsManager; }
+	WindowManager* GetWindowManager() const { return m_windowManager; }
 	void SetUser(int p_user) { m_user = p_user; }
 	int GetUser() { return m_user; }
 	
@@ -36,6 +37,7 @@ private:
 	AntiAliasing* m_antiAliasing = nullptr;
 	ToneMapping* m_toneMapping = nullptr;
 	GraphicsManager* m_graphicsManager = nullptr;
+	WindowManager* m_windowManager = nullptr;
 	int m_user;
 
 
@@ -43,8 +45,6 @@ private:
 	~ApplicationContext();
 	ApplicationContext(ApplicationContext const&) = delete;
 	void operator=(ApplicationContext const&) = delete;
-
-
 };
 
 
