@@ -11,13 +11,14 @@
 ApplicationContext* ApplicationContext::applicationContext = nullptr;
 ApplicationContext::ApplicationContext()
 {
-	m_graphicsManager = new GraphicsManager;
 	m_user = TEXT;
 	m_antiAliasing = new AntiAliasing;
 	m_text = new Text;
 	m_lightning = new Lightning;
 	m_compositing = new Compositing;
 	m_toneMapping = new ToneMapping;
+	m_graphicsManager = new GraphicsManager;
+	m_windowManager = new WindowManager;
 }
 
 ApplicationContext::~ApplicationContext()
@@ -34,6 +35,8 @@ ApplicationContext::~ApplicationContext()
 	m_toneMapping = nullptr;
 	delete m_graphicsManager;
 	m_graphicsManager = nullptr;
+	delete m_windowManager;
+	m_windowManager = nullptr;
 }
 
 void ApplicationContext::Startup()

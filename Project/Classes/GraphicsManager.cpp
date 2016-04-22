@@ -287,38 +287,39 @@ void GraphicsManager::createTexture2D(
 	UINT width,
 	UINT height,
 	bool renderTarget,
-	bool shaderResource
-	)
+	bool shaderResource,
+	ID3D11Texture2D* texture)
 {
 
 	if (renderTarget == true || shaderResource == true) {
-		ID3D11Texture2D* texture;
+		if (texture == nullptr) {
+			D3D11_TEXTURE2D_DESC desc;
+			ZeroMemory(&desc, sizeof(desc));
+			desc.Width = width;
+			desc.Height = height;
+			desc.MipLevels = 0;
+			desc.ArraySize = 1;
+			desc.Format = format;
+			desc.SampleDesc.Count = 1;
+			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			desc.CPUAccessFlags = 0;
+			desc.MiscFlags = 0;
 
-		D3D11_TEXTURE2D_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Width = width;
-		desc.Height = height;
-		desc.MipLevels = 0;
-		desc.ArraySize = 1;
-		desc.Format = format;
-		desc.SampleDesc.Count = 1;
-		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = 0;
+			if (renderTarget == false)
+				desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			if (shaderResource == false)
+				desc.BindFlags = D3D11_BIND_RENDER_TARGET;
 
-		if (renderTarget == false)
-			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		if (shaderResource == false)
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET;
-
-		HRESULT iasdf = gDevice->CreateTexture2D(&desc, nullptr, &texture); // add subresource
+			HRESULT iasdf = gDevice->CreateTexture2D(&desc, nullptr, &texture); // add subresource
+		}
 
 		if (renderTarget == true) {
 			ID3D11RenderTargetView* rtv;
 
 			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-			rtvDesc.Format = desc.Format;
+			rtvDesc.Format = format;
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			rtvDesc.Texture2D.MipSlice = 0;
 
@@ -331,7 +332,7 @@ void GraphicsManager::createTexture2D(
 			ID3D11ShaderResourceView* srv;
 
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-			srvDesc.Format = desc.Format;
+			srvDesc.Format = format;
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MostDetailedMip = 0;
 			srvDesc.Texture2D.MipLevels = 1;
