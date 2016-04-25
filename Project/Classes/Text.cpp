@@ -1,6 +1,5 @@
 #include "Text.h"
 
-#include "..\ApplicationContext.h"
 Text::Text()
 {
 
@@ -13,6 +12,7 @@ Text::~Text()
 	m_dxgiDevice ? m_dxgiDevice->Release() : 0;
 	m_d2dDev ? m_d2dDev->Release() : 0;
 	m_d2dDevcon ? m_d2dDevcon->Release() : 0;
+	d2dTextureTarget ? d2dTextureTarget->Release() : 0;
 	m_idxgSurface ? m_idxgSurface->Release() : 0;
 	m_d2dRenderTarget ? m_d2dRenderTarget->Release() : 0;
 	m_blackBrush ? m_blackBrush->Release() : 0;
@@ -39,29 +39,30 @@ void Text::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
 
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["VertexShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["PixelShader"], nullptr, 0);
+	gdeviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
+	gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
 
-	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
 	//RenderText();
 	EdgeRender();
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["Text"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Text"]);
 
 	gdeviceContext->Draw(4, 0);
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["NULL"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
 }
 
 void Text::Initialize() {
+	manager = ApplicationContext::GetInstance().GetGraphicsManager();
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -70,12 +71,11 @@ void Text::Initialize() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 
-	m_graphicsManager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	manager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
 
 
@@ -93,7 +93,7 @@ void Text::Initialize() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	m_graphicsManager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -104,7 +104,7 @@ void Text::Initialize() {
 	//		string name
 	//			);
 
-	m_graphicsManager->createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	manager->createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
 
 
 
@@ -121,27 +121,27 @@ void Text::Initialize() {
 	//	);
 
 	// Only RTV
-	m_graphicsManager->createTexture2D(
+	manager->createTexture2D(
 		"myRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Only SRV
-	m_graphicsManager->createTexture2D(
+	manager->createTexture2D(
 		"mySRV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false
 	);
 
 	// Both
-	m_graphicsManager->createTexture2D("myRTVandSRV");
+	manager->createTexture2D("myRTVandSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
@@ -157,7 +157,7 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	m_graphicsManager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Initialize Systems
 	InitializeDirect2D();
@@ -168,8 +168,8 @@ void Text::Initialize() {
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = m_graphicsManager->getWindowHeight();
-	m_width = m_graphicsManager->getWindowWidth();
+	m_height = manager->getWindowHeight();
+	m_width = manager->getWindowWidth();
 
 	// Factory
 	CheckStatus(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory), L"D2D1CreateFactory");
@@ -185,14 +185,13 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = m_graphicsManager->getWindowHeight();
-	texDesc.Width = m_graphicsManager->getWindowWidth();
+	texDesc.Height = manager->getWindowHeight();
+	texDesc.Width = manager->getWindowWidth();
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = 0;
 	texDesc.SampleDesc.Count = 1;
 	texDesc.SampleDesc.Quality = 0;
 	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	ID3D11Texture2D* d2dTextureTarget;
 	CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget), L"CreateTexture2D");
 
 	d2dTextureTarget->QueryInterface(&m_idxgSurface);
@@ -204,7 +203,7 @@ void Text::InitializeDirect2D()
 			96,
 			96);
 	CheckStatus(m_d2dFactory->CreateDxgiSurfaceRenderTarget(m_idxgSurface, &props, &m_d2dRenderTarget), L"CreateDxgiSurfaceRenderTarget");
-	m_graphicsManager->thesisData.shaderResourceViews["NULL"] = nullptr;
+	resources.shaderResourceViews["NULL"] = nullptr;
 
 	// Brushes
 	CheckStatus(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &m_blackBrush), L"CreateSolidColorBrush");
@@ -215,11 +214,11 @@ void Text::InitializeDirect2D()
 	renderTargetViewDesc.Format = texDesc.Format;
 	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
-	m_graphicsManager->createTexture2D(
+	manager->createTexture2D(
 		"Text",
 		texDesc.Format,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		true,
 		false,
 		d2dTextureTarget
@@ -231,11 +230,11 @@ void Text::InitializeDirect2D()
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-	m_graphicsManager->createTexture2D(
+	manager->createTexture2D(
 		"Text",
 		texDesc.Format,
-		m_graphicsManager->getWindowWidth(),
-		m_graphicsManager->getWindowHeight(),
+		manager->getWindowWidth(),
+		manager->getWindowHeight(),
 		false,
 		true,
 		d2dTextureTarget
@@ -271,8 +270,8 @@ void Text::InitializeDirectWrite()
 	m_layoutRect = D2D1::RectF(
 		static_cast<FLOAT>(0.0f),
 		static_cast<FLOAT>(0.0f),
-		static_cast<FLOAT>(m_graphicsManager->getWindowWidth()),
-		static_cast<FLOAT>(m_graphicsManager->getWindowHeight())
+		static_cast<FLOAT>(manager->getWindowWidth()),
+		static_cast<FLOAT>(manager->getWindowHeight())
 	);
 }
 
@@ -283,14 +282,17 @@ void Text::RenderText()
 	//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
 	m_d2dRenderTarget->Clear(NULL);
 	// Call the DrawText method of this class.
+	//m_d2dRenderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE::D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 	m_d2dRenderTarget->DrawText(
-		m_text,				// The string to render.
+		m_text,					// The string to render.
 		m_textLength,			// The string's length.
-		m_writeTextFormat,    // The text format.
+		m_writeTextFormat,		// The text format.
 		m_layoutRect,			// The region of the window where the text will be rendered.
 		m_orangeBrush			// The brush used to draw the text.
 	);
 	m_d2dRenderTarget->EndDraw();
+
+	manager->saveImage("Fonts/Images/Text.png", d2dTextureTarget);
 }
 
 void Text::DirectWriteEdge()
@@ -390,7 +392,7 @@ void Text::DirectWriteEdge()
 	m_glyphRun.isSideways = false;
 	//m_glyphRun.bidiLevel = ;
 
-	m_edgeSize = 60.0f;
+	m_edgeSize = 10.0f;
 }
 
 void Text::EdgeRender()
@@ -401,10 +403,15 @@ void Text::EdgeRender()
 	m_d2dRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
 
 	// // Draw text with outline
-	//m_d2dRenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(0.0f, m_height / 2.0f));
-	m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize, m_strokeStyle);
-	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_orangeBrush);
+	m_d2dRenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(m_width / 1.8f, m_height / 1.1f));
+	//m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
+	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_blackBrush);
+
+	m_d2dRenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(m_width / 15.0f, m_height / 1.1f));
+	//m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
+	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_blackBrush);
 
 	//// Draw with Glyph function
 	//D2D1_POINT_2F baseline;
@@ -413,11 +420,13 @@ void Text::EdgeRender()
 	//m_d2dRenderTarget->DrawGlyphRun(baseline, &m_glyphRun, m_orangeBrush);
 
 	m_d2dRenderTarget->EndDraw();
+
+	manager->saveImage("Fonts/Images/TextOutline2.png", d2dTextureTarget);
 }
 
 ID3D11ShaderResourceView * Text::GetText()
 {
-	return m_graphicsManager->thesisData.shaderResourceViews["Text"];
+	return resources.shaderResourceViews["Text"];
 }
 
 void Text::CheckStatus(HRESULT hr, LPCTSTR titel)

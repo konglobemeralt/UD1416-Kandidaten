@@ -9,9 +9,10 @@
 #pragma comment(lib, "Dwrite")
 
 #include "GraphicsManager.h"
-//
-//#define manager GraphicsManager::getInstance()
-//#define resources GraphicsManager::getInstance().thesisData
+#include "..\ApplicationContext.h"
+
+#define manager m_graphicsManager
+#define resources m_graphicsManager->thesisData
 #define gdevice m_graphicsManager->getDevice()
 #define gdeviceContext m_graphicsManager->getDeviceContext()
 class GraphicsManager;
@@ -35,7 +36,7 @@ private:
 	// Values
 	unsigned int m_height;
 	unsigned int m_width;
-	float m_textSize = 500.0f;
+	float m_textSize = 600.0f;
 	float m_edgeSize = 100.0f;
 
 	// Direct2D
@@ -43,6 +44,7 @@ private:
 	IDXGIDevice* m_dxgiDevice = nullptr;
 	ID2D1Device* m_d2dDev = nullptr;
 	ID2D1DeviceContext* m_d2dDevcon = nullptr;
+	ID3D11Texture2D* d2dTextureTarget = nullptr;
 	IDXGISurface* m_idxgSurface = nullptr;
 	ID2D1RenderTarget* m_d2dRenderTarget = nullptr;
 	ID2D1SolidColorBrush* m_blackBrush = nullptr;
@@ -50,8 +52,8 @@ private:
 
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
-	const wchar_t* m_text = L"Erik";
-	CString m_font = "geo_1.ttf";
+	const wchar_t* m_text = L"A";
+	CString m_font = "arial.ttf";
 	UINT32 m_textLength;
 	D2D1_RECT_F m_layoutRect;
 	IDWriteTextFormat* m_writeTextFormat = nullptr;
