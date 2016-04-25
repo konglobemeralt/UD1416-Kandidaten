@@ -1,181 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Source Files\Render">
-      <UniqueIdentifier>{d1b53eec-42a3-4f4b-a170-b5e0dd6232d5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Window">
-      <UniqueIdentifier>{8c906aaf-0b41-4169-922e-e8a9b66c2958}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Text">
-      <UniqueIdentifier>{13da274d-c8bf-456e-9627-7e7b36798d6f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\ToneMapping">
-      <UniqueIdentifier>{cfe84d3e-bae8-440e-b0d4-c8c25eb313a7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Lightning">
-      <UniqueIdentifier>{2aff4c84-d506-42f9-8da8-32b90318fdd7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Compositing">
-      <UniqueIdentifier>{5594a25b-a9bf-4605-b88c-6aa249fa6a9b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\AntiAliasing">
-      <UniqueIdentifier>{cbf8e1a6-ea12-4de2-8164-eafe71bf6d24}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Lightning\Shaders">
-      <UniqueIdentifier>{bfda06a1-2634-49b6-9a7b-64797a85446f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Compositing\Shaders">
-      <UniqueIdentifier>{8612aa10-5234-4535-b680-f2e3b28bb8e1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\AntiAliasing\Shaders">
-      <UniqueIdentifier>{48442134-b9ba-4fde-b585-449f3de51f78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\ToneMapping\Shaders">
-      <UniqueIdentifier>{f6862326-d59b-46ea-b4bd-55c8a0379a20}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Text\Shaders">
-      <UniqueIdentifier>{92db16b8-c766-4b81-8105-a986744ca460}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Application">
-      <UniqueIdentifier>{57e42e96-1d9e-4c75-9580-d31c265b2dc3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\ToneMapping\Shaders\Gao">
-      <UniqueIdentifier>{27a6a5b1-de8d-46c4-89cd-c571cb5e765c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\ToneMapping\Shaders\Meylan">
-      <UniqueIdentifier>{819fbfc5-bf4a-4a4b-90ca-cf1fbc488e80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\ToneMapping\Shaders\Reinhard">
-      <UniqueIdentifier>{1cf03b44-4b0b-4f6a-a99f-608af025d05e}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Classes\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\GraphicsManager.cpp">
-      <Filter>Source Files\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\WindowManager.cpp">
-      <Filter>Source Files\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\AntiAliasing.cpp">
-      <Filter>Resource Files\AntiAliasing</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Compositing.cpp">
-      <Filter>Resource Files\Compositing</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Lightning.cpp">
-      <Filter>Resource Files\Lightning</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Text.cpp">
-      <Filter>Resource Files\Text</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\ToneMapping.cpp">
-      <Filter>Resource Files\ToneMapping</Filter>
-    </ClCompile>
-    <ClCompile Include="ApplicationContext.cpp">
-      <Filter>Source Files\Application</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Classes\GraphicsManager.h">
-      <Filter>Source Files\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\WindowManager.h">
-      <Filter>Source Files\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\AntiAliasing.h">
-      <Filter>Resource Files\AntiAliasing</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Compositing.h">
-      <Filter>Resource Files\Compositing</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\DataStructures.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Lightning.h">
-      <Filter>Resource Files\Lightning</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Text.h">
-      <Filter>Resource Files\Text</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\ToneMapping.h">
-      <Filter>Resource Files\ToneMapping</Filter>
-    </ClInclude>
-    <ClInclude Include="ApplicationContext.h">
-      <Filter>Source Files\Application</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\LightningDomainShader.hlsl">
-      <Filter>Resource Files\Lightning\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LightningHullShader.hlsl">
-      <Filter>Resource Files\Lightning\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LightningPixelShader.hlsl">
-      <Filter>Resource Files\Lightning\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LightningVertexShader.hlsl">
-      <Filter>Resource Files\Lightning\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LightningGeometryShader.hlsl">
-      <Filter>Resource Files\Lightning\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\FXAA_PS.hlsl" />
+    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl" />
+    <FxCompile Include="Shaders\LightningDomainShader.hlsl" />
+    <FxCompile Include="Shaders\LightningGeometryShader.hlsl" />
+    <FxCompile Include="Shaders\LightningHullShader.hlsl" />
+    <FxCompile Include="Shaders\LightningPixelShader.hlsl" />
+    <FxCompile Include="Shaders\LightningVertexShader.hlsl" />
+    <FxCompile Include="Shaders\MEYLAN_PixelShader.hlsl" />
+    <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl" />
+    <FxCompile Include="Shaders\PixelShader.hlsl" />
+    <FxCompile Include="Shaders\REINHARD_PixelShader.hlsl" />
+    <FxCompile Include="Shaders\REINHARD_VertexShader.hlsl" />
     <FxCompile Include="Shaders\SimpleVertexShader.hlsl" />
-    <FxCompile Include="Shaders\PixelShader.hlsl">
-      <Filter>Resource Files\Text\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\VertexShader.hlsl">
-      <Filter>Resource Files\Text\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\REINHARD_PixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Reinhard</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\REINHARD_VertexShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Reinhard</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MEYLAN_PixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Meylan</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Meylan</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\GAO_PixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\GAO_VertexShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
-    </FxCompile>
-<<<<<<< HEAD
-<<<<<<< ToneMapping
-=======
-    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\REINHARD_FinalPixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Reinhard</Filter>
-    </FxCompile>
->>>>>>> local
-=======
-    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
-      <Filter>Resource Files\ToneMapping\Shaders\Gao</Filter>
-    </FxCompile>
->>>>>>> fb27d22839bf92a45ca13e9e1838e986fa5c3595
+    <FxCompile Include="Shaders\GAO_PixelShader.hlsl" />
+    <FxCompile Include="Shaders\GAO_VertexShader.hlsl" />
+    <FxCompile Include="Shaders\VertexShader.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ApplicationContext.cpp" />
+    <ClCompile Include="Classes\AntiAliasing.cpp" />
+    <ClCompile Include="Classes\Compositing.cpp" />
+    <ClCompile Include="Classes\Lightning.cpp" />
+    <ClCompile Include="Classes\main.cpp" />
+    <ClCompile Include="Classes\GraphicsManager.cpp" />
+    <ClCompile Include="Classes\Text.cpp" />
+    <ClCompile Include="Classes\ToneMapping.cpp" />
+    <ClCompile Include="Classes\WindowManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ApplicationContext.h" />
+    <ClInclude Include="Classes\AntiAliasing.h" />
+    <ClInclude Include="Classes\Compositing.h" />
+    <ClInclude Include="Classes\DataStructures.h" />
+    <ClInclude Include="Classes\GraphicsManager.h" />
+    <ClInclude Include="Classes\Lightning.h" />
+    <ClInclude Include="Classes\Text.h" />
+    <ClInclude Include="Classes\ToneMapping.h" />
+    <ClInclude Include="Classes\WindowManager.h" />
   </ItemGroup>
 </Project>

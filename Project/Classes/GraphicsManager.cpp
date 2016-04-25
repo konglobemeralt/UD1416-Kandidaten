@@ -102,7 +102,7 @@ void GraphicsManager::setRasterstate(D3D11_CULL_MODE cullmode) {
 	rastDesc.MultisampleEnable = FALSE;
 	rastDesc.AntialiasedLineEnable = FALSE;
 
-	gDevice->CreateRasterizerState(&rastDesc, &rasterState);
+	HRESULT hr = gDevice->CreateRasterizerState(&rastDesc, &rasterState);
 	gDeviceContext->RSSetState(rasterState);
 }
 
