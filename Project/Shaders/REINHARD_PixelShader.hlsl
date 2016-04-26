@@ -130,34 +130,40 @@ float4 maxFilter(float2 uv, float mipLvlBias) {
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
+	// USER SETTINGS
+	float key = 4.0;
+	float lWhite = 4.0;
+	////////////////
+
 	uint width, heigth;
 	Texture.GetDimensions(width, heigth);
 	uint imagesize = width * heigth;
+	float2 uv = floor(input.Tex * imagesize) / imagesize;
 	const float delta = 1.0;
 	
 	//MAX LUM
 	if (levels.y == 0) {
-		float3 RGB = RGBEToRGB(Texture.Sample(SamplerWrap, input.Tex));
-		float3 MaxL = RGBEToRGB(MaxLum.Sample(SamplerWrap, float2(0.0, 0.0)));
-		float luminance = GetLuminance(RGB);
-		float logLuminance = log(delta + luminance);
-		if(MaxL.x < 0.00001)
-			return RGBToRGBE(logLuminance);
-		if (logLuminance > MaxL.x)
-			return RGBToRGBE(float3(logLuminance, logLuminance, logLuminance));//logLuminance);
-		else
-			return RGBToRGBE(MaxL);
-		maxlum not working properly!
-		//return maxFilter(input.Tex, levels.x);
+		//float3 AvgL = RGBEToRGB(AvgLum.Sample(SamplerWrap, input.Tex));
+		//float3 MaxL = RGBEToRGB(MaxLum.Sample(SamplerWrap, float2(0.0, 0.0)));
+		////float luminance = GetLuminance(RGB);
+		////float logLuminance = log(delta + luminance);
+		////if(MaxL.x < 0.00001)
+		////	return RGBToRGBE(logLuminance);
+		//if (AvgL.x > MaxL.x)
+		//	return RGBToRGBE(AvgL);
+		//else
+		//	return RGBToRGBE(MaxL);
+		//maxlum not working properly!
+		return maxFilter(input.Tex, levels.x);
 	}
 
 	//AVG LUM
 	else if (levels.y == 1) {
-		float3 RGB = RGBEToRGB(Texture.Sample(SamplerWrap, input.Tex));
+		float3 RGB = Texture.Sample(SamplerWrap, uv);
 		float luminance = GetLuminance(RGB);
 		float logLuminance = log(delta + luminance);
 
-		return RGBToRGBE(logLuminance);
+		return logLuminance;
 
 		/*float4 rgb = float4(BilinearFilter(input.Tex, levels.x), 1.0);
 		return RGBToRGBE(rgb);*/
@@ -165,15 +171,23 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	//FINAL PASS
 	else {		//if (levels.y == 2)
-		float avgLum = GetLuminance(RGBEToRGB(AvgLum.SampleLevel(SamplerWrap, input.Tex, levels.x)));
-		//avgLum = exp(1/imageSize)
-		////follow nuttys code! http://www.nutty.ca/?page_id=352&link=hdr
+		// GLOBAL TONE MAP
+		float3 locLum = AvgLum.SampleLevel(SamplerWrap, uv, 0);
+		float worldLum = AvgLum.SampleLevel(SamplerWrap, uv, levels.x);
+		//worldLum = (1 / imagesize) * exp(worldLum);
+		float lumScale = (key / worldLum) * locLum;
+		float finLum = (lumScale * (1 + lumScale / (lWhite * lWhite))) / (1 + lumScale);	// white should be crammed in here
 
-		//float3 rgb = RGBEToRGB(Texture.Sample(SamplerWrap, input.Tex));
-		//float lum = GetLuminance(rgb);
+		float3 rgb = Texture.Sample(SamplerWrap, uv);
+		float3 xyY = RGB2xyY(rgb);
+		xyY.z *= finLum;
+		rgb = xyY2RGB(xyY);
 
+		float gamma = 1.0 / 2.2;
+		rgb = pow(rgb, float3(gamma, gamma, gamma));
+		return float4(rgb, 1.0);
 
-		return AvgLum.Sample(SamplerWrap, input.Tex);
+		//return float4(AvgLum.Sample(SamplerWrap, input.Tex));
 		//return float4(RGBEToRGB(MaxLum.Sample(SamplerWrap, float2(0.0, 0.0))), 1.0);
 		//return float4(RGBEToRGB(AvgLum.Sample(SamplerWrap, input.Tex)), 1.0);
 		//return float4(RGBEToRGB(MaxLumSRV.SampleLevel(SamplerWrap, input.Tex, levels.x).xyz), 1.0);// levels.x);
@@ -183,5 +197,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		// https://msdn.microsoft.com/en-us/library/windows/desktop/bb153294(v=vs.85).aspx
 		// http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
 		// http://www.nutty.ca/?page_id=352&link=hdr
+		// https://imdoingitwrong.wordpress.com/2010/08/19/why-reinhard-desaturates-my-blacks-3/
+		// https://books.google.se/books?id=30ZOCgAAQBAJ&pg=PA403&lpg=PA403&dq=implementing+reinhard+dodging+and+burning&source=bl&ots=2Yiqg0IDEL&sig=QHGS1IWqgLhRI7U6yWqI0izg3kI&hl=sv&sa=X&ved=0ahUKEwjiuL-ItazMAhXoDZoKHTTbCkQQ6AEIGzAA#v=onepage&q=implementing%20reinhard%20dodging%20and%20burning&f=false
+		// http://liu.diva-portal.org/smash/get/diva2:24136/FULLTEXT01.pdf
 	}
 }

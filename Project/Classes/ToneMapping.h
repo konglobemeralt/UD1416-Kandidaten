@@ -44,6 +44,8 @@ private:
 	void renderGao();
 	void renderMeylan();
 	void renderReinhard();
+
+	ID3D11Texture2D* CPUtexture;
 };
 
 #endif
