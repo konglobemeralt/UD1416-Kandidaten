@@ -11,7 +11,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	ApplicationContext::GetInstance().SetUser(TONEMAPPING);
+	ApplicationContext::GetInstance().SetUser(ANTIALIASING);
 /*		
 		CHOOSE FROM:
 		TEXT

@@ -145,7 +145,7 @@
     <FxCompile Include="Shaders\SimpleVertexShader.hlsl">
       <Filter>Resource Files\AntiAliasing\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SSAA_PS.hlsl">
+    <FxCompile Include="Shaders\SSAA_PS.hlsl">
       <Filter>Resource Files\AntiAliasing\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

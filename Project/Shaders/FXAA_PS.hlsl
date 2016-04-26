@@ -51,8 +51,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	dir = dir * temp;
 
 	//begränsa antalet texlar den kommer blurra
-	clamp(dir.x, -FXAA_blur_Texels_Threshhold, FXAA_blur_Texels_Threshhold);
-	clamp(dir.y, -FXAA_blur_Texels_Threshhold, FXAA_blur_Texels_Threshhold);
+	dir.x = clamp(dir.x, -FXAA_blur_Texels_Threshhold, FXAA_blur_Texels_Threshhold);
+	dir.y = clamp(dir.y, -FXAA_blur_Texels_Threshhold, FXAA_blur_Texels_Threshhold);
 
 	dir *= texelSizeXY;
 

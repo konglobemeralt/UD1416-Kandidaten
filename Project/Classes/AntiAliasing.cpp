@@ -30,10 +30,10 @@ void AntiAliasing::Render() {
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["Simple_VS_cb"]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["FXAA_Test"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["SSAA_Test"]);
 
 	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
+	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
@@ -70,7 +70,7 @@ void AntiAliasing::Initialize() {
 
 	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_graphicsManager->getWindowWidth();
 	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_graphicsManager->getWindowHeight();
-	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 8.0f;
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 2.0f;
 	FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
 	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 2.0f;
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
@@ -97,7 +97,7 @@ void AntiAliasing::Initialize() {
 
 	m_graphicsManager->createPixelShader("FXAA_PS"); // Name has to match shader name without .hlsl
 
-
+	m_graphicsManager->createPixelShader("SSAA_PS");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -120,7 +120,17 @@ void AntiAliasing::Initialize() {
 		true
 	);
 
+	m_graphicsManager->createTexture2D( //shaderresource
+		"SSAA_Test",
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		1600,
+		1066,
+		false,
+		true
+	);
+
 	m_graphicsManager->attachImage("AntiAliasing/Images/AATest.png", "FXAA_Test"); //attachea till shaderresourcen
+	m_graphicsManager->attachImage("AntiAliasing/Images/SSAATest.jpg", "SSAA_Test");
 	// ###########################################################
 	// ######		Render target & shader resource			######
 	// ###########################################################
