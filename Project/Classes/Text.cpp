@@ -157,7 +157,7 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Initialize Systems
 	InitializeDirect2D();
@@ -206,7 +206,7 @@ void Text::InitializeDirect2D()
 	resources.shaderResourceViews["NULL"] = nullptr;
 
 	// Brushes
-	CheckStatus(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &m_blackBrush), L"CreateSolidColorBrush");
+	CheckStatus(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_blackBrush), L"CreateSolidColorBrush");
 	CheckStatus(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Orange), &m_orangeBrush), L"CreateSolidColorBrush");
 
 	// Create the render target view.
@@ -225,13 +225,8 @@ void Text::InitializeDirect2D()
 	);
 
 	// Setup the description of the shader resource view.
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-	shaderResourceViewDesc.Format = texDesc.Format;
-	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 	manager->createTexture2D(
-		"Text",
+		"Text2",
 		texDesc.Format,
 		manager->getWindowWidth(),
 		manager->getWindowHeight(),
@@ -239,6 +234,44 @@ void Text::InitializeDirect2D()
 		true,
 		d2dTextureTarget
 	);
+
+	// With mipmaps
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	shaderResourceViewDesc.Format = texDesc.Format;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
+	texDesc.ArraySize = 1;
+	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	texDesc.CPUAccessFlags = 0;
+	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	texDesc.Height = manager->getWindowHeight();
+	texDesc.Width = manager->getWindowWidth();
+	texDesc.MipLevels = 1;
+	texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	//texDesc.SampleDesc.Count = 1;
+	//texDesc.SampleDesc.Quality = 0;
+	texDesc.Usage = D3D11_USAGE_DEFAULT;
+	CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &tempD2DTexture), L"CreateTexture2D");
+
+	ID3D11ShaderResourceView* srv;
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	srvDesc.Format = texDesc.Format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = -1;
+	CheckStatus(gdevice->CreateShaderResourceView(tempD2DTexture, &srvDesc, &srv), L"CreateShaderResourceView");
+	resources.shaderResourceViews["Text"] = srv;
+
+	//manager->createTexture2D(
+	//	"Text",
+	//	texDesc.Format,
+	//	manager->getWindowWidth(),
+	//	manager->getWindowHeight(),
+	//	false,
+	//	true,
+	//	tempD2DTexture
+	//);
 }
 
 void Text::InitializeDirectWrite()
@@ -291,8 +324,6 @@ void Text::RenderText()
 		m_orangeBrush			// The brush used to draw the text.
 	);
 	m_d2dRenderTarget->EndDraw();
-
-	manager->saveImage("Fonts/Images/Text.png", d2dTextureTarget);
 }
 
 void Text::DirectWriteEdge()
@@ -400,18 +431,12 @@ void Text::EdgeRender()
 	// Clear
 	m_d2dRenderTarget->BeginDraw();
 	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-	m_d2dRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
+	m_d2dRenderTarget->Clear(NULL);
 
 	// // Draw text with outline
-	m_d2dRenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_ALIASED);
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(m_width / 1.8f, m_height / 1.1f));
-	//m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
-	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_blackBrush);
-
-	m_d2dRenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE::D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(m_width / 15.0f, m_height / 1.1f));
-	//m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
-	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_blackBrush);
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(m_width / 2.0f, m_height / 1.5f));
+	m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
+	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_orangeBrush);
 
 	//// Draw with Glyph function
 	//D2D1_POINT_2F baseline;
@@ -421,7 +446,8 @@ void Text::EdgeRender()
 
 	m_d2dRenderTarget->EndDraw();
 
-	manager->saveImage("Fonts/Images/TextOutline2.png", d2dTextureTarget);
+	gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
+	gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
 }
 
 ID3D11ShaderResourceView * Text::GetText()

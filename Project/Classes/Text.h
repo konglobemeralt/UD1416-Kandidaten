@@ -36,7 +36,7 @@ private:
 	// Values
 	unsigned int m_height;
 	unsigned int m_width;
-	float m_textSize = 600.0f;
+	float m_textSize = 500.0f;
 	float m_edgeSize = 100.0f;
 
 	// Direct2D
@@ -66,6 +66,7 @@ private:
 	IDWriteFontFace1* m_fontFace = nullptr;
 	IDWriteFontFile* m_fontFiles = nullptr;
 	ID2D1StrokeStyle* m_strokeStyle = nullptr;
+	ID3D11Texture2D* tempD2DTexture = nullptr;
 	UINT* m_codePoints = nullptr;
 	UINT16* m_glyphIndices = nullptr;
 	int* m_advances = nullptr;
