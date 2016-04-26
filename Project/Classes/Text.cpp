@@ -59,6 +59,8 @@ void Text::Render() {
 	gdeviceContext->Draw(4, 0);
 
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
+	gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
+	gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
 }
 
 void Text::Initialize() {
@@ -236,11 +238,6 @@ void Text::InitializeDirect2D()
 	);
 
 	// With mipmaps
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-	shaderResourceViewDesc.Format = texDesc.Format;
-	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 	texDesc.ArraySize = 1;
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
@@ -259,7 +256,7 @@ void Text::InitializeDirect2D()
 	srvDesc.Format = texDesc.Format;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = -1;
+	srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
 	CheckStatus(gdevice->CreateShaderResourceView(tempD2DTexture, &srvDesc, &srv), L"CreateShaderResourceView");
 	resources.shaderResourceViews["Text"] = srv;
 
@@ -445,9 +442,6 @@ void Text::EdgeRender()
 	//m_d2dRenderTarget->DrawGlyphRun(baseline, &m_glyphRun, m_orangeBrush);
 
 	m_d2dRenderTarget->EndDraw();
-
-	gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
-	gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
 }
 
 ID3D11ShaderResourceView * Text::GetText()
