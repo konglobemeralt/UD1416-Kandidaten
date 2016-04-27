@@ -52,7 +52,7 @@ private:
 
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
-	const wchar_t* m_text = L"A";
+	const wchar_t* m_text = L"Erik";
 	CString m_font = "arial.ttf";
 	UINT32 m_textLength;
 	D2D1_RECT_F m_layoutRect;

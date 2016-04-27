@@ -431,7 +431,7 @@ void Text::EdgeRender()
 	m_d2dRenderTarget->Clear(NULL);
 
 	// // Draw text with outline
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(m_width / 2.0f, m_height / 1.5f));
+	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(100, (m_height + m_textSize) / 2));
 	m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
 	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_orangeBrush);
 
