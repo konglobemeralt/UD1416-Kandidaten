@@ -136,8 +136,6 @@
     <FxCompile Include="Shaders\LightningGeometryShader.hlsl">
       <Filter>Resource Files\Lightning\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\FXAA_PS.hlsl" />
-    <FxCompile Include="Shaders\SimpleVertexShader.hlsl" />
     <FxCompile Include="Shaders\PixelShader.hlsl">
       <Filter>Resource Files\Text\Shaders</Filter>
     </FxCompile>
@@ -153,6 +151,15 @@
     <FxCompile Include="Shaders\MEYLAN_PixelShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders\Meylan</Filter>
     </FxCompile>
+     </FxCompile>
+    <FxCompile Include="Shaders\FXAA_PS.hlsl">
+      <Filter>Resource Files\AntiAliasing\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleVertexShader.hlsl">
+      <Filter>Resource Files\AntiAliasing\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SSAA_PS.hlsl">
+      <Filter>Resource Files\AntiAliasing\Shaders</Filter>
     <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl">
       <Filter>Resource Files\ToneMapping\Shaders\Meylan</Filter>
     </FxCompile>
