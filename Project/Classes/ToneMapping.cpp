@@ -160,12 +160,11 @@ void ToneMapping::renderReinhard() {
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
 	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["REINHARD_ConstantBuffer"]);
 
-	manager->attachImage("ToneMapping/Reinhard/Arches_E_PineTree_3k.tif", "REINHARD_SRV"); // loads image every frame = superawesomeoptimization
+	manager->attachImage("ToneMapping/Reinhard/skolan.tif", "REINHARD_SRV"); // loads image every frame = superawesomeoptimization
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_SRV"]);
 
 
 	//// AVG LUMINANCE
-
 	mipBuffer.mipLevel =	{	textureWidth,	// miplevel
 								1,				// Max(0) or Avg(1) Luminance, or final render(2)
 								0,				// Unassigned
@@ -177,31 +176,27 @@ void ToneMapping::renderReinhard() {
 	manager->generateMips("REINHARD_AvgLuminance_SRV_and_RTV", "REINHARD_AvgLuminance_SRV_and_RTV");
 
 
-	//// MAX LUMINANCE
+	////// MAX LUMINANCE
+	//mipBuffer.mipLevel = {		textureWidth,	// miplevel
+	//							0,				// Max(0) or Avg(1) Luminance, or final render(2)
+	//							0,				// Unassigned
+	//							0				// Unassigned
+	//};
+	//deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
+	//deviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["REINHARD_MaxLuminance_SRV"]);
+	//deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["REINHARD_MaxLuminance_RTV"], nullptr);
+	//deviceContext->Draw(4, 0);
 
+	//// LOCAL TMO
 	mipBuffer.mipLevel = { textureWidth,	// miplevel
-		0,				// Max(0) or Avg(1) Luminance, or final render(2)
-		0,				// Unassigned
+		1,				// Max(0) or Avg(1) Luminance, or final render(2)
+		1,				// Global(0) or Local(1) TMO
 		0				// Unassigned
 	};
-	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
-	deviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["REINHARD_MaxLuminance_SRV"]);
-	deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["REINHARD_MaxLuminance_RTV"], nullptr);
-	deviceContext->Draw(4, 0);
-
-	ID3D11Resource* maxSRV;
-	ID3D11Resource* maxRTV;
-	resources.shaderResourceViews["REINHARD_MaxLuminance_SRV"]->GetResource(&maxSRV);
-	resources.renderTargetViews["REINHARD_MaxLuminance_RTV"]->GetResource(&maxRTV);
-	//deviceContext->UpdateSubresource(maxSRV, 0, nullptr, &maxRTV, 0, 0);
-	//deviceContext->CopyResource(maxSRV, maxRTV);
-
-	//maxSRV->Release();
-	//maxRTV->Release();
+	//deviceContext->CSSetShader
 
 
 	//// FINAL RENDER
-
 	mipBuffer.mipLevel =	{	textureWidth,	// miplevel
 								2,				// Max(0) or Avg(1) Luminance, or final render(2)
 								0,				// Unassigned
@@ -210,11 +205,6 @@ void ToneMapping::renderReinhard() {
 	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
 	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["REINHARD_AvgLuminance_SRV_and_RTV"]);
-	
-
-	//manager->generateMips("REINHARD_MaxLuminance_RTV", "REINHARD_MaxLuminance_SRV");
-	//deviceContext->PSSetShader(resources.pixelShaders["REINHARD_FinalPixelShader"], nullptr, 0);
-	//deviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["REINHARD_MaxLuminance_SRV"]);
 	
 	deviceContext->Draw(4, 0);
 }
@@ -239,17 +229,17 @@ void ToneMapping::initReinhard() {
 
 	manager->createVertexShader("REINHARD_VertexShader", "REINHARD_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
+	//// ####	COMPUTE SHADER
+	//manager->createComputeShader("REINHARD_Local_ComputeShader");
+
 	// #### PIXEL SHADER
 	manager->createPixelShader("REINHARD_PixelShader"); // Name has to match shader name without .hlsl
-	//manager->createPixelShader("REINHARD_FinalPixelShader"); // Name has to match shader name without .hlsl
 
 	// #### SRV
 	manager->createTexture2D("REINHARD_SRV",						DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), false, true);
-	//manager->createTexture2D("REINHARD_MaxLuminance_SRV_and_RTV",	DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 1, true, true);
 	manager->createTexture2D("REINHARD_AvgLuminance_SRV_and_RTV",	DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), true, true);
 	manager->createTexture2D("REINHARD_MaxLuminance_RTV",			DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), true, false);
 	manager->createTexture2D("REINHARD_MaxLuminance_SRV",			DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), false, true);
-	//manager->createTexture2D("REINHARD_AvgLuminance_SRV",			DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), false, true);
 
 	// #### SAMPLER
 	manager->createSamplerState("REINHARD_SamplerWrap",		D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);

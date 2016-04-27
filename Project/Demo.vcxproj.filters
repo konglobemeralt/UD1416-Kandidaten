@@ -17,6 +17,7 @@
     <FxCompile Include="Shaders\GAO_PixelShader.hlsl" />
     <FxCompile Include="Shaders\GAO_VertexShader.hlsl" />
     <FxCompile Include="Shaders\VertexShader.hlsl" />
+    <FxCompile Include="REINHARD_Local_ComputeShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplicationContext.cpp" />
