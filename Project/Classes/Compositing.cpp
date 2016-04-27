@@ -26,27 +26,25 @@ void Compositing::Render() {
 	gdeviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
+	string framePadding;
 
 	//Find correct background and UV images to sample from
-	if (imageCount < 9)
+	if (m_imageCount <= 9)
 	{
-		UVFrame = "UVTEST/UVTEST_00";
-		BgrFrame = "background/Backgrnd_00";
+		framePadding = "00";
 	}
-	else if (imageCount > 9 && imageCount < 100)
-		{
-			UVFrame = "UVTEST/UVTEST_0";
-			BgrFrame = "background/Backgrnd_0";
-		}
+	else if (m_imageCount > 9 && m_imageCount < 100)
+	{
+		framePadding = "0";
+	}
 	else
 	{
-		UVFrame = "UVTEST/UVTEST_";
-		BgrFrame = "background/Backgrnd_";
+		framePadding = "";
 	}
 		
 
 	//Switch image to composit depending on frame
-	if (imageCount == 0)
+	/*if (imageCount == 0)
 	{
 		manager->attachImage("dickbutt.png", "PlayerSRV");
 	}
@@ -82,20 +80,84 @@ void Compositing::Render() {
 	if (imageCount == 329)
 	{
 		manager->attachImage("putin.png", "PlayerSRV");
+	}*/
+
+	if (m_imageCount == 2)
+	{
+		manager->attachImage("dickbutt.png", "PlayerSRV");
+	}
+	if (m_imageCount == 30)
+	{
+		manager->attachImage("bert.png", "PlayerSRV");
+	}
+	if (m_imageCount == 90)
+	{
+		manager->attachImage("dickbutt.png", "PlayerSRV");
 	}
 
 
 	//Concatenate to filename to find correct UV and Backgroudn image.
-	string cat = UVFrame + to_string(imageCount) + ".png";
-	string cat2 = BgrFrame + to_string(imageCount) + ".png";
+	string uvString = m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
+	string uvRefString = m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+	string beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
+	string diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
+	string specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
+	string irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
+	string shadowString = m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
+	string reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
 	
-	manager->attachImage(cat, "UVSRV");
-	manager->attachImage(cat2, "BackgroundSRV");
-	
-	//Attach shader resources
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	//Create and attach shader resources
+	if (m_renderUV)
+	{
+		manager->attachImage(uvString, "UVSRV");
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	}
+
 	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
+
+	if (m_renderUVReflection)
+	{
+		manager->attachImage(uvRefString, "UVrefSRV");
+		gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["UVrefSRV"]);
+	}
+	if (m_renderBeauty)
+	{
+		manager->attachImage(beautyString, "BeautySRV");
+		gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BeautySRV"]);
+	}
+	if (m_renderDiffuse)
+	{
+		manager->attachImage(diffuseString, "DiffuseSRV");
+		gdeviceContext->PSSetShaderResources(4, 1, &resources.shaderResourceViews["DiffuseSRV"]);
+	}
+	if (m_renderSpecular)
+	{
+		manager->attachImage(specularString, "SpecularSRV");
+		gdeviceContext->PSSetShaderResources(5, 1, &resources.shaderResourceViews["SpecularSRV"]);
+	}
+	if (m_renderIrradiance)
+	{
+		manager->attachImage(irradianceString, "IrradianceSRV");
+		gdeviceContext->PSSetShaderResources(6, 1, &resources.shaderResourceViews["IrradianceSRV"]);
+	}
+	if (m_renderShadow)
+	{
+		manager->attachImage(shadowString, "ShadowSRV");
+		gdeviceContext->PSSetShaderResources(7, 1, &resources.shaderResourceViews["ShadowSRV"]);
+	}
+	if (m_renderReflection)
+	{
+		manager->attachImage(reflectionString, "ReflectionSRV");
+		gdeviceContext->PSSetShaderResources(8, 1, &resources.shaderResourceViews["ReflectionSRV"]);
+	}
+
+	//manager->attachImage(cat, "UVSRV");
+	//manager->attachImage(cat2, "BackgroundSRV");
+	
+	
+	/*gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
+	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);*/
 
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
@@ -104,10 +166,10 @@ void Compositing::Render() {
 	gdeviceContext->Draw(4, 0);
 
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
-	Sleep(50);
-	imageCount++;
-	if (imageCount == 400)
-		imageCount = 0;
+	//Sleep(5);
+	m_imageCount++;
+	if (m_imageCount == m_imageSum+1)
+		m_imageCount = m_startFrame;
 	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
 
 }
@@ -197,7 +259,25 @@ void Compositing::Initialize() {
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	manager->attachImage("dickbutt.png", "PlayerSRV");
 
+	m_UVFrame = "uvLayer/MasterBeauty.";
+	m_UVReflectionFrame = "uvRefLayer/uvRef_Reflection.";
+	m_beautyFrame = "baseLayer/MasterBeauty.";
+	m_diffuseFrame = "baseLayer/all_Diffuse.";
+	m_specularFrame = "baseLayer/all_SpecularNoShadow.";
+	m_irradianceFrame = "baseLayer/all_DirectIrradianceNoShadow.";
+	m_shadowFrame = "baseLayer/all_ShadowRaw.";
+	m_reflectionFrame = "baseLayer/all_Reflection.";
 
+	m_textureConstantBuffer.m_UV = m_renderUV;
+	m_textureConstantBuffer.m_UVRef = m_renderUVReflection;
+	m_textureConstantBuffer.m_beauty = m_renderBeauty;
+	m_textureConstantBuffer.m_diffuse = m_renderDiffuse;
+	m_textureConstantBuffer.m_specular = m_renderSpecular;
+	m_textureConstantBuffer.m_irradiance = m_renderIrradiance;
+	m_textureConstantBuffer.m_shadow = m_renderShadow;
+	m_textureConstantBuffer.m_reflection = m_renderReflection;
+
+	manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -208,5 +288,5 @@ void Compositing::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MAXIMUM_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 }
