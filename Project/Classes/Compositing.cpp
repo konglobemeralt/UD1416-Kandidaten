@@ -106,6 +106,10 @@ void Compositing::Render() {
 	string shadowString = m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
 	string reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
 	
+	string textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
+	string textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
+	string textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+
 	//Create and attach shader resources
 	if (m_renderUV)
 	{
@@ -149,6 +153,29 @@ void Compositing::Render() {
 	{
 		manager->attachImage(reflectionString, "ReflectionSRV");
 		gdeviceContext->PSSetShaderResources(8, 1, &resources.shaderResourceViews["ReflectionSRV"]);
+	}
+
+	if (m_renderText)
+	{
+		manager->attachImage(textPlane1String, "Text1SRV");
+		gdeviceContext->PSSetShaderResources(9, 1, &resources.shaderResourceViews["Text1SRV"]);
+
+		manager->attachImage(textPlane2String, "Text2SRV");
+		gdeviceContext->PSSetShaderResources(10, 1, &resources.shaderResourceViews["Text2SRV"]);
+
+		manager->attachImage(textPlane3String, "Text3SRV");
+		gdeviceContext->PSSetShaderResources(11, 1, &resources.shaderResourceViews["Text3SRV"]);
+
+		manager->attachImage("firstName.png", "FirstNameSRV");
+		gdeviceContext->PSSetShaderResources(12, 1, &resources.shaderResourceViews["FirstNameSRV"]);
+
+		manager->attachImage("lastName.png", "LastNameSRV");
+		gdeviceContext->PSSetShaderResources(13, 1, &resources.shaderResourceViews["LastNameSRV"]);
+
+		manager->attachImage("number.png", "NumberSRV");
+		gdeviceContext->PSSetShaderResources(14, 1, &resources.shaderResourceViews["NumberSRV"]);
+
+
 	}
 
 	//manager->attachImage(cat, "UVSRV");
@@ -259,6 +286,9 @@ void Compositing::Initialize() {
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	manager->attachImage("dickbutt.png", "PlayerSRV");
 
+
+
+
 	m_UVFrame = "uvLayer/MasterBeauty.";
 	m_UVReflectionFrame = "uvRefLayer/uvRef_Reflection.";
 	m_beautyFrame = "baseLayer/MasterBeauty.";
@@ -268,6 +298,11 @@ void Compositing::Initialize() {
 	m_shadowFrame = "baseLayer/all_ShadowRaw.";
 	m_reflectionFrame = "baseLayer/all_Reflection.";
 
+	m_textFrame1 = "textPlane1/untitled.";
+	m_textFrame2 = "textPlane2/untitled.";
+	m_textFrame3 = "textPlane3/untitled.";
+	
+	
 	m_textureConstantBuffer.m_UV = m_renderUV;
 	m_textureConstantBuffer.m_UVRef = m_renderUVReflection;
 	m_textureConstantBuffer.m_beauty = m_renderBeauty;
@@ -276,6 +311,9 @@ void Compositing::Initialize() {
 	m_textureConstantBuffer.m_irradiance = m_renderIrradiance;
 	m_textureConstantBuffer.m_shadow = m_renderShadow;
 	m_textureConstantBuffer.m_reflection = m_renderReflection;
+
+	m_textureConstantBuffer.m_text = m_renderText;
+
 
 	manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));
 
