@@ -66,6 +66,34 @@ float GetLuminance(float3 rgb) {
 	return (0.2126 * rgb.r) + (0.7152 * rgb.g) + (0.0722 * rgb.b);
 }
 
+float globTMO(float key, float lWhite, float2 uv) {
+	float3 locLum = exp(AvgLum.SampleLevel(SamplerWrap, uv, 0));	// should exp be here?
+	float worldLum = exp(AvgLum.SampleLevel(SamplerWrap, uv, levels.x));
+	float lumScale = (key / worldLum) * locLum;
+	float finLum = (lumScale * (1 + lumScale / (lWhite * lWhite))) / (1 + lumScale);	// white should be crammed in here
+
+	return finLum;
+}
+
+float locTMO(float key, float2 uv) {
+	float La;
+	float factor = key / exp(AvgLum.SampleLevel(SamplerWrap, uv, levels.x).x);
+	float epsilon = 0.001;
+	float phi = 8.0;
+	float scale[7] = { 1, 2, 4, 8, 16, 32, 64 };
+	for (unsigned int i = 0; i < 7; ++i) {
+		float v1 = exp(AvgLum.SampleLevel(SamplerWrap, uv, i).x - 1.0) * factor; //ska -1 vara med här?
+		float v2 = exp(AvgLum.SampleLevel(SamplerWrap, uv, i + 1).x - 1.0) * factor;
+		if (abs(v1 - v2) / ((key * pow(2, phi) / (scale[i] * scale[i])) + v1) > epsilon) {	// Reinhard Equation 7 & 8
+			La = v1;
+			break;
+		}
+		else
+			La = v2;
+	}
+	return La;
+}
+
 ////manual mipmap?
 //float3 BilinearFilter(float2 uv, float mipLvlBias) {
 //	uint width, heigth;
@@ -131,8 +159,15 @@ float GetLuminance(float3 rgb) {
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
 	// USER SETTINGS
-	float key = 1.8;
-	float lWhite = 0.9;
+	float key = 1.4;
+	//float sharpness = 0.2;
+	float lWhite = 1.0;
+	//float epsilon = 0.0000001;
+	////////////////
+
+	// LOCAL TMO VARS
+	//const unsigned int numMipLums = 7;
+	//const float k[numMipLums];
 	////////////////
 
 	uint width, heigth;
@@ -141,24 +176,24 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float2 uv = floor(input.Tex * imagesize) / imagesize;
 	const float delta = 1.0;
 
-	//MAX LUM
-	if (levels.y == 0) {
-		//float3 AvgL = RGBEToRGB(AvgLum.Sample(SamplerWrap, input.Tex));
-		//float3 MaxL = RGBEToRGB(MaxLum.Sample(SamplerWrap, float2(0.0, 0.0)));
-		////float luminance = GetLuminance(RGB);
-		////float logLuminance = log(delta + luminance);
-		////if(MaxL.x < 0.00001)
-		////	return RGBToRGBE(logLuminance);
-		//if (AvgL.x > MaxL.x)
-		//	return RGBToRGBE(AvgL);
-		//else
-		//	return RGBToRGBE(MaxL);
-		//maxlum not working properly!
-		return maxFilter(input.Tex, levels.x);
-	}
+	////MAX LUM
+	//if (levels.y == 0) {
+	//	//float3 AvgL = RGBEToRGB(AvgLum.Sample(SamplerWrap, input.Tex));
+	//	//float3 MaxL = RGBEToRGB(MaxLum.Sample(SamplerWrap, float2(0.0, 0.0)));
+	//	////float luminance = GetLuminance(RGB);
+	//	////float logLuminance = log(delta + luminance);
+	//	////if(MaxL.x < 0.00001)
+	//	////	return RGBToRGBE(logLuminance);
+	//	//if (AvgL.x > MaxL.x)
+	//	//	return RGBToRGBE(AvgL);
+	//	//else
+	//	//	return RGBToRGBE(MaxL);
+	//	//maxlum not working properly!
+	//	return maxFilter(input.Tex, levels.x);
+	//}
 
 	//AVG LUM
-	else if (levels.y == 1) {
+	/*else */if (levels.y == 1) {
 		float3 RGB = Texture.Sample(SamplerWrap, uv).xyz;
 		float luminance = GetLuminance(RGB);
 		float logLuminance = log(delta + luminance);
@@ -169,33 +204,49 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	//FINAL PASS
 	else {		//if (levels.y == 2)
 		// LOCAL TMO USING MIPS
-		const unsigned int numMipLums = 7;
-		float avgMipLums[numMipLums];
-		if (levels.z == 1) {
-			for (unsigned int i = 0; i < numMipLums; i++) {
-				avgMipLums[i] = AvgLum.SampleLevel(SamplerWrap, uv, i).x;
-			}
+		//float avgMipLums[numMipLums];
+		//float centerPos;
+		//float surroundPos;
+		//if (levels.z == 1) {
+		//	float kVar = 1.0;
+		//	surroundPos = uv;
+		//	for (unsigned int i = 0; i < numMipLums; i++) {
+		//		k[i] = 256.0 * key / (kVar * kVar);
+		//		kVar *= 2.0;
+		//	}
+		//	for (unsigned int i = 0; i < numMipLums; i++) {
+		//		avgMipLums[i] = AvgLum.SampleLevel(SamplerWrap, uv, i).x;
+		//		centerPos = surroundPos;
+		//		surroundPos /= 2;
+		//	}
 
-		}
-		// GLOBAL TONE MAP
-		float3 locLum = AvgLum.SampleLevel(SamplerWrap, uv, 0);
-		float worldLum = exp(AvgLum.SampleLevel(SamplerWrap, uv, levels.x));
-		float lumScale = (key / worldLum) * locLum;
-		float finLum = (lumScale * (1 + lumScale / (lWhite * lWhite))) / (1 + lumScale);	// white should be crammed in here
+		//}
+		float finLum;
+		// LOCAL TONE MAP
+		if (input.Tex.x > 0.5/*levels.z == 1*/)
+			finLum = locTMO(key, uv);
 
+		//// GLOBAL TONE MAP
+		else
+			finLum = globTMO(key, lWhite, uv);
+
+		//har jag missat nån sorts reduction?
+
+		// APPLY LUMINANCE
 		float3 rgb = Texture.Sample(SamplerWrap, uv);
 		float3 xyY = RGB2xyY(rgb);
 		xyY.z *= finLum;
 		rgb = xyY2RGB(xyY);
 
+		// GAMMA CORRECTION
 		float gamma = 1.0 / 2.2;
 		rgb = pow(rgb, float3(gamma, gamma, gamma));
 
-		if(input.Tex.x > 0.3)
+		//if(input.Tex.y < 0.5)
 			return float4(rgb, 1.0);
 			//return float4(AvgLum.SampleLevel(SamplerWrap, input.Tex, 4.5));
-		return Texture.Sample(SamplerWrap, uv);
-		//return float4(AvgLum.SampleLevel(SamplerWrap, input.Tex, 8));
+		//return Texture.Sample(SamplerWrap, uv);
+		//return float4(exp(AvgLum.SampleLevel(SamplerWrap, input.Tex, 0) - 1.0));
 
 		
 		//return float4(RGBEToRGB(MaxLum.Sample(SamplerWrap, float2(0.0, 0.0))), 1.0);
@@ -210,5 +261,6 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		// https://imdoingitwrong.wordpress.com/2010/08/19/why-reinhard-desaturates-my-blacks-3/
 		// https://books.google.se/books?id=30ZOCgAAQBAJ&pg=PA403&lpg=PA403&dq=implementing+reinhard+dodging+and+burning&source=bl&ots=2Yiqg0IDEL&sig=QHGS1IWqgLhRI7U6yWqI0izg3kI&hl=sv&sa=X&ved=0ahUKEwjiuL-ItazMAhXoDZoKHTTbCkQQ6AEIGzAA#v=onepage&q=implementing%20reinhard%20dodging%20and%20burning&f=false
 		// http://liu.diva-portal.org/smash/get/diva2:24136/FULLTEXT01.pdf
+			// http://www.ceng.metu.edu.tr/~akyuz/files/hdrgpu.pdf
 	}
 }

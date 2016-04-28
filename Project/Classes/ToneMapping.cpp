@@ -160,7 +160,7 @@ void ToneMapping::renderReinhard() {
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
 	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["REINHARD_ConstantBuffer"]);
 
-	manager->attachImage("ToneMapping/Reinhard/skolan.tif", "REINHARD_SRV"); // loads image every frame = superawesomeoptimization
+	manager->attachImage("ToneMapping/Reinhard/inputImage.tif", "REINHARD_SRV"); // loads image every frame = superawesomeoptimization
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_SRV"]);
 
 
@@ -199,7 +199,7 @@ void ToneMapping::renderReinhard() {
 	//// FINAL RENDER
 	mipBuffer.mipLevel =	{	textureWidth,	// miplevel
 								2,				// Max(0) or Avg(1) Luminance, or final render(2)
-								0,				// Unassigned
+								1,				// Global(0) or Local(1) TMO
 								0				// Unassigned
 							};
 	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
