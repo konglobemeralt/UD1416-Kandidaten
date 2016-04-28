@@ -91,7 +91,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	{
 		playerColor = tempPlayer;
 		float4 outColor;
-		outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + (tempDiffuse * (playerColor * 150.0f))), 1.0 / 2.2));
+		outColor = float4(pow((tempDiffuse + /*tempIrradiance +*/ tempSpecular * (tempDiffuse * (playerColor * 150.0f))), 1.0 / 2.2)) * 2;
 		return outColor;
 	}
 
@@ -100,7 +100,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	{
 		playerReflectionColor = tempPlayerReflection;
 		float4 outColor;
-		outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + (tempDiffuse * (tempPlayerReflection * 1.0f))), 1.0 / 2.2));
+		outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + (tempDiffuse * (playerReflectionColor * 1.0f))), 1.0 / 2.2));
 		
 
 
