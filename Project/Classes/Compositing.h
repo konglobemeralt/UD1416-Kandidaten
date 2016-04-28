@@ -25,6 +25,7 @@ private:
 	string UVFrame;
 	string BgrFrame;
 	ID3D11ShaderResourceView* text = nullptr;
+	void AA();
 };
 
 #endif

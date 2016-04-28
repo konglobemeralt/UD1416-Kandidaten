@@ -17,15 +17,13 @@ void Compositing::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
+	// Compositing
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
-
 	gdeviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 	gdeviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
-
 
 	//Find correct background and UV images to sample from
 	if (imageCount < 9)
@@ -83,7 +81,15 @@ void Compositing::Render() {
 	{
 		manager->attachImage("putin.png", "PlayerSRV");
 	}
+	manager->attachImage("putin.png", "PlayerSRV");
 
+	//// AA
+	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["PlayerSRV"], nullptr);
+	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["PlayerSRV"]);
+	//gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
+	//gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
+	//gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["SamplerWrap"]);
+	//gdeviceContext->Draw(4, 0);
 
 	//Concatenate to filename to find correct UV and Backgroudn image.
 	string cat = UVFrame + to_string(imageCount) + ".png";
@@ -95,15 +101,42 @@ void Compositing::Render() {
 	
 	//Attach shader resources
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &text);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
+	//gdeviceContext->PSSetShaderResources(1, 1, &text);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
 
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
+	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
 
 	gdeviceContext->Draw(4, 0);
+
+	// Text
+
+	//// FXAA
+	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+	//gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
+	//gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
+	//gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["SamplerWrap"]);
+	//gdeviceContext->Draw(4, 0);
+
+	//// SSAA
+	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	//gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+	//gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
+	//gdeviceContext->Draw(4, 0);
+
+	//// Final
+	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+	//gdeviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
+	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	//gdeviceContext->Draw(4, 0);
 
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	Sleep(50);
@@ -147,6 +180,7 @@ void Compositing::Initialize() {
 	};
 
 	manager->createVertexShader("CompositingVertexShader", "CompositingLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -161,19 +195,19 @@ void Compositing::Initialize() {
 
 
 
-												  // ###########################################################
-												  // ######		Render target & shader resource			######
-												  // ###########################################################
-												  //	void createTexture2D(
-												  //		string name,
-												  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-												  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-												  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-												  //		bool renderTarget = true,
-												  //		bool shaderResource = true
-												  //	);
+	// ###########################################################
+	// ######		Render target & shader resource			######
+	// ###########################################################
+	//	void createTexture2D(
+	//		string name,
+	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+	//		bool renderTarget = true,
+	//		bool shaderResource = true
+	//	);
 
-												  // Only RTV
+	// Only RTV
 	manager->createTexture2D(
 		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -194,10 +228,10 @@ void Compositing::Initialize() {
 	);
 
 	// Both
-	manager->createTexture2D("FirstSRVRTV");
+	manager->createTexture2D("BackgroundSRV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("dickbutt.png", "PlayerSRV");
+	manager->attachImage("Ring.png", "PlayerSRV");
 
 
 
@@ -211,9 +245,41 @@ void Compositing::Initialize() {
 	//	);
 
 	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+
+	AA();
 }
 
 void Compositing::SetText(ID3D11ShaderResourceView * text)
 {
 	this->text = text;
+}
+
+void Compositing::AA()
+{
+	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
+		XMFLOAT2 texelSizeXY;
+		float FXAA_blur_Texels_Threshhold; //hur många texlar som kommer blurras åt varje håll
+		float minimumBlurThreshhold; //hur mycket som krävs för att den ens ska blurra
+		float FXAA_reduce_MULTIPLIER;
+		float FXAA_reduce_MIN; //så dirOffset inte ska bli noll
+		XMFLOAT2 pad;
+	}FXAA_PS_cb;
+
+	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_graphicsManager->getWindowWidth();
+	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_graphicsManager->getWindowHeight();
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 20.0f;
+	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
+	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
+	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
+
+	m_graphicsManager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
+
+	manager->createPixelShader("FXAA_PS");
+	manager->createPixelShader("PixelShader");
+
+	manager->createTexture2D("Final", 
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		manager->getWindowWidth(),
+		manager->getWindowHeight());
 }

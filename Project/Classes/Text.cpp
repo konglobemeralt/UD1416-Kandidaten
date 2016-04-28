@@ -170,8 +170,8 @@ void Text::Initialize() {
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = manager->getWindowHeight();
-	m_width = manager->getWindowWidth();
+	m_height = manager->getWindowHeight()*4;
+	m_width = manager->getWindowWidth()*4;
 
 	// Factory
 	CheckStatus(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory), L"D2D1CreateFactory");
@@ -187,8 +187,8 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = manager->getWindowHeight();
-	texDesc.Width = manager->getWindowWidth();
+	texDesc.Height = m_height;
+	texDesc.Width = m_width;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = 0;
 	texDesc.SampleDesc.Count = 1;
@@ -219,8 +219,8 @@ void Text::InitializeDirect2D()
 	manager->createTexture2D(
 		"Text",
 		texDesc.Format,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
+		m_width,
+		m_height,
 		true,
 		false,
 		d2dTextureTarget
@@ -230,8 +230,8 @@ void Text::InitializeDirect2D()
 	manager->createTexture2D(
 		"Text2",
 		texDesc.Format,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
+		m_width,
+		m_height,
 		false,
 		true,
 		d2dTextureTarget
@@ -242,8 +242,8 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = manager->getWindowHeight();
-	texDesc.Width = manager->getWindowWidth();
+	texDesc.Height = m_height;
+	texDesc.Width = m_width;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 	//texDesc.SampleDesc.Count = 1;

@@ -1,7 +1,9 @@
 Texture2D UVSRV: register(t0);
 Texture2D PlayerSRV: register(t1);
 Texture2D BackgroundSRV: register(t2);
-sampler SamplerWrap;
+//sampler SamplerWrap;
+SamplerState SamplerWrap : register(s0);
+SamplerState sampPoint : register(s1);
 
 struct VS_OUT {
 	float4 Pos : SV_POSITION;
@@ -25,7 +27,11 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	if (!(tempUV2.w < 0.5) && !(tempUV.z > 0))
 	{
-		return (playerAmbient * PlayerSRV.Sample(SamplerWrap, saturate(tempUV)) + (funkyLight * (PlayerSRV.Sample(SamplerWrap, saturate(tempUV))) * tempUVBackground));
+		if (input.Tex.y > 0.5f)
+			return (playerAmbient * PlayerSRV.Sample(SamplerWrap, saturate(tempUV)) + (funkyLight * (PlayerSRV.Sample(SamplerWrap, saturate(tempUV))) * tempUVBackground));
+		else
+			return (playerAmbient * PlayerSRV.Sample(sampPoint, saturate(tempUV)) + (funkyLight * (PlayerSRV.Sample(sampPoint, saturate(tempUV))) * tempUVBackground));
+	
 	}
 	else
 		return tempUVBackground;
