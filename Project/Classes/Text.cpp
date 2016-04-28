@@ -44,10 +44,12 @@ void Text::Render() {
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["CoolSampler"]);
+	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
+	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
+	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
 
-	gdeviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
+	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
@@ -55,9 +57,11 @@ void Text::Render() {
 	EdgeRender();
 
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Text"]);
+	gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
 
 	gdeviceContext->Draw(4, 0);
 
+	// Genereate mip maps
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
 	gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
 	gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
@@ -95,7 +99,7 @@ void Text::Initialize() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	manager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager->createVertexShader("Text_VS", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -106,7 +110,7 @@ void Text::Initialize() {
 	//		string name
 	//			);
 
-	manager->createPixelShader("PixelShader"); // Name has to match shader name without .hlsl
+	manager->createPixelShader("Text_PS"); // Name has to match shader name without .hlsl
 
 
 
@@ -159,19 +163,23 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->createSamplerState("CoolSampler", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Initialize Systems
 	InitializeDirect2D();
 	//InitializeDirectWrite();
 	DirectWriteEdge();
+	RotatePlane();
 }
 
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = manager->getWindowHeight()*4;
-	m_width = manager->getWindowWidth()*4;
+	m_height = manager->getWindowHeight();
+	m_width = manager->getWindowWidth();
+	float doubleHeight = manager->getWindowHeight();
+	float doubleWidth = manager->getWindowWidth();
 
 	// Factory
 	CheckStatus(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory), L"D2D1CreateFactory");
@@ -187,8 +195,8 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = m_height;
-	texDesc.Width = m_width;
+	texDesc.Height = doubleHeight;
+	texDesc.Width = doubleWidth;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = 0;
 	texDesc.SampleDesc.Count = 1;
@@ -219,8 +227,8 @@ void Text::InitializeDirect2D()
 	manager->createTexture2D(
 		"Text",
 		texDesc.Format,
-		m_width,
-		m_height,
+		doubleWidth,
+		doubleHeight,
 		true,
 		false,
 		d2dTextureTarget
@@ -230,8 +238,8 @@ void Text::InitializeDirect2D()
 	manager->createTexture2D(
 		"Text2",
 		texDesc.Format,
-		m_width,
-		m_height,
+		doubleWidth,
+		doubleHeight,
 		false,
 		true,
 		d2dTextureTarget
@@ -242,8 +250,8 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = m_height;
-	texDesc.Width = m_width;
+	texDesc.Height = doubleHeight;
+	texDesc.Width = doubleWidth;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 	//texDesc.SampleDesc.Count = 1;
@@ -321,6 +329,17 @@ void Text::RenderText()
 		m_orangeBrush			// The brush used to draw the text.
 	);
 	m_d2dRenderTarget->EndDraw();
+}
+
+void Text::RotatePlane()
+{
+	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, m_width / m_height, 0.1f, 1000.0f);
+
+	XMMATRIX finalmatrix = view;
+	finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
+	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(finalmatrix));
+	m_graphicsManager->createConstantBuffer("Rotation", &m_matrix, sizeof(XMFLOAT4X4));
 }
 
 void Text::DirectWriteEdge()

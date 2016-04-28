@@ -34,10 +34,14 @@ private:
 	void RenderText();
 
 	// Values
-	unsigned int m_height;
-	unsigned int m_width;
+	float m_height;
+	float m_width;
 	float m_textSize = 500.0f;
 	float m_edgeSize = 100.0f;
+
+	// Direct3D
+	XMFLOAT4X4 m_matrix;
+	void RotatePlane();
 
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;

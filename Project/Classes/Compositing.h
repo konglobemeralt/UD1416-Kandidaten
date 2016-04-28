@@ -26,6 +26,8 @@ private:
 	string BgrFrame;
 	ID3D11ShaderResourceView* text = nullptr;
 	void AA();
+
+	void SetTextImages();
 };
 
 #endif

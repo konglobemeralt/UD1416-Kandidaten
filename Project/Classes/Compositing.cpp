@@ -81,7 +81,7 @@ void Compositing::Render() {
 	{
 		manager->attachImage("putin.png", "PlayerSRV");
 	}
-	manager->attachImage("putin.png", "PlayerSRV");
+	//manager->attachImage("putin.png", "PlayerSRV");
 
 	//// AA
 	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["PlayerSRV"], nullptr);
@@ -95,6 +95,7 @@ void Compositing::Render() {
 	string cat = UVFrame + to_string(imageCount) + ".png";
 	string cat2 = BgrFrame + to_string(imageCount) + ".png";
 	
+	//manager->attachImage("Fonts/UV/UV1.png", "UVSRV");
 	manager->attachImage(cat, "UVSRV");
 	manager->attachImage(cat2, "BackgroundSRV");
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
@@ -102,8 +103,8 @@ void Compositing::Render() {
 	//Attach shader resources
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
 	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &text);
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &text);
+	//gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
 
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
@@ -282,4 +283,11 @@ void Compositing::AA()
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager->getWindowWidth(),
 		manager->getWindowHeight());
+}
+
+void Compositing::SetTextImages()
+{
+	resources.shaderResourceViews["AliasedText"];
+	resources.shaderResourceViews["FXAAText"];
+	resources.shaderResourceViews["SSAAText"];
 }
