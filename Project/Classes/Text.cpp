@@ -12,8 +12,8 @@ Text::~Text()
 	m_dxgiDevice ? m_dxgiDevice->Release() : 0;
 	m_d2dDev ? m_d2dDev->Release() : 0;
 	m_d2dDevcon ? m_d2dDevcon->Release() : 0;
-	d2dTextureTarget ? d2dTextureTarget->Release() : 0;
-	m_idxgSurface ? m_idxgSurface->Release() : 0;
+	//d2dTextureTarget ? d2dTextureTarget->Release() : 0;
+	//m_idxgSurface ? m_idxgSurface->Release() : 0;
 	//m_d2dRenderTarget ? m_d2dRenderTarget->Release() : 0;
 	//m_blackBrush ? m_blackBrush->Release() : 0;
 	//m_orangeBrush ? m_orangeBrush->Release() : 0;
@@ -23,7 +23,7 @@ Text::~Text()
 	m_writeTextFormat ? m_writeTextFormat->Release() : 0;
 
 	// EdgeTesting
-	m_pathGeometry ? m_pathGeometry->Release() : 0;
+	//m_pathGeometry ? m_pathGeometry->Release() : 0;
 	m_geometrySink ? m_geometrySink->Release() : 0;
 	m_fontFaceBeginning ? m_fontFaceBeginning->Release() : 0;
 	m_fontFace ? m_fontFace->Release() : 0;
@@ -56,15 +56,15 @@ void Text::Render() {
 	//RenderText();
 	EdgeRender();
 
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Text"]);
+	gdeviceContext->PSSetShaderResources(0, 1, &finalText[1]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
 
 	gdeviceContext->Draw(4, 0);
 
-	// Genereate mip maps
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
-	gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
-	gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
+	//// Genereate mip maps
+	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
+	//gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
+	//gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
 }
 
 void Text::Initialize() {
@@ -202,79 +202,70 @@ void Text::InitializeDirect2D()
 	texDesc.SampleDesc.Count = 1;
 	texDesc.SampleDesc.Quality = 0;
 	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget), L"CreateTexture2D");
-
-	d2dTextureTarget->QueryInterface(&m_idxgSurface);
-	d2dTextureTarget->Release();
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,
 			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
 			96,
 			96);
-
-	for (int i = 0; i < 3; i++)
-	{
-		// Brushes
-		CheckStatus(m_d2dFactory->CreateDxgiSurfaceRenderTarget(m_idxgSurface, &props, &m_d2dRenderTarget[i]), L"CreateDxgiSurfaceRenderTarget");
-		CheckStatus(m_d2dRenderTarget[i]->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_blackBrush[i]), L"CreateSolidColorBrush");
-		CheckStatus(m_d2dRenderTarget[i]->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Orange), &m_orangeBrush[i]), L"CreateSolidColorBrush");
-	}
-
-	resources.shaderResourceViews["NULL"] = nullptr;
-
-	// Create the render target view.
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 	renderTargetViewDesc.Format = texDesc.Format;
 	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
-	manager->createTexture2D(
-		"Text",
-		texDesc.Format,
-		doubleWidth,
-		doubleHeight,
-		true,
-		false,
-		d2dTextureTarget
-	);
+	resources.shaderResourceViews["NULL"] = nullptr;
 
-	// Setup the description of the shader resource view.
-	manager->createTexture2D(
-		"Text2",
-		texDesc.Format,
-		doubleWidth,
-		doubleHeight,
-		false,
-		true,
-		d2dTextureTarget
-	);
-
-	// With mipmaps
-	texDesc.ArraySize = 1;
-	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = doubleHeight;
-	texDesc.Width = doubleWidth;
-	texDesc.MipLevels = 1;
-	texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-	//texDesc.SampleDesc.Count = 1;
-	//texDesc.SampleDesc.Quality = 0;
-	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &tempD2DTexture), L"CreateTexture2D");
-
-	ID3D11ShaderResourceView* srv;
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	srvDesc.Format = texDesc.Format;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
-	CheckStatus(gdevice->CreateShaderResourceView(tempD2DTexture, &srvDesc, &srv), L"CreateShaderResourceView");
 	for (int i = 0; i < 3; i++)
 	{
-		finalText[i] = srv;
+		CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget[i]), L"CreateTexture2D");
+
+		d2dTextureTarget[i]->QueryInterface(&m_idxgSurface[i]);
+		d2dTextureTarget[i]->Release();
+
+		// Brushes
+		CheckStatus(m_d2dFactory->CreateDxgiSurfaceRenderTarget(m_idxgSurface[i], &props, &m_d2dRenderTarget[i]), L"CreateDxgiSurfaceRenderTarget");
+		CheckStatus(m_d2dRenderTarget[i]->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_blackBrush[i]), L"CreateSolidColorBrush");
+		CheckStatus(m_d2dRenderTarget[i]->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Orange), &m_orangeBrush[i]), L"CreateSolidColorBrush");
+
+		// Create the render target view.
+		manager->createTexture2D(
+			"Text" + to_string(i),
+			texDesc.Format,
+			doubleWidth,
+			doubleHeight,
+			true,
+			true,
+			d2dTextureTarget[i]
+		);
+
+		finalText[i] = resources.shaderResourceViews["Text" + to_string(i)];
 	}
-	resources.shaderResourceViews["Text"] = srv;
+
+	//// With mipmaps
+	//texDesc.ArraySize = 1;
+	//texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	//texDesc.CPUAccessFlags = 0;
+	//texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	//texDesc.Height = doubleHeight;
+	//texDesc.Width = doubleWidth;
+	//texDesc.MipLevels = 1;
+	//texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	////texDesc.SampleDesc.Count = 1;
+	////texDesc.SampleDesc.Quality = 0;
+	//texDesc.Usage = D3D11_USAGE_DEFAULT;
+	//CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &tempD2DTexture), L"CreateTexture2D");
+	//
+	//ID3D11ShaderResourceView* srv;
+	//D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	//srvDesc.Format = texDesc.Format;
+	//srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	//srvDesc.Texture2D.MostDetailedMip = 0;
+	//srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
+	//CheckStatus(gdevice->CreateShaderResourceView(d2dTextureTarget, &srvDesc, &srv), L"CreateShaderResourceView");
+	//for (int i = 0; i < 3; i++)
+	//{
+	//	finalText[i] = srv;
+	//}
+	//resources.shaderResourceViews["Text"] = srv;
 
 	//manager->createTexture2D(
 	//	"Text",
@@ -296,7 +287,7 @@ void Text::InitializeDirectWrite()
 		L"DWriteCreateFactory");
 
 	// Font
-	m_textLength = (UINT32)wcslen(m_text);
+	m_textLength = (UINT32)wcslen(m_text[0]);
 	CheckStatus(m_writeFactory->CreateTextFormat(
 		L"Arial",
 		NULL,
@@ -345,7 +336,7 @@ void Text::RotatePlane()
 	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, m_width / m_height, 0.1f, 1000.0f);
 
 	XMMATRIX finalmatrix = view;
-	finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
+	//finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
 	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(finalmatrix));
 	m_graphicsManager->createConstantBuffer("Rotation", &m_matrix, sizeof(XMFLOAT4X4));
 }
@@ -381,20 +372,44 @@ void Text::DirectWriteEdge()
 		L"CreateFontFace");
 	m_fontFaceBeginning->QueryInterface<IDWriteFontFace1>(&m_fontFace);
 
-	m_textLength = (UINT32)wcslen(m_text);
+	m_text[0] = L"Shit";
+	m_text[1] = L"Pommes";
+	m_text[2] = L"68";
+	for (int i = 0; i < 3; i++)
+	{
+		GetTextOutline(m_text[i], i);
+	}
+	
+
+	// Glyphrun
+	m_glyphRun.fontFace = m_fontFace;
+	m_glyphRun.fontEmSize = m_textSize;
+	m_glyphRun.glyphCount = m_textLength;
+	m_glyphRun.glyphIndices = m_glyphIndices;
+	//m_glyphRun.glyphAdvances = ;
+	//m_glyphRun.glyphOffsets = ;
+	m_glyphRun.isSideways = false;
+	//m_glyphRun.bidiLevel = ;
+
+	m_edgeSize = 10.0f;
+}
+
+void Text::GetTextOutline(const wchar_t* text, int index)
+{
+	m_textLength = (UINT32)wcslen(text);
 	m_codePoints = new UINT[m_textLength];
 	m_glyphIndices = new UINT16[m_textLength];
 	ZeroMemory(m_codePoints, sizeof(UINT) * m_textLength);
 	ZeroMemory(m_glyphIndices, sizeof(UINT16) * m_textLength);
 	for (int i = 0; i<m_textLength; ++i)
 	{
-		m_codePoints[i] = m_text[i];
+		m_codePoints[i] = text[i];
 	}
 	CheckStatus(m_fontFace->GetGlyphIndices(m_codePoints, m_textLength, m_glyphIndices), L"GetGlyphIndices");
 
 	//Create the path geometry
-	CheckStatus(m_d2dFactory->CreatePathGeometry(&m_pathGeometry), L"CreatePathGeometry");
-	CheckStatus(m_pathGeometry->Open((ID2D1GeometrySink**)&m_geometrySink), L"Open");
+	CheckStatus(m_d2dFactory->CreatePathGeometry(&m_pathGeometry[index]), L"CreatePathGeometry");
+	CheckStatus(m_pathGeometry[index]->Open((ID2D1GeometrySink**)&m_geometrySink), L"Open");
 
 	DWRITE_GLYPH_OFFSET glyphOffset = { 100.0f, 1.0f };
 	FLOAT glyphAdvances = 250.0f;
@@ -413,11 +428,6 @@ void Text::DirectWriteEdge()
 	// Getting advances
 	m_advances = new int[m_textLength];
 	m_fontFace->GetDesignGlyphAdvances(m_textLength, m_glyphIndices, m_advances);
-	for (size_t i = 0; i < m_textLength; i++)
-	{
-		int hej = m_advances[i];
-		int asd = 0;
-	}
 
 	CheckStatus(m_geometrySink->Close(), L"Close");
 
@@ -432,22 +442,10 @@ void Text::DirectWriteEdge()
 			10.0f,
 			D2D1_DASH_STYLE_SOLID,
 			0.0f),
-			NULL,
-			NULL,
-			&m_strokeStyle),
-			L"CreateStrokeStyle");
-
-	// Glyphrun
-	m_glyphRun.fontFace = m_fontFace;
-	m_glyphRun.fontEmSize = m_textSize;
-	m_glyphRun.glyphCount = m_textLength;
-	m_glyphRun.glyphIndices = m_glyphIndices;
-	//m_glyphRun.glyphAdvances = ;
-	//m_glyphRun.glyphOffsets = ;
-	m_glyphRun.isSideways = false;
-	//m_glyphRun.bidiLevel = ;
-
-	m_edgeSize = 10.0f;
+		NULL,
+		NULL,
+		&m_strokeStyle),
+		L"CreateStrokeStyle");
 }
 
 void Text::EdgeRender()
@@ -460,15 +458,10 @@ void Text::EdgeRender()
 		m_d2dRenderTarget[i]->Clear(NULL);
 
 		// // Draw text with outline
-		m_d2dRenderTarget[i]->SetTransform(D2D1::Matrix3x2F::Translation(100, (m_height + m_textSize) / 2));
-		m_d2dRenderTarget[i]->DrawGeometry(m_pathGeometry, m_blackBrush[i], m_edgeSize);
-		m_d2dRenderTarget[i]->FillGeometry(m_pathGeometry, m_orangeBrush[i]);
-
-		//// Draw with Glyph function
-		//D2D1_POINT_2F baseline;
-		//baseline.x = 0;
-		//baseline.y = 0;
-		//m_d2dRenderTarget->DrawGlyphRun(baseline, &m_glyphRun, m_orangeBrush);
+		//m_d2dRenderTarget[i]->SetTransform(D2D1::Matrix3x2F::Translation(100, (m_height + m_textSize) / 2));
+		m_d2dRenderTarget[i]->SetTransform(D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * D2D1::Matrix3x2F::Scale(1,-1));
+		m_d2dRenderTarget[i]->DrawGeometry(m_pathGeometry[i], m_blackBrush[i], m_edgeSize);
+		m_d2dRenderTarget[i]->FillGeometry(m_pathGeometry[i], m_orangeBrush[i]);
 
 		m_d2dRenderTarget[i]->EndDraw();
 	}

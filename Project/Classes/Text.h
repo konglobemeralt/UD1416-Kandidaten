@@ -48,8 +48,8 @@ private:
 	IDXGIDevice* m_dxgiDevice = nullptr;
 	ID2D1Device* m_d2dDev = nullptr;
 	ID2D1DeviceContext* m_d2dDevcon = nullptr;
-	ID3D11Texture2D* d2dTextureTarget = nullptr;
-	IDXGISurface* m_idxgSurface = nullptr;
+	ID3D11Texture2D* d2dTextureTarget[3];
+	IDXGISurface* m_idxgSurface[3];
 	ID2D1RenderTarget* m_d2dRenderTarget[3];
 	ID2D1SolidColorBrush* m_blackBrush[3];
 	ID2D1SolidColorBrush* m_orangeBrush[3];
@@ -57,7 +57,7 @@ private:
 
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
-	const wchar_t* m_text = L"Erik";
+	const wchar_t* m_text[3];
 	CString m_font = "arial.ttf";
 	UINT32 m_textLength;
 	D2D1_RECT_F m_layoutRect;
@@ -65,7 +65,7 @@ private:
 	RECT rc;
 
 	// Testing
-	ID2D1PathGeometry* m_pathGeometry = nullptr;
+	ID2D1PathGeometry* m_pathGeometry[3];
 	ID2D1GeometrySink* m_geometrySink = nullptr;
 	IDWriteFontFace* m_fontFaceBeginning = nullptr;
 	IDWriteFontFace1* m_fontFace = nullptr;
@@ -77,6 +77,7 @@ private:
 	int* m_advances = nullptr;
 	DWRITE_GLYPH_RUN m_glyphRun;
 	void DirectWriteEdge();
+	void GetTextOutline(const wchar_t* text, int index);
 	void EdgeRender();
 
 	//// Helper functions
