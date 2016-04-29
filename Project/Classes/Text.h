@@ -38,6 +38,8 @@ private:
 	float m_width;
 	float m_textSize = 500.0f;
 	float m_edgeSize = 100.0f;
+	float m_padding = 50.0f;
+	float m_scale = 1.0f;
 
 	// Direct3D
 	XMFLOAT4X4 m_matrix;
@@ -74,6 +76,7 @@ private:
 	ID3D11Texture2D* tempD2DTexture = nullptr;
 	UINT* m_codePoints = nullptr;
 	UINT16* m_glyphIndices = nullptr;
+	D2D1_RECT_F bound[3];
 	int* m_advances = nullptr;
 	DWRITE_GLYPH_RUN m_glyphRun;
 	void DirectWriteEdge();

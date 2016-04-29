@@ -375,11 +375,15 @@ void Text::DirectWriteEdge()
 	m_text[0] = L"Shit";
 	m_text[1] = L"Pommes";
 	m_text[2] = L"68";
+	float maxSize = 0.0f;
 	for (int i = 0; i < 3; i++)
 	{
 		GetTextOutline(m_text[i], i);
+		if (bound[i].right > maxSize)
+			maxSize = bound[i].right;
 	}
-	
+	// Scale text
+	m_scale = (m_width - m_padding) / (maxSize - m_padding);
 
 	// Glyphrun
 	m_glyphRun.fontFace = m_fontFace;
@@ -410,10 +414,11 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 	//Create the path geometry
 	CheckStatus(m_d2dFactory->CreatePathGeometry(&m_pathGeometry[index]), L"CreatePathGeometry");
 	CheckStatus(m_pathGeometry[index]->Open((ID2D1GeometrySink**)&m_geometrySink), L"Open");
-
+	
 	DWRITE_GLYPH_OFFSET glyphOffset = { 100.0f, 1.0f };
 	FLOAT glyphAdvances = 250.0f;
 	// (48.0f / 72.0f)*96.0f
+	m_textSize = 500.0f;
 	CheckStatus(m_fontFace->GetGlyphRunOutline(
 		m_textSize,
 		m_glyphIndices,
@@ -430,6 +435,10 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 	m_fontFace->GetDesignGlyphAdvances(m_textLength, m_glyphIndices, m_advances);
 
 	CheckStatus(m_geometrySink->Close(), L"Close");
+	//float test;
+	//m_pathGeometry[index]->ComputeLength(D2D1::IdentityMatrix(), &test);
+	
+	m_pathGeometry[index]->GetBounds(D2D1::IdentityMatrix(), &bound[index]);
 
 	// Stroke style
 	float dashes[] = { 0.0f };
@@ -458,8 +467,9 @@ void Text::EdgeRender()
 		m_d2dRenderTarget[i]->Clear(NULL);
 
 		// // Draw text with outline
-		//m_d2dRenderTarget[i]->SetTransform(D2D1::Matrix3x2F::Translation(100, (m_height + m_textSize) / 2));
-		m_d2dRenderTarget[i]->SetTransform(D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * D2D1::Matrix3x2F::Scale(1,-1));
+		m_d2dRenderTarget[i]->SetTransform(
+			D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
+			D2D1::Matrix3x2F::Scale(m_scale, -m_scale));
 		m_d2dRenderTarget[i]->DrawGeometry(m_pathGeometry[i], m_blackBrush[i], m_edgeSize);
 		m_d2dRenderTarget[i]->FillGeometry(m_pathGeometry[i], m_orangeBrush[i]);
 
