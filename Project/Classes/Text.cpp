@@ -14,9 +14,9 @@ Text::~Text()
 	m_d2dDevcon ? m_d2dDevcon->Release() : 0;
 	d2dTextureTarget ? d2dTextureTarget->Release() : 0;
 	m_idxgSurface ? m_idxgSurface->Release() : 0;
-	m_d2dRenderTarget ? m_d2dRenderTarget->Release() : 0;
-	m_blackBrush ? m_blackBrush->Release() : 0;
-	m_orangeBrush ? m_orangeBrush->Release() : 0;
+	//m_d2dRenderTarget ? m_d2dRenderTarget->Release() : 0;
+	//m_blackBrush ? m_blackBrush->Release() : 0;
+	//m_orangeBrush ? m_orangeBrush->Release() : 0;
 
 	// DirectWrite
 	m_writeFactory ? m_writeFactory->Release() : 0;
@@ -212,12 +212,16 @@ void Text::InitializeDirect2D()
 			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
 			96,
 			96);
-	CheckStatus(m_d2dFactory->CreateDxgiSurfaceRenderTarget(m_idxgSurface, &props, &m_d2dRenderTarget), L"CreateDxgiSurfaceRenderTarget");
-	resources.shaderResourceViews["NULL"] = nullptr;
 
-	// Brushes
-	CheckStatus(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_blackBrush), L"CreateSolidColorBrush");
-	CheckStatus(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Orange), &m_orangeBrush), L"CreateSolidColorBrush");
+	for (int i = 0; i < 3; i++)
+	{
+		// Brushes
+		CheckStatus(m_d2dFactory->CreateDxgiSurfaceRenderTarget(m_idxgSurface, &props, &m_d2dRenderTarget[i]), L"CreateDxgiSurfaceRenderTarget");
+		CheckStatus(m_d2dRenderTarget[i]->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_blackBrush[i]), L"CreateSolidColorBrush");
+		CheckStatus(m_d2dRenderTarget[i]->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Orange), &m_orangeBrush[i]), L"CreateSolidColorBrush");
+	}
+
+	resources.shaderResourceViews["NULL"] = nullptr;
 
 	// Create the render target view.
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -266,6 +270,10 @@ void Text::InitializeDirect2D()
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
 	CheckStatus(gdevice->CreateShaderResourceView(tempD2DTexture, &srvDesc, &srv), L"CreateShaderResourceView");
+	for (int i = 0; i < 3; i++)
+	{
+		finalText[i] = srv;
+	}
 	resources.shaderResourceViews["Text"] = srv;
 
 	//manager->createTexture2D(
@@ -313,23 +321,23 @@ void Text::InitializeDirectWrite()
 	);
 }
 
-void Text::RenderText()
-{
-	m_d2dRenderTarget->BeginDraw();
-	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-	//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
-	m_d2dRenderTarget->Clear(NULL);
-	// Call the DrawText method of this class.
-	//m_d2dRenderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE::D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
-	m_d2dRenderTarget->DrawText(
-		m_text,					// The string to render.
-		m_textLength,			// The string's length.
-		m_writeTextFormat,		// The text format.
-		m_layoutRect,			// The region of the window where the text will be rendered.
-		m_orangeBrush			// The brush used to draw the text.
-	);
-	m_d2dRenderTarget->EndDraw();
-}
+//void Text::RenderText()
+//{
+//	m_d2dRenderTarget->BeginDraw();
+//	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
+//	//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
+//	m_d2dRenderTarget->Clear(NULL);
+//	// Call the DrawText method of this class.
+//	//m_d2dRenderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE::D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+//	m_d2dRenderTarget->DrawText(
+//		m_text,					// The string to render.
+//		m_textLength,			// The string's length.
+//		m_writeTextFormat,		// The text format.
+//		m_layoutRect,			// The region of the window where the text will be rendered.
+//		m_orangeBrush			// The brush used to draw the text.
+//	);
+//	m_d2dRenderTarget->EndDraw();
+//}
 
 void Text::RotatePlane()
 {
@@ -444,28 +452,31 @@ void Text::DirectWriteEdge()
 
 void Text::EdgeRender()
 {
-	// Clear
-	m_d2dRenderTarget->BeginDraw();
-	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-	m_d2dRenderTarget->Clear(NULL);
+	for (int i = 0; i < 3; i++)
+	{
+		// Clear
+		m_d2dRenderTarget[i]->BeginDraw();
+		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
+		m_d2dRenderTarget[i]->Clear(NULL);
 
-	// // Draw text with outline
-	m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(100, (m_height + m_textSize) / 2));
-	m_d2dRenderTarget->DrawGeometry(m_pathGeometry, m_blackBrush, m_edgeSize);
-	m_d2dRenderTarget->FillGeometry(m_pathGeometry, m_orangeBrush);
+		// // Draw text with outline
+		m_d2dRenderTarget[i]->SetTransform(D2D1::Matrix3x2F::Translation(100, (m_height + m_textSize) / 2));
+		m_d2dRenderTarget[i]->DrawGeometry(m_pathGeometry, m_blackBrush[i], m_edgeSize);
+		m_d2dRenderTarget[i]->FillGeometry(m_pathGeometry, m_orangeBrush[i]);
 
-	//// Draw with Glyph function
-	//D2D1_POINT_2F baseline;
-	//baseline.x = 0;
-	//baseline.y = 0;
-	//m_d2dRenderTarget->DrawGlyphRun(baseline, &m_glyphRun, m_orangeBrush);
+		//// Draw with Glyph function
+		//D2D1_POINT_2F baseline;
+		//baseline.x = 0;
+		//baseline.y = 0;
+		//m_d2dRenderTarget->DrawGlyphRun(baseline, &m_glyphRun, m_orangeBrush);
 
-	m_d2dRenderTarget->EndDraw();
+		m_d2dRenderTarget[i]->EndDraw();
+	}
 }
 
-ID3D11ShaderResourceView * Text::GetText()
+ID3D11ShaderResourceView** Text::GetText()
 {
-	return resources.shaderResourceViews["Text"];
+	return finalText;
 }
 
 void Text::CheckStatus(HRESULT hr, LPCTSTR titel)

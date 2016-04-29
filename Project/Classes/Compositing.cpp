@@ -17,34 +17,34 @@ void Compositing::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	// Compositing
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
-	gdeviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
+
+	gdeviceContext->VSSetShader(resources.vertexShaders["CompositingVertexShader"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["CompositingPixelShader"], nullptr, 0);
 
+	string framePadding;
+
 	//Find correct background and UV images to sample from
-	if (imageCount < 9)
+	if (m_imageCount <= 9)
 	{
-		UVFrame = "UVTEST/UVTEST_00";
-		BgrFrame = "background/Backgrnd_00";
+		framePadding = "00";
 	}
-	else if (imageCount > 9 && imageCount < 100)
-		{
-			UVFrame = "UVTEST/UVTEST_0";
-			BgrFrame = "background/Backgrnd_0";
-		}
+	else if (m_imageCount > 9 && m_imageCount < 100)
+	{
+		framePadding = "0";
+	}
 	else
 	{
-		UVFrame = "UVTEST/UVTEST_";
-		BgrFrame = "background/Backgrnd_";
+		framePadding = "";
 	}
 		
 
 	//Switch image to composit depending on frame
-	if (imageCount == 0)
+	/*if (imageCount == 0)
 	{
 		manager->attachImage("dickbutt.png", "PlayerSRV");
 	}
@@ -80,72 +80,125 @@ void Compositing::Render() {
 	if (imageCount == 329)
 	{
 		manager->attachImage("putin.png", "PlayerSRV");
-	}
-	//manager->attachImage("putin.png", "PlayerSRV");
+	}*/
 
-	//// AA
-	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["PlayerSRV"], nullptr);
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["PlayerSRV"]);
-	//gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
-	//gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
-	//gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["SamplerWrap"]);
-	//gdeviceContext->Draw(4, 0);
+	if (m_imageCount == 2)
+	{
+		manager->attachImage("dickbutt.png", "PlayerSRV");
+	}
+	if (m_imageCount == 30)
+	{
+		manager->attachImage("bert.png", "PlayerSRV");
+	}
+	if (m_imageCount == 90)
+	{
+		manager->attachImage("dickbutt.png", "PlayerSRV");
+	}
+
 
 	//Concatenate to filename to find correct UV and Backgroudn image.
-	string cat = UVFrame + to_string(imageCount) + ".png";
-	string cat2 = BgrFrame + to_string(imageCount) + ".png";
+	string uvString = m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
+	string uvRefString = m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+	string beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
+	string diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
+	string specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
+	string irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
+	string shadowString = m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
+	string reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
 	
-	//manager->attachImage("Fonts/UV/UV1.png", "UVSRV");
-	manager->attachImage(cat, "UVSRV");
-	manager->attachImage(cat2, "BackgroundSRV");
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
-	
-	//Attach shader resources
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	string textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
+	string textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
+	string textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+
+	//Create and attach shader resources
+	if (m_renderUV)
+	{
+		manager->attachImage(uvString, "UVSRV");
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	}
+
 	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &text);
-	//gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);
+
+	if (m_renderUVReflection)
+	{
+		manager->attachImage(uvRefString, "UVrefSRV");
+		gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["UVrefSRV"]);
+	}
+	if (m_renderBeauty)
+	{
+		manager->attachImage(beautyString, "BeautySRV");
+		gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BeautySRV"]);
+	}
+	if (m_renderDiffuse)
+	{
+		manager->attachImage(diffuseString, "DiffuseSRV");
+		gdeviceContext->PSSetShaderResources(4, 1, &resources.shaderResourceViews["DiffuseSRV"]);
+	}
+	if (m_renderSpecular)
+	{
+		manager->attachImage(specularString, "SpecularSRV");
+		gdeviceContext->PSSetShaderResources(5, 1, &resources.shaderResourceViews["SpecularSRV"]);
+	}
+	if (m_renderIrradiance)
+	{
+		manager->attachImage(irradianceString, "IrradianceSRV");
+		gdeviceContext->PSSetShaderResources(6, 1, &resources.shaderResourceViews["IrradianceSRV"]);
+	}
+	if (m_renderShadow)
+	{
+		manager->attachImage(shadowString, "ShadowSRV");
+		gdeviceContext->PSSetShaderResources(7, 1, &resources.shaderResourceViews["ShadowSRV"]);
+	}
+	if (m_renderReflection)
+	{
+		manager->attachImage(reflectionString, "ReflectionSRV");
+		gdeviceContext->PSSetShaderResources(8, 1, &resources.shaderResourceViews["ReflectionSRV"]);
+	}
+
+	if (m_renderText)
+	{
+		manager->attachImage(textPlane1String, "Text1SRV");
+		gdeviceContext->PSSetShaderResources(9, 1, &resources.shaderResourceViews["Text1SRV"]);
+
+		manager->attachImage(textPlane2String, "Text2SRV");
+		gdeviceContext->PSSetShaderResources(10, 1, &resources.shaderResourceViews["Text2SRV"]);
+
+		manager->attachImage(textPlane3String, "Text3SRV");
+		gdeviceContext->PSSetShaderResources(11, 1, &resources.shaderResourceViews["Text3SRV"]);
+
+		//manager->attachImage("firstName.png", "FirstNameSRV");
+		gdeviceContext->PSSetShaderResources(12, 1, &resources.shaderResourceViews["FirstNameSRV"]);
+
+		//manager->attachImage("lastName.png", "LastNameSRV");
+		gdeviceContext->PSSetShaderResources(13, 1, &resources.shaderResourceViews["LastNameSRV"]);
+
+		//manager->attachImage("number.png", "NumberSRV");
+		gdeviceContext->PSSetShaderResources(14, 1, &resources.shaderResourceViews["NumberSRV"]);
+
+
+	}
+
+	//manager->attachImage(cat, "UVSRV");
+	//manager->attachImage(cat2, "BackgroundSRV");
+	
+	
+	/*gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
+	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);*/
 
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
-	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
-	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
 
 	gdeviceContext->Draw(4, 0);
 
-	// Text
-
-	//// FXAA
-	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
-	//gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
-	//gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
-	//gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["SamplerWrap"]);
-	//gdeviceContext->Draw(4, 0);
-
-	//// SSAA
-	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
-	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
-	//gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
-	//gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
-	//gdeviceContext->Draw(4, 0);
-
-	//// Final
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
-	//gdeviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
-	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
-	//gdeviceContext->Draw(4, 0);
-
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
-	Sleep(50);
-	imageCount++;
-	if (imageCount == 400)
-		imageCount = 0;
+	//Sleep(5);
+	m_imageCount++;
+	if (m_imageCount == m_imageSum+1)
+		m_imageCount = m_startFrame;
 	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
-	Sleep(0);
+
 }
 
 void Compositing::Initialize() {
@@ -181,7 +234,6 @@ void Compositing::Initialize() {
 	};
 
 	manager->createVertexShader("CompositingVertexShader", "CompositingLayout", layoutDesc, ARRAYSIZE(layoutDesc));
-	manager->createVertexShader("VertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 
 
@@ -196,19 +248,19 @@ void Compositing::Initialize() {
 
 
 
-	// ###########################################################
-	// ######		Render target & shader resource			######
-	// ###########################################################
-	//	void createTexture2D(
-	//		string name,
-	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-	//		bool renderTarget = true,
-	//		bool shaderResource = true
-	//	);
+												  // ###########################################################
+												  // ######		Render target & shader resource			######
+												  // ###########################################################
+												  //	void createTexture2D(
+												  //		string name,
+												  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+												  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+												  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+												  //		bool renderTarget = true,
+												  //		bool shaderResource = true
+												  //	);
 
-	// Only RTV
+												  // Only RTV
 	manager->createTexture2D(
 		"FirstRTV",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -229,12 +281,41 @@ void Compositing::Initialize() {
 	);
 
 	// Both
-	manager->createTexture2D("BackgroundSRV");
+	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("Ring.png", "PlayerSRV");
+	manager->attachImage("dickbutt.png", "PlayerSRV");
 
 
+
+
+	m_UVFrame = "uvLayer/MasterBeauty.";
+	m_UVReflectionFrame = "uvRefLayer/uvRef_Reflection.";
+	m_beautyFrame = "baseLayer/MasterBeauty.";
+	m_diffuseFrame = "baseLayer/all_Diffuse.";
+	m_specularFrame = "baseLayer/all_SpecularNoShadow.";
+	m_irradianceFrame = "baseLayer/all_DirectIrradianceNoShadow.";
+	m_shadowFrame = "baseLayer/all_ShadowRaw.";
+	m_reflectionFrame = "baseLayer/all_Reflection.";
+
+	m_textFrame1 = "textPlane1/untitled.";
+	m_textFrame2 = "textPlane2/untitled.";
+	m_textFrame3 = "textPlane3/untitled.";
+	
+	
+	m_textureConstantBuffer.m_UV = m_renderUV;
+	m_textureConstantBuffer.m_UVRef = m_renderUVReflection;
+	m_textureConstantBuffer.m_beauty = m_renderBeauty;
+	m_textureConstantBuffer.m_diffuse = m_renderDiffuse;
+	m_textureConstantBuffer.m_specular = m_renderSpecular;
+	m_textureConstantBuffer.m_irradiance = m_renderIrradiance;
+	m_textureConstantBuffer.m_shadow = m_renderShadow;
+	m_textureConstantBuffer.m_reflection = m_renderReflection;
+
+	m_textureConstantBuffer.m_text = m_renderText;
+
+
+	manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -246,48 +327,11 @@ void Compositing::Initialize() {
 	//	);
 
 	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-
-	AA();
 }
 
-void Compositing::SetText(ID3D11ShaderResourceView * text)
+void Compositing::SetText(ID3D11ShaderResourceView* text[3])
 {
-	this->text = text;
-}
-
-void Compositing::AA()
-{
-	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
-		XMFLOAT2 texelSizeXY;
-		float FXAA_blur_Texels_Threshhold; //hur många texlar som kommer blurras åt varje håll
-		float minimumBlurThreshhold; //hur mycket som krävs för att den ens ska blurra
-		float FXAA_reduce_MULTIPLIER;
-		float FXAA_reduce_MIN; //så dirOffset inte ska bli noll
-		XMFLOAT2 pad;
-	}FXAA_PS_cb;
-
-	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_graphicsManager->getWindowWidth();
-	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_graphicsManager->getWindowHeight();
-	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 20.0f;
-	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
-	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
-	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
-
-	m_graphicsManager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
-
-	manager->createPixelShader("FXAA_PS");
-	manager->createPixelShader("PixelShader");
-
-	manager->createTexture2D("Final", 
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight());
-}
-
-void Compositing::SetTextImages()
-{
-	resources.shaderResourceViews["AliasedText"];
-	resources.shaderResourceViews["FXAAText"];
-	resources.shaderResourceViews["SSAAText"];
+	resources.shaderResourceViews["FirstNameSRV"] = text[0];
+	resources.shaderResourceViews["LastNameSRV"] = text[1];
+	resources.shaderResourceViews["NumberSRV"] = text[2];
 }

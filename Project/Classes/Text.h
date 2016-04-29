@@ -23,7 +23,7 @@ public:
 	~Text();
 	void Render();
 	void Initialize();
-	ID3D11ShaderResourceView* GetText();
+	ID3D11ShaderResourceView** GetText();
 
 private:
 	GraphicsManager* m_graphicsManager;
@@ -50,9 +50,10 @@ private:
 	ID2D1DeviceContext* m_d2dDevcon = nullptr;
 	ID3D11Texture2D* d2dTextureTarget = nullptr;
 	IDXGISurface* m_idxgSurface = nullptr;
-	ID2D1RenderTarget* m_d2dRenderTarget = nullptr;
-	ID2D1SolidColorBrush* m_blackBrush = nullptr;
-	ID2D1SolidColorBrush* m_orangeBrush = nullptr;
+	ID2D1RenderTarget* m_d2dRenderTarget[3];
+	ID2D1SolidColorBrush* m_blackBrush[3];
+	ID2D1SolidColorBrush* m_orangeBrush[3];
+	ID3D11ShaderResourceView* finalText[3];
 
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
