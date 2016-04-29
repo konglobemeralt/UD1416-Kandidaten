@@ -36,10 +36,12 @@ private:
 	// Values
 	float m_height;
 	float m_width;
-	float m_textSize = 500.0f;
+	float m_textSize = 800.0f;
 	float m_edgeSize = 100.0f;
 	float m_padding = 50.0f;
 	float m_scale = 1.0f;
+	float m_uvWidth = 1024.0f;
+	float m_uvHeight = 760.0f;
 
 	// Direct3D
 	XMFLOAT4X4 m_matrix;
@@ -68,6 +70,7 @@ private:
 
 	// Testing
 	ID2D1PathGeometry* m_pathGeometry[3];
+	ID2D1TransformedGeometry* m_transformedPathGeometry[3];
 	ID2D1GeometrySink* m_geometrySink = nullptr;
 	IDWriteFontFace* m_fontFaceBeginning = nullptr;
 	IDWriteFontFace1* m_fontFace = nullptr;

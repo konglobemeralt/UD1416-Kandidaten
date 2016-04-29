@@ -56,7 +56,7 @@ void Text::Render() {
 	//RenderText();
 	EdgeRender();
 
-	gdeviceContext->PSSetShaderResources(0, 1, &finalText[1]);
+	gdeviceContext->PSSetShaderResources(0, 1, &finalText[0]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
 
 	gdeviceContext->Draw(4, 0);
@@ -385,6 +385,21 @@ void Text::DirectWriteEdge()
 	// Scale text
 	m_scale = (m_width - m_padding) / (maxSize - m_padding);
 
+	// Center text
+	for (int i = 0; i < 3; i++)
+	{
+		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
+			1.0f, 0.0f,
+			0.0f, 1.0f,
+			(m_uvWidth / 2) - (bound[i].right / 2) * m_scale, m_uvHeight * m_scale
+			//0,0
+		);
+		m_d2dFactory->CreateTransformedGeometry(
+			m_pathGeometry[i],
+			&matrix,
+			&m_transformedPathGeometry[i]);
+	}
+
 	// Glyphrun
 	m_glyphRun.fontFace = m_fontFace;
 	m_glyphRun.fontEmSize = m_textSize;
@@ -418,7 +433,6 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 	DWRITE_GLYPH_OFFSET glyphOffset = { 100.0f, 1.0f };
 	FLOAT glyphAdvances = 250.0f;
 	// (48.0f / 72.0f)*96.0f
-	m_textSize = 500.0f;
 	CheckStatus(m_fontFace->GetGlyphRunOutline(
 		m_textSize,
 		m_glyphIndices,
@@ -429,14 +443,11 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 		false,
 		m_geometrySink),
 		L"GetGlyphRunOutline");
-
 	// Getting advances
 	m_advances = new int[m_textLength];
 	m_fontFace->GetDesignGlyphAdvances(m_textLength, m_glyphIndices, m_advances);
 
 	CheckStatus(m_geometrySink->Close(), L"Close");
-	//float test;
-	//m_pathGeometry[index]->ComputeLength(D2D1::IdentityMatrix(), &test);
 	
 	m_pathGeometry[index]->GetBounds(D2D1::IdentityMatrix(), &bound[index]);
 
@@ -468,10 +479,10 @@ void Text::EdgeRender()
 
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
-			D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
-			D2D1::Matrix3x2F::Scale(m_scale, -m_scale));
-		m_d2dRenderTarget[i]->DrawGeometry(m_pathGeometry[i], m_blackBrush[i], m_edgeSize);
-		m_d2dRenderTarget[i]->FillGeometry(m_pathGeometry[i], m_orangeBrush[i]);
+			//D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
+			D2D1::Matrix3x2F::Scale(m_scale, m_scale));
+		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
+		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 
 		m_d2dRenderTarget[i]->EndDraw();
 	}
