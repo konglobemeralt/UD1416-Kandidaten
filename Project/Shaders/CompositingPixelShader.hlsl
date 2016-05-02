@@ -41,7 +41,6 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 tempPlayer = PlayerSRV.Sample(SamplerWrap, saturate(tempUV));
 	float4 tempPlayerReflection = PlayerSRV.Sample(SamplerWrap, saturate(tempUVRef));
 
-
 	//Text planes
 	float4 tempText1 = Text1SRV.Sample(SamplerWrap, input.Tex);
 	float4 textyTest1 = FirstNameSRV.Sample(SamplerWrap, saturate(tempText1));
@@ -51,8 +50,6 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	float4 tempText3 = Text3SRV.Sample(SamplerWrap, input.Tex);
 	float4 textyTest3 = NumberSRV.Sample(SamplerWrap, saturate(tempText3));
-
-
 
 	float4 playerColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 playerReflectionColor = float4(0.0f, 0.0f, 0.0f, 0.0f);

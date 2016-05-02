@@ -32,10 +32,13 @@ private:
 	void InitializeDirectWrite();
 	void CheckStatus(HRESULT hr, LPCTSTR titel);
 	void RenderText();
+	void AA();
 
 	// Values
-	float m_height;
-	float m_width;
+	bool fxaa = false;
+	bool ssaa = true;
+	unsigned int m_height;
+	unsigned int m_width;
 	float m_textSize = 800.0f;
 	float m_edgeSize = 100.0f;
 	float m_padding = 50.0f;
@@ -63,9 +66,9 @@ private:
 	IDWriteFactory1* m_writeFactory = nullptr;
 	const wchar_t* m_text[3];
 	CString m_font = "arial.ttf";
-	UINT32 m_textLength;
+	UINT32 m_textLength[3];
 	D2D1_RECT_F m_layoutRect;
-	IDWriteTextFormat* m_writeTextFormat = nullptr;
+	IDWriteTextFormat* m_writeTextFormat[3];
 	RECT rc;
 
 	// Testing

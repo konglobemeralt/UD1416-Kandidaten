@@ -30,7 +30,7 @@ private:
 	ID3D11Buffer* lightningBuffer;
 	void createVertexBuffer();
 
-	float speed = 0.01;
+	float speed = 0.01f;
 
 	XMFLOAT4 worldForward, worldRight, camForward, camRight;
 	XMFLOAT4X4 ViewSpace;

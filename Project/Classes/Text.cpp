@@ -2,7 +2,18 @@
 
 Text::Text()
 {
+	for (int i = 0; i < 3; i++)
+	{
+		d2dTextureTarget[i] = nullptr;
+		m_idxgSurface[i] = nullptr;
+		m_d2dRenderTarget[i] = nullptr;
+		m_blackBrush[i] = nullptr;
+		m_orangeBrush[i] = nullptr;
 
+		m_writeTextFormat[i] = nullptr;
+
+		m_pathGeometry[i] = nullptr;
+	}
 }
 
 Text::~Text()
@@ -12,18 +23,11 @@ Text::~Text()
 	m_dxgiDevice ? m_dxgiDevice->Release() : 0;
 	m_d2dDev ? m_d2dDev->Release() : 0;
 	m_d2dDevcon ? m_d2dDevcon->Release() : 0;
-	//d2dTextureTarget ? d2dTextureTarget->Release() : 0;
-	//m_idxgSurface ? m_idxgSurface->Release() : 0;
-	//m_d2dRenderTarget ? m_d2dRenderTarget->Release() : 0;
-	//m_blackBrush ? m_blackBrush->Release() : 0;
-	//m_orangeBrush ? m_orangeBrush->Release() : 0;
 
 	// DirectWrite
 	m_writeFactory ? m_writeFactory->Release() : 0;
-	m_writeTextFormat ? m_writeTextFormat->Release() : 0;
 
 	// EdgeTesting
-	//m_pathGeometry ? m_pathGeometry->Release() : 0;
 	m_geometrySink ? m_geometrySink->Release() : 0;
 	m_fontFaceBeginning ? m_fontFaceBeginning->Release() : 0;
 	m_fontFace ? m_fontFace->Release() : 0;
@@ -32,6 +36,19 @@ Text::~Text()
 	m_codePoints ? delete[] m_codePoints : 0;
 	m_glyphIndices ? delete[] m_glyphIndices : 0;
 	m_advances ? delete[] m_advances : 0;
+
+	for (int i = 0; i < 3; i++)
+	{
+		d2dTextureTarget[i] ? d2dTextureTarget[i]->Release() : 0;
+		m_idxgSurface[i] ? m_idxgSurface[i]->Release() : 0;
+		m_d2dRenderTarget[i] ? m_d2dRenderTarget[i]->Release() : 0;
+		m_blackBrush[i] ? m_blackBrush[i]->Release() : 0;
+		m_orangeBrush[i] ? m_orangeBrush[i]->Release() : 0;
+
+		m_writeTextFormat[i] ? m_writeTextFormat[i]->Release() : 0;
+
+		m_pathGeometry[i] ? m_pathGeometry[i]->Release() : 0;
+	}
 }
 
 void Text::Render() {
@@ -39,6 +56,7 @@ void Text::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
+	// Standard
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -56,14 +74,32 @@ void Text::Render() {
 	//RenderText();
 	EdgeRender();
 
+	// FXAA
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
+	if (fxaa) 
+	{
+		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	}
+
+	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
 	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
-	gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
-
 	gdeviceContext->Draw(4, 0);
+
+	// Render FXAA
+	if (fxaa)
+	{
+		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
+		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
+		gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Linear"]);
+		gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
+		gdeviceContext->Draw(4, 0);
+	}
 
 	//// Genereate mip maps
 	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
@@ -168,17 +204,21 @@ void Text::Initialize() {
 	//	);
 
 	manager->attachImage("Fonts/Images/Cheese.jpg", "Erik");
-	manager->attachImage("Fonts/Images/uv.png", "UV");
+	manager->attachImage("Fonts/UV/uv3.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
 	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Initialize Systems
+	m_text[0] = L"Text";
+	m_text[1] = L"Pommes";
+	m_text[2] = L"68";
 	InitializeDirect2D();
 	//InitializeDirectWrite();
 	DirectWriteEdge();
 	RotatePlane();
+	AA();
 }
 
 void Text::InitializeDirect2D()
@@ -186,8 +226,11 @@ void Text::InitializeDirect2D()
 	// Get values
 	m_height = manager->getWindowHeight();
 	m_width = manager->getWindowWidth();
-	float doubleHeight = manager->getWindowHeight()*4;
-	float doubleWidth = manager->getWindowWidth()*4;
+	if (ssaa)
+	{
+		m_height *= 2.0f;
+		m_width *= 2.0f;
+	}
 
 	// Factory
 	CheckStatus(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory), L"D2D1CreateFactory");
@@ -203,8 +246,8 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = doubleHeight;
-	texDesc.Width = doubleWidth;
+	texDesc.Height = m_height;
+	texDesc.Width = m_width;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = 0;
 	texDesc.SampleDesc.Count = 1;
@@ -238,8 +281,8 @@ void Text::InitializeDirect2D()
 		manager->createTexture2D(
 			"Text" + to_string(i),
 			texDesc.Format,
-			doubleWidth,
-			doubleHeight,
+			m_width,
+			m_height,
 			true,
 			true,
 			d2dTextureTarget[i]
@@ -295,48 +338,54 @@ void Text::InitializeDirectWrite()
 		L"DWriteCreateFactory");
 
 	// Font
-	m_textLength = (UINT32)wcslen(m_text[0]);
-	CheckStatus(m_writeFactory->CreateTextFormat(
-		L"Arial",
-		NULL,
-		DWRITE_FONT_WEIGHT_REGULAR,
-		DWRITE_FONT_STYLE_NORMAL,
-		DWRITE_FONT_STRETCH_NORMAL,
-		m_textSize,
-		L"en-us",
-		&m_writeTextFormat),
-		L"CreateTextFormat");
+	for (int i = 0; i < 3; i++)
+	{
+		m_textLength[i] = (UINT32)wcslen(m_text[i]);
+		CheckStatus(m_writeFactory->CreateTextFormat(
+			L"Arial",
+			NULL,
+			DWRITE_FONT_WEIGHT_REGULAR,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			m_textSize,
+			L"en-us",
+			&m_writeTextFormat[i]),
+			L"CreateTextFormat");
 
-	// Center align the text.
-	CheckStatus(m_writeTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER), L"SetTextAlignment");
-	CheckStatus(m_writeTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER), L"SetParagraphAlignment");
+		// Center align the text.
+		CheckStatus(m_writeTextFormat[i]->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER), L"SetTextAlignment");
+		CheckStatus(m_writeTextFormat[i]->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER), L"SetParagraphAlignment");
 
-	// layout to draw on
-	m_layoutRect = D2D1::RectF(
-		static_cast<FLOAT>(0.0f),
-		static_cast<FLOAT>(0.0f),
-		static_cast<FLOAT>(manager->getWindowWidth()),
-		static_cast<FLOAT>(manager->getWindowHeight())
-	);
+		// layout to draw on
+		m_layoutRect = D2D1::RectF(
+			static_cast<FLOAT>(0.0f),
+			static_cast<FLOAT>(0.0f),
+			static_cast<FLOAT>(manager->getWindowWidth()),
+			static_cast<FLOAT>(manager->getWindowHeight())
+			);
+	}
 }
 
-//void Text::RenderText()
-//{
-//	m_d2dRenderTarget->BeginDraw();
-//	m_d2dRenderTarget->SetTransform(D2D1::IdentityMatrix());
-//	//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
-//	m_d2dRenderTarget->Clear(NULL);
-//	// Call the DrawText method of this class.
-//	//m_d2dRenderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE::D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
-//	m_d2dRenderTarget->DrawText(
-//		m_text,					// The string to render.
-//		m_textLength,			// The string's length.
-//		m_writeTextFormat,		// The text format.
-//		m_layoutRect,			// The region of the window where the text will be rendered.
-//		m_orangeBrush			// The brush used to draw the text.
-//	);
-//	m_d2dRenderTarget->EndDraw();
-//}
+void Text::RenderText()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		m_d2dRenderTarget[i]->BeginDraw();
+		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
+		//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
+		m_d2dRenderTarget[i]->Clear(NULL);
+		// Call the DrawText method of this class.
+		//m_d2dRenderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE::D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+		m_d2dRenderTarget[i]->DrawText(
+			m_text[i],					// The string to render.
+			m_textLength[i],			// The string's length.
+			m_writeTextFormat[i],		// The text format.
+			m_layoutRect,			// The region of the window where the text will be rendered.
+			m_orangeBrush[i]			// The brush used to draw the text.
+			);
+		m_d2dRenderTarget[i]->EndDraw();
+	}
+}
 
 void Text::RotatePlane()
 {
@@ -380,9 +429,6 @@ void Text::DirectWriteEdge()
 		L"CreateFontFace");
 	m_fontFaceBeginning->QueryInterface<IDWriteFontFace1>(&m_fontFace);
 
-	m_text[0] = L"Text";
-	m_text[1] = L"Pommes";
-	m_text[2] = L"68";
 	float maxSize = 0.0f;
 	for (int i = 0; i < 3; i++)
 	{
@@ -408,31 +454,21 @@ void Text::DirectWriteEdge()
 			&m_transformedPathGeometry[i]);
 	}
 
-	// Glyphrun
-	m_glyphRun.fontFace = m_fontFace;
-	m_glyphRun.fontEmSize = m_textSize;
-	m_glyphRun.glyphCount = m_textLength;
-	m_glyphRun.glyphIndices = m_glyphIndices;
-	//m_glyphRun.glyphAdvances = ;
-	//m_glyphRun.glyphOffsets = ;
-	m_glyphRun.isSideways = false;
-	//m_glyphRun.bidiLevel = ;
-
 	m_edgeSize = 10.0f;
 }
 
 void Text::GetTextOutline(const wchar_t* text, int index)
 {
-	m_textLength = (UINT32)wcslen(text);
-	m_codePoints = new UINT[m_textLength];
-	m_glyphIndices = new UINT16[m_textLength];
-	ZeroMemory(m_codePoints, sizeof(UINT) * m_textLength);
-	ZeroMemory(m_glyphIndices, sizeof(UINT16) * m_textLength);
-	for (int i = 0; i<m_textLength; ++i)
+	m_textLength[index] = (UINT32)wcslen(text);
+	m_codePoints = new UINT[m_textLength[index]];
+	m_glyphIndices = new UINT16[m_textLength[index]];
+	ZeroMemory(m_codePoints, sizeof(UINT) * m_textLength[index]);
+	ZeroMemory(m_glyphIndices, sizeof(UINT16) * m_textLength[index]);
+	for (unsigned int i = 0; i < m_textLength[index]; ++i)
 	{
 		m_codePoints[i] = text[i];
 	}
-	CheckStatus(m_fontFace->GetGlyphIndices(m_codePoints, m_textLength, m_glyphIndices), L"GetGlyphIndices");
+	CheckStatus(m_fontFace->GetGlyphIndices(m_codePoints, m_textLength[index], m_glyphIndices), L"GetGlyphIndices");
 
 	//Create the path geometry
 	CheckStatus(m_d2dFactory->CreatePathGeometry(&m_pathGeometry[index]), L"CreatePathGeometry");
@@ -446,14 +482,14 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 		m_glyphIndices,
 		NULL,
 		NULL,
-		m_textLength,
+		m_textLength[index],
 		false,
 		false,
 		m_geometrySink),
 		L"GetGlyphRunOutline");
 	// Getting advances
-	m_advances = new int[m_textLength];
-	m_fontFace->GetDesignGlyphAdvances(m_textLength, m_glyphIndices, m_advances);
+	m_advances = new int[m_textLength[index]];
+	m_fontFace->GetDesignGlyphAdvances(m_textLength[index], m_glyphIndices, m_advances);
 
 	CheckStatus(m_geometrySink->Close(), L"Close");
 	
@@ -488,7 +524,7 @@ void Text::EdgeRender()
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
 			//D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
-			D2D1::Matrix3x2F::Scale(m_scale*6, m_scale*6));
+			D2D1::Matrix3x2F::Scale(m_scale, m_scale));
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 
@@ -499,6 +535,34 @@ void Text::EdgeRender()
 ID3D11ShaderResourceView** Text::GetText()
 {
 	return finalText;
+}
+
+void Text::AA()
+{
+	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
+		XMFLOAT2 texelSizeXY;
+		float FXAA_blur_Texels_Threshhold; //hur m?nga texlar som kommer blurras ?t varje h?ll
+		float minimumBlurThreshhold; //hur mycket som kr?vs f?r att den ens ska blurra
+		float FXAA_reduce_MULTIPLIER;
+		float FXAA_reduce_MIN; //s? dirOffset inte ska bli noll
+		XMFLOAT2 pad;
+	}FXAA_PS_cb;
+
+	FXAA_PS_cb.texelSizeXY.x = 1.0f / manager->getWindowWidth();
+	FXAA_PS_cb.texelSizeXY.y = 1.0f / manager->getWindowHeight();
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 20.0f;
+	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
+	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
+	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
+
+	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
+
+	manager->createPixelShader("FXAA_PS");
+
+	manager->createTexture2D("Final",
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		manager->getWindowWidth(),
+		manager->getWindowHeight());
 }
 
 void Text::CheckStatus(HRESULT hr, LPCTSTR titel)

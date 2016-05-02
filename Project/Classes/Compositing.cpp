@@ -189,15 +189,20 @@ void Compositing::Render() {
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-
+	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
 	gdeviceContext->Draw(4, 0);
+
+	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+	//gdeviceContext->Draw(4, 0);
 
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
 	m_imageCount++;
 	if (m_imageCount == m_imageSum+1)
 		m_imageCount = m_startFrame;
-	//manager->saveImage("ToneMapping/OutputImages/image.png", manager->pBackBuffer);
+	//manager->saveImage("Fonts/UV/uv2.png", texture);
 
 }
 
@@ -245,29 +250,45 @@ void Compositing::Initialize() {
 	//			);
 
 	manager->createPixelShader("CompositingPixelShader"); // Name has to match shader name without .hlsl
+	manager->createPixelShader("PixelShader");
 
 
 
-												  // ###########################################################
-												  // ######		Render target & shader resource			######
-												  // ###########################################################
-												  //	void createTexture2D(
-												  //		string name,
-												  //		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
-												  //		UINT width = GraphicsManager::getInstance().getWindowWidth(),
-												  //		UINT height = GraphicsManager::getInstance().getWindowHeight(),
-												  //		bool renderTarget = true,
-												  //		bool shaderResource = true
-												  //	);
+	// ###########################################################
+	// ######		Render target & shader resource			######
+	// ###########################################################
+	//	void createTexture2D(
+	//		string name,
+	//		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+	//		UINT width = GraphicsManager::getInstance().getWindowWidth(),
+	//		UINT height = GraphicsManager::getInstance().getWindowHeight(),
+	//		bool renderTarget = true,
+	//		bool shaderResource = true
+	//	);
 
-												  // Only RTV
+	// Boath
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Width = manager->getWindowWidth();
+	desc.Height = manager->getWindowHeight();
+	desc.MipLevels = 0;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	desc.SampleDesc.Count = 1;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+
+	gdevice->CreateTexture2D(&desc, nullptr, &texture); // add subresource
 	manager->createTexture2D(
-		"FirstRTV",
+		"Final",
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		manager->getWindowWidth(),
 		manager->getWindowHeight(),
 		true,
-		false
+		true,
+		texture
 	);
 
 	// Only SRV

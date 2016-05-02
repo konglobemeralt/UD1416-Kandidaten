@@ -62,6 +62,9 @@ private:
 		int m_text;
 
 	} m_textureConstantBuffer;
+
+	// Eriks test
+	ID3D11Texture2D* texture;
 };
 
 #endif
