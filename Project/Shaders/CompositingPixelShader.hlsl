@@ -27,8 +27,7 @@ struct VS_OUT {
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
 	//float4 outColor;
-
-
+	//return float4(input.Tex, 0.0f, 1.0f);
 
 	float4 tempBeauty = BackgroundSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempUV = UVSRV.Sample(SamplerWrap, input.Tex);
