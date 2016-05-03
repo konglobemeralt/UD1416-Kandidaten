@@ -27,7 +27,8 @@ struct VS_OUT {
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
 	//float4 outColor;
-	//return float4(input.Tex, 0.0f, 1.0f);
+
+	float2x2 rotationMatrix = float2x2(0, 1, -1, 0);
 
 	float4 tempBeauty = BackgroundSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempUV = UVSRV.Sample(SamplerWrap, input.Tex);
@@ -40,6 +41,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	float4 tempPlayer = PlayerSRV.Sample(SamplerWrap, saturate(tempUV));
 	float4 tempPlayerReflection = PlayerSRV.Sample(SamplerWrap, saturate(tempUVRef));
+	//return tempPlayer;
 
 	//Text planes
 	float4 tempText1 = Text1SRV.Sample(SamplerWrap, input.Tex);
@@ -51,11 +53,13 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 tempText3 = Text3SRV.Sample(SamplerWrap, input.Tex);
 	float4 textyTest3 = NumberSRV.Sample(SamplerWrap, saturate(tempText3));
 
+
+
 	float4 playerColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 playerReflectionColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	
+
 	//Text name plane1
-	if (!(textyTest1.w < 0.5))
+	if ((tempText1.w > 0.99) && textyTest1.w != 0)
 	{
 		playerColor = textyTest1;
 		float4 outColor;
@@ -65,7 +69,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 
 	//Text name plane2
-	if (!(textyTest2.w < 0.5))
+	if ((tempText2.w > 0.99) && textyTest2.w != 0)
 	{
 		playerColor = textyTest2;
 		float4 outColor;
@@ -74,7 +78,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	}
 
 	//Text name plane3
-	if (!(textyTest3.w < 0.5) && !(tempText3.z > 0))
+	if ((tempText3.w > 0.99) && textyTest3.w != 0)
 	{
 		playerColor = textyTest3;
 		float4 outColor;
@@ -83,21 +87,21 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	}
 
 	//Player on puck
-	if (!(tempPlayer.w < 0.5) && !(tempUV.z > 0))
+	if ((tempUV.w > 0.99) && tempPlayer.w != 0)
 	{
 		playerColor = tempPlayer;
 		float4 outColor;
-		outColor = float4(pow((tempDiffuse + /*tempIrradiance +*/ tempSpecular * (tempDiffuse * (playerColor * 150.0f))), 1.0 / 2.2)) * 2;
+		outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + (playerColor)), 1.0 / 2.2));
 		return outColor;
 	}
 
 	//Reflection on the is
-	if (!(tempPlayerReflection.w < 0.5) && !(tempUVRef.z > 0))
+	if (!(tempPlayerReflection.w < 0.9) && !(tempUVRef.z > 0))
 	{
 		playerReflectionColor = tempPlayerReflection;
 		float4 outColor;
 		outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + (tempDiffuse * (playerReflectionColor * 1.0f))), 1.0 / 2.2));
-		
+
 
 
 
@@ -105,23 +109,23 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	}
 
 
-	
+
 
 
 	//return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	//Background
-	float4 outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + tempReflection), 1.0 /2.2));
+	float4 outColor = float4(pow(saturate(tempDiffuse + /*tempIrradiance +*/ tempSpecular + tempReflection), 1.0 / 2.2));
 	return outColor;
 	/*float4 outColor;
 	outColor = tempPlayerReflection + playerColor;
 	return outColor;*/
 	/*float4 tempUV = UVSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempUV2 = PlayerSRV.Sample(SamplerWrap, saturate(tempUV));
-	
-	
+
+
 	float4 tempUVBackground = BackgroundSRV.Sample(SamplerWrap, input.Tex);
 
-	
+
 
 	float4 playerAmbient = float4(1.1f, 1.1f, 0.7f, 1.0f);
 	float4 funkyLight = float4(1.6f, 1.6f, 0.6f, 1.0f);
@@ -129,9 +133,9 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	if (!(tempUV2.w < 0.5) && !(tempUV.z > 0))
 	{
-		return (playerAmbient * PlayerSRV.Sample(SamplerWrap, saturate(tempUV)) + (funkyLight * (PlayerSRV.Sample(SamplerWrap, saturate(tempUV))) * tempUVBackground));
+	return (playerAmbient * PlayerSRV.Sample(SamplerWrap, saturate(tempUV)) + (funkyLight * (PlayerSRV.Sample(SamplerWrap, saturate(tempUV))) * tempUVBackground));
 	}
 	else
-		return tempUVBackground;*/
-	
+	return tempUVBackground;*/
+
 }

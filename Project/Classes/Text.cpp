@@ -57,6 +57,7 @@ void Text::Render() {
 	UINT offset = 0;
 
 	// Standard
+	gdeviceContext->Begin(m_query);
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -87,7 +88,13 @@ void Text::Render() {
 	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
+
+	// Query
 	gdeviceContext->Draw(4, 0);
+	gdeviceContext->End(m_query);
+	D3D11_QUERY_DATA_PIPELINE_STATISTICS queryData;
+	while (S_OK != gdeviceContext->GetData(m_query, &queryData, m_query->GetDataSize(), 0))
+	{}
 
 	// Render FXAA
 	if (fxaa)
@@ -204,14 +211,20 @@ void Text::Initialize() {
 	//	);
 
 	manager->attachImage("Fonts/Images/Cheese.jpg", "Erik");
-	manager->attachImage("Fonts/UV/uv3.png", "UV");
+	manager->attachImage("Fonts/UV/uv4.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
 	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
+	// Query
+	D3D11_QUERY_DESC qDesc;
+	qDesc.MiscFlags = 0;
+	qDesc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
+	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
+
 	// Initialize Systems
-	m_text[0] = L"Text";
+	m_text[0] = L"Shit";
 	m_text[1] = L"Pommes";
 	m_text[2] = L"68";
 	InitializeDirect2D();
@@ -224,8 +237,8 @@ void Text::Initialize() {
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = manager->getWindowHeight();
-	m_width = manager->getWindowWidth();
+	m_height = manager->getWindowHeight()/4;
+	m_width = manager->getWindowWidth()/4;
 	if (ssaa)
 	{
 		m_height *= 2.0f;
@@ -446,7 +459,7 @@ void Text::DirectWriteEdge()
 			1.0f, 0.0f,
 			0.0f, 1.0f,
 			//(m_uvWidth / 2) - (bound[i].right / 2) * m_scale, m_uvHeight * m_scale
-			0,1000
+			1500,2000
 		);
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
@@ -524,7 +537,9 @@ void Text::EdgeRender()
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
 			//D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
-			D2D1::Matrix3x2F::Scale(m_scale, m_scale));
+			D2D1::Matrix3x2F::Scale(m_scale, m_scale)
+			//D2D1::Matrix3x2F::Rotation(17.0f)
+		);
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 

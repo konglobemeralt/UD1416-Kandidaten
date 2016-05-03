@@ -63,7 +63,7 @@ void GraphicsManager::Render() {
 		break;
 	case ALL:
 		ApplicationContext::GetInstance().GetTextObject()->Render();
-		//ApplicationContext::GetInstance().GetCompositingObject()->Render();
+		ApplicationContext::GetInstance().GetCompositingObject()->Render();
 		//ApplicationContext::GetInstance().GetToneMappingObject()->Render();
 		//ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
 		//ApplicationContext::GetInstance().GetLightningObject()->Render();
@@ -117,7 +117,7 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		NULL,
-		D3D_DRIVER_TYPE_WARP,
+		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
 		D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_SINGLETHREADED,
 		NULL,

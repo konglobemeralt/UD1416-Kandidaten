@@ -36,7 +36,7 @@ private:
 
 	// Values
 	bool fxaa = false;
-	bool ssaa = true;
+	bool ssaa = false;
 	unsigned int m_height;
 	unsigned int m_width;
 	float m_textSize = 800.0f;
@@ -48,6 +48,7 @@ private:
 
 	// Direct3D
 	XMFLOAT4X4 m_matrix;
+	ID3D11Query* m_query;
 	void RotatePlane();
 
 	// Direct2D
