@@ -20,38 +20,49 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	// 4 = show two texture uv
 	// 5 = show quad uv
 
+	float4 color = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 texUV = textUV.Sample(Linear, input.Tex);	// Sample uv coordinates from texture
 	float2 u = U.Sample(Linear, input.Tex);				// Sample u coordinates from texture
 	float2 v = V.Sample(Linear, input.Tex);				// Sample v coordinates from texture
 	float4 uv = float4((u.r), (v.g), 0.0f, 1.0f);		// put u and v toghter to uv
-	if (choice == 0)
+	color = text.Sample(Linear, saturate(texUV));
+	if (choice == 0 && texUV.w > 0.99f && color.w != 0)
 	{
-		return text.Sample(Linear, saturate(texUV));
+		//if (color.w > 0.1f)
+		//{
+		//	return color;
+		//}
+		//else
+		//{
+		//	discard;
+		//}
+		return color;
 	}
-	if (choice == 1)
+	else if (choice == 1)
 	{
 		return text.Sample(Linear, saturate(uv));
 	}
-	if (choice == 2)
+	else if (choice == 2)
 	{
 		return text.Sample(Linear, input.Tex);
 	}
-	if (choice == 3)
+	else if (choice == 3)
 	{
 		return textUV.Sample(Linear, input.Tex);
 	}
-	if (choice == 4)
+	else if (choice == 4)
 	{
 		return texUV;
 	}
-	if (choice == 5)
+	else if (choice == 5)
 	{
 		return uv;
 	}
-	if (choice == 6)
+	else if (choice == 6)
 	{
 		return float4(input.Tex, 0.0f, 1.0f);
 	}
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	//return float4(input.Tex.x, input.Tex.y, 0.0f, 1.0f);
 

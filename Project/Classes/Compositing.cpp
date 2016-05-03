@@ -157,7 +157,7 @@ void Compositing::Render() {
 
 	if (m_renderText)
 	{
-		manager->attachImage(textPlane1String, "Text1SRV");
+		manager->attachImage("textPlane1/untitled.046.png", "Text1SRV");
 		gdeviceContext->PSSetShaderResources(9, 1, &resources.shaderResourceViews["Text1SRV"]);
 
 		manager->attachImage(textPlane2String, "Text2SRV");

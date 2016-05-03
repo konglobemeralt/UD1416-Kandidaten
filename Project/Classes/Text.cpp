@@ -74,6 +74,7 @@ void Text::Render() {
 
 	//RenderText();
 	EdgeRender();
+	//manager->saveImage("Fonts/UV/test.png", d2dTextureTarget[0]);
 
 	// FXAA
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
@@ -88,9 +89,9 @@ void Text::Render() {
 	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
+	gdeviceContext->Draw(4, 0);
 
 	// Query
-	gdeviceContext->Draw(4, 0);
 	gdeviceContext->End(m_query);
 	D3D11_QUERY_DATA_PIPELINE_STATISTICS queryData;
 	while (S_OK != gdeviceContext->GetData(m_query, &queryData, m_query->GetDataSize(), 0))
@@ -210,11 +211,11 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->attachImage("Fonts/Images/Cheese.jpg", "Erik");
-	manager->attachImage("Fonts/UV/uv4.png", "UV");
+	manager->attachImage("Fonts/Images/Checker.png", "Erik");
+	manager->attachImage("Fonts/UV/test.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
-	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_BORDER);
 	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Query
@@ -224,7 +225,7 @@ void Text::Initialize() {
 	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
 
 	// Initialize Systems
-	m_text[0] = L"Shit";
+	m_text[0] = L"TTTShit";
 	m_text[1] = L"Pommes";
 	m_text[2] = L"68";
 	InitializeDirect2D();
@@ -237,12 +238,16 @@ void Text::Initialize() {
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = manager->getWindowHeight()/4;
-	m_width = manager->getWindowWidth()/4;
+	m_height = manager->getWindowHeight();
+	m_width = manager->getWindowWidth();
+	//m_height = 1940;
+	//m_width = 1940;
+	//m_height = 290;
+	//m_width = 290;
 	if (ssaa)
 	{
-		m_height *= 2.0f;
-		m_width *= 2.0f;
+		m_height *= 4.0f;
+		m_width *= 4.0f;
 	}
 
 	// Factory
@@ -453,21 +458,21 @@ void Text::DirectWriteEdge()
 	m_scale = (m_width - m_padding) / (maxSize - m_padding);
 
 	// Center text
+	float m_uvWidth = manager->getWindowHeight();
+	float m_uvHeight = manager->getWindowWidth();
 	for (int i = 0; i < 3; i++)
 	{
 		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
 			1.0f, 0.0f,
 			0.0f, 1.0f,
-			//(m_uvWidth / 2) - (bound[i].right / 2) * m_scale, m_uvHeight * m_scale
-			1500,2000
+			(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
+			//100,500
 		);
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
 			&matrix,
 			&m_transformedPathGeometry[i]);
 	}
-
-	m_edgeSize = 10.0f;
 }
 
 void Text::GetTextOutline(const wchar_t* text, int index)
@@ -563,9 +568,9 @@ void Text::AA()
 		XMFLOAT2 pad;
 	}FXAA_PS_cb;
 
-	FXAA_PS_cb.texelSizeXY.x = 1.0f / manager->getWindowWidth();
-	FXAA_PS_cb.texelSizeXY.y = 1.0f / manager->getWindowHeight();
-	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 20.0f;
+	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_width;
+	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_height;
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 5.0f;
 	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
 	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;

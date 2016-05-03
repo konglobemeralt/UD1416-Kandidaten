@@ -40,11 +40,11 @@ private:
 	unsigned int m_height;
 	unsigned int m_width;
 	float m_textSize = 800.0f;
-	float m_edgeSize = 100.0f;
+	float m_edgeSize = 10.0f;
 	float m_padding = 50.0f;
 	float m_scale = 1.0f;
-	float m_uvWidth = 1024.0f;
-	float m_uvHeight = 760.0f;
+	float m_uvWidth = 0.0f;
+	float m_uvHeight = 0.0f;
 
 	// Direct3D
 	XMFLOAT4X4 m_matrix;
