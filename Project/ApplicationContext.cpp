@@ -79,10 +79,7 @@ void ApplicationContext::Initialize()
 		break;
 	case ALL:
 		applicationContext->m_text->Initialize();
-		applicationContext->m_text->Render();
 		applicationContext->m_compositing->Initialize();
-		applicationContext->m_compositing->SetText(applicationContext->m_text->GetText());
-		
 		//applicationContext->m_toneMapping->Initialize();
 		//applicationContext->m_antiAliasing->Initialize();
 		//applicationContext->m_lightning->Initialize();

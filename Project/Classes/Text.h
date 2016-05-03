@@ -32,21 +32,26 @@ private:
 	void InitializeDirectWrite();
 	void CheckStatus(HRESULT hr, LPCTSTR titel);
 	void RenderText();
-	void AA();
+	void CalculateSize();
 
 	// Values
-	bool fxaa = false;
-	bool ssaa = false;
-	unsigned int m_height;
-	unsigned int m_width;
+	bool m_firstTime = true;
+	bool m_edgeRendering = true;
+	bool m_fxaa = false;
+	bool m_ssaa = false;
+	UINT m_height = 0;
+	UINT m_width = 0;
+	float m_uvWidth = 0.0f;
+	float m_uvHeight = 0.0f;
 	float m_textSize = 800.0f;
 	float m_edgeSize = 10.0f;
 	float m_padding = 50.0f;
 	float m_scale = 1.0f;
-	float m_uvWidth = 0.0f;
-	float m_uvHeight = 0.0f;
 
 	// Direct3D
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	UINT vertexSize = sizeof(float) * 5;
+	UINT offset = 0;
 	XMFLOAT4X4 m_matrix;
 	ID3D11Query* m_query;
 	void RotatePlane();

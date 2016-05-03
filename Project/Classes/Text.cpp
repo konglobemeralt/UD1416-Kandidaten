@@ -51,37 +51,48 @@ Text::~Text()
 	}
 }
 
-void Text::Render() {
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	UINT vertexSize = sizeof(float) * 5;
-	UINT offset = 0;
+void Text::Render() 
+{
+	if (m_firstTime)
+	{
+		CalculateSize();
+		// Initialize Systems
+		m_text[0] = L"TTText";
+		m_text[1] = L"Pommes";
+		m_text[2] = L"68";
+		InitializeDirect2D();
+		if(m_edgeRendering)
+			DirectWriteEdge();
+		else
+		InitializeDirectWrite();
+		RotatePlane();
+		m_firstTime = false;
+	}
 
-	// Standard
-	gdeviceContext->Begin(m_query);
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
-	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
-	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
+	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
 
 	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 
-	//RenderText();
-	EdgeRender();
-	//manager->saveImage("Fonts/UV/test.png", d2dTextureTarget[0]);
+	if (m_edgeRendering)
+		EdgeRender();
+	else
+		RenderText();
+	//manager->saveImage("Fonts/UV/saved.png", d2dTextureTarget[0]);
 
 	// FXAA
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
-	if (fxaa) 
-	{
+	if (m_fxaa)
 		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
-	}
 
 	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
@@ -91,14 +102,8 @@ void Text::Render() {
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
 	gdeviceContext->Draw(4, 0);
 
-	// Query
-	gdeviceContext->End(m_query);
-	D3D11_QUERY_DATA_PIPELINE_STATISTICS queryData;
-	while (S_OK != gdeviceContext->GetData(m_query, &queryData, m_query->GetDataSize(), 0))
-	{}
-
 	// Render FXAA
-	if (fxaa)
+	if (m_fxaa)
 	{
 		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
@@ -128,10 +133,24 @@ void Text::Initialize() {
 	struct cBuffer {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
-
 	manager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
+	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
+		XMFLOAT2 texelSizeXY;
+		float FXAA_blur_Texels_Threshhold; //hur m?nga texlar som kommer blurras ?t varje h?ll
+		float minimumBlurThreshhold; //hur mycket som kr?vs f?r att den ens ska blurra
+		float FXAA_reduce_MULTIPLIER;
+		float FXAA_reduce_MIN; //s? dirOffset inte ska bli noll
+		XMFLOAT2 pad;
+	}FXAA_PS_cb;
 
+	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_width;
+	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_height;
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 5.0f;
+	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
+	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
+	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
+	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
 
 	// ###########################################################
 	// ######				Vertex Shader					######
@@ -149,8 +168,6 @@ void Text::Initialize() {
 
 	manager->createVertexShader("Text_VS", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
-
-
 	// ###########################################################
 	// ######				Other Shaders					######
 	// ###########################################################
@@ -159,8 +176,8 @@ void Text::Initialize() {
 	//			);
 
 	manager->createPixelShader("Text_PS"); // Name has to match shader name without .hlsl
-
-
+	manager->createPixelShader("Text_Size_PS");
+	manager->createPixelShader("FXAA_PS");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -174,33 +191,29 @@ void Text::Initialize() {
 	//		bool shaderResource = true
 	//	);
 
-	// Only RTV
-	manager->createTexture2D(
-		"myRTV",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
-		true,
-		false
-	);
-
-	// Only SRV
-	manager->createTexture2D(
-		"mySRV",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
-		true,
-		false
-	);
-
-	// Both
-	manager->createTexture2D("myRTVandSRV");
-
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
 
+	manager->attachImage("Fonts/Images/Checker.png", "Erik");
+	manager->attachImage("Fonts/UV/test4.png", "UV");
+	manager->attachImage("Fonts/UV/XUV.png", "U");
+	manager->attachImage("Fonts/UV/VUV.png", "V");
 
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ID3D11Texture2D* texture;
+	ID3D11Resource* resource;
+	resources.shaderResourceViews["UV"]->GetResource(&resource);
+	resource->QueryInterface<ID3D11Texture2D>(&texture);
+	D3D11_TEXTURE2D_DESC texDesc;
+	texture->GetDesc(&texDesc);
+
+	m_uvHeight = texDesc.Height;
+	m_uvWidth = texDesc.Width;
+
+	manager->createTexture2D("Final",
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		texDesc.Width,
+		texDesc.Height);
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -211,43 +224,25 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->attachImage("Fonts/Images/Checker.png", "Erik");
-	manager->attachImage("Fonts/UV/test.png", "UV");
-	manager->attachImage("Fonts/UV/XUV.png", "U");
-	manager->attachImage("Fonts/UV/VUV.png", "V");
-	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_BORDER);
+	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Query
 	D3D11_QUERY_DESC qDesc;
 	qDesc.MiscFlags = 0;
-	qDesc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
+	qDesc.Query = D3D11_QUERY_OCCLUSION;
 	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
-
-	// Initialize Systems
-	m_text[0] = L"TTTShit";
-	m_text[1] = L"Pommes";
-	m_text[2] = L"68";
-	InitializeDirect2D();
-	//InitializeDirectWrite();
-	DirectWriteEdge();
-	RotatePlane();
-	AA();
 }
 
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = manager->getWindowHeight();
-	m_width = manager->getWindowWidth();
-	//m_height = 1940;
-	//m_width = 1940;
-	//m_height = 290;
-	//m_width = 290;
-	if (ssaa)
+	//m_height = manager->getWindowHeight();
+	//m_width = manager->getWindowWidth();
+	if (m_ssaa)
 	{
-		m_height *= 4.0f;
-		m_width *= 4.0f;
+		m_height *= 4;
+		m_width *= 4;
 	}
 
 	// Factory
@@ -305,7 +300,6 @@ void Text::InitializeDirect2D()
 			true,
 			d2dTextureTarget[i]
 		);
-
 		finalText[i] = resources.shaderResourceViews["Text" + to_string(i)];
 	}
 
@@ -408,7 +402,7 @@ void Text::RenderText()
 void Text::RotatePlane()
 {
 	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, m_width / m_height, 0.1f, 1000.0f);
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, (float)m_width / (float)m_height, 0.1f, 1000.0f);
 
 	XMMATRIX finalmatrix = view;
 	//finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
@@ -458,15 +452,13 @@ void Text::DirectWriteEdge()
 	m_scale = (m_width - m_padding) / (maxSize - m_padding);
 
 	// Center text
-	float m_uvWidth = manager->getWindowHeight();
-	float m_uvHeight = manager->getWindowWidth();
 	for (int i = 0; i < 3; i++)
 	{
 		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
 			1.0f, 0.0f,
 			0.0f, 1.0f,
-			(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
-			//100,500
+			//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
+			100,-500
 		);
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
@@ -542,7 +534,7 @@ void Text::EdgeRender()
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
 			//D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
-			D2D1::Matrix3x2F::Scale(m_scale, m_scale)
+			D2D1::Matrix3x2F::Scale(m_scale, -m_scale)
 			//D2D1::Matrix3x2F::Rotation(17.0f)
 		);
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
@@ -552,37 +544,44 @@ void Text::EdgeRender()
 	}
 }
 
+void Text::CalculateSize()
+{
+	// Standard
+	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	//gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
+	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
+
+	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
+	gdeviceContext->PSSetShader(resources.pixelShaders["Text_Size_PS"], nullptr, 0);
+
+	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
+	gdeviceContext->Begin(m_query);
+	gdeviceContext->Draw(4, 0);
+
+	// Query
+	gdeviceContext->End(m_query);
+	UINT64 queryData;
+	while (S_OK != gdeviceContext->GetData(m_query, &queryData, m_query->GetDataSize(), 0)){}
+	
+	// Calculate texture size
+	if (queryData > 0)
+	{
+		m_height = queryData / (m_uvWidth / m_uvHeight);
+		m_height = sqrt(m_height);
+		m_width = m_height * (m_uvWidth / m_uvHeight);
+	}
+}
+
 ID3D11ShaderResourceView** Text::GetText()
 {
 	return finalText;
-}
-
-void Text::AA()
-{
-	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
-		XMFLOAT2 texelSizeXY;
-		float FXAA_blur_Texels_Threshhold; //hur m?nga texlar som kommer blurras ?t varje h?ll
-		float minimumBlurThreshhold; //hur mycket som kr?vs f?r att den ens ska blurra
-		float FXAA_reduce_MULTIPLIER;
-		float FXAA_reduce_MIN; //s? dirOffset inte ska bli noll
-		XMFLOAT2 pad;
-	}FXAA_PS_cb;
-
-	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_width;
-	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_height;
-	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 5.0f;
-	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
-	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
-	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
-
-	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
-
-	manager->createPixelShader("FXAA_PS");
-
-	manager->createTexture2D("Final",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight());
 }
 
 void Text::CheckStatus(HRESULT hr, LPCTSTR titel)

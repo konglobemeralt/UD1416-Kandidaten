@@ -1,4 +1,5 @@
-struct VS_OUT {
+struct VS_OUT
+{
 	float4 Pos : SV_POSITION;
 	float2 Tex : TEXCOORD;
 };
@@ -19,7 +20,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	// 3 = show one texture uv
 	// 4 = show two texture uv
 	// 5 = show quad uv
-
+	
 	float4 color = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 texUV = textUV.Sample(Linear, input.Tex);	// Sample uv coordinates from texture
 	float2 u = U.Sample(Linear, input.Tex);				// Sample u coordinates from texture
@@ -28,14 +29,6 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	color = text.Sample(Linear, saturate(texUV));
 	if (choice == 0 && texUV.w > 0.99f && color.w != 0)
 	{
-		//if (color.w > 0.1f)
-		//{
-		//	return color;
-		//}
-		//else
-		//{
-		//	discard;
-		//}
 		return color;
 	}
 	else if (choice == 1)

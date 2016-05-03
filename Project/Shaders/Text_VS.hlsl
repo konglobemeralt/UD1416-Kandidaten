@@ -18,7 +18,8 @@ cbuffer Matrix : register(b0)
 VS_OUT VS_main(VS_IN input)
 {
 	VS_OUT output;
-	output.Pos = mul(float4(input.Pos, 1.0f), rotationM);
+	//output.Pos = mul(float4(input.Pos, 1.0f), rotationM);
+	output.Pos = float4(input.Pos, 1.0f);
 	output.Tex = input.Tex;
 
 	return output;
