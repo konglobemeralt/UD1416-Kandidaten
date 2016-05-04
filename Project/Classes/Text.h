@@ -39,6 +39,9 @@ private:
 	bool m_edgeRendering;
 	bool m_fxaa;
 	bool m_ssaa;
+	bool m_thesis;
+	unsigned int m_ssaaSize;
+	float m_sizeMultiplier;
 	UINT m_height;
 	UINT m_width;
 	float m_uvWidth;
@@ -52,9 +55,15 @@ private:
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
-	XMFLOAT4X4 m_matrix;
 	ID3D11Query* m_query;
-	void RotatePlane();
+
+	struct Matrices
+	{
+		XMFLOAT4X4 world;
+		XMFLOAT4X4 view;
+		XMFLOAT4X4 projection;
+		XMFLOAT4 useMatrices;
+	}m_matrices;
 
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;
@@ -71,7 +80,7 @@ private:
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
 	const wchar_t* m_text[3];
-	CString m_font = "arial.ttf";
+	CString m_font = "DINNextLTPro-Regular.otf";
 	UINT32 m_textLength[3];
 	D2D1_RECT_F m_layoutRect;
 	IDWriteTextFormat* m_writeTextFormat[3];

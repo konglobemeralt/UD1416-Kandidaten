@@ -12,14 +12,23 @@ struct VS_OUT
 
 cbuffer Matrix : register(b0)
 {
-	matrix rotationM;
+	matrix world;
+	matrix view;
+	matrix projection;
+	float4 useMatrices;
 }
 
 VS_OUT VS_main(VS_IN input)
 {
 	VS_OUT output;
-	//output.Pos = mul(float4(input.Pos, 1.0f), rotationM);
-	output.Pos = float4(input.Pos, 1.0f);
+	if(useMatrices.x == 1)
+		output.Pos = mul(float4(input.Pos, 1.0f), world);
+	else if(useMatrices.x == 2)
+		output.Pos = mul(float4(input.Pos, 1.0f), mul(world, view));
+	else if (useMatrices.x == 3)
+		output.Pos = mul(float4(input.Pos, 1.0f), mul(world, mul(view, projection)));
+	else
+		output.Pos = float4(input.Pos, 1.0f);
 	output.Tex = input.Tex;
 
 	return output;

@@ -13,7 +13,7 @@ SamplerState Point : register(s1);
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
-	unsigned int choice = 0;
+	unsigned int choice = 2;
 	// 0 = one texture uv
 	// 1 = two texture uv
 	// 2 = quad uv

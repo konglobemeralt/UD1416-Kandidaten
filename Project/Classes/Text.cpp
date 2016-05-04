@@ -17,14 +17,17 @@ Text::Text()
 
 	m_firstTime = true;
 	m_edgeRendering = true;
-	m_fxaa = false;
-	m_ssaa = false;
+	m_fxaa = true;
+	m_ssaa = true;
+	m_thesis = true;
+	m_ssaaSize = 4;
+	m_sizeMultiplier = 0.25f;
 	m_height = 0;
 	m_width = 0;
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
-	m_textSize = 800.0f;
-	m_edgeSize = 10.0f;
+	m_textSize = 850.0f * m_ssaaSize * m_sizeMultiplier;
+	m_edgeSize = 25.0f * m_ssaaSize * m_sizeMultiplier;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
 }
@@ -78,7 +81,6 @@ void Text::Render()
 			DirectWriteEdge();
 		else
 			InitializeDirectWrite();
-		RotatePlane();
 		m_firstTime = false;
 	}
 
@@ -89,7 +91,7 @@ void Text::Render()
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
 	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
-	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
+	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Matrices"]);
 
 	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
@@ -111,8 +113,8 @@ void Text::Render()
 
 	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
+	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
 	gdeviceContext->Draw(4, 0);
@@ -145,23 +147,34 @@ void Text::Initialize() {
 	//		D3D11_BUFFER_DESC desc,
 	//		const void* data
 	//	);
-	struct cBuffer {
-		XMFLOAT4X4 matrix;
-	}myMatrix;
-	manager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
 
+	// Matrices
+	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, (float)manager->getWindowWidth() / (float)manager->getWindowHeight(), 0.1f, 1000.0f);
+
+	XMMATRIX transform = XMMatrixRotationZ(XMConvertToRadians(10));
+	//transform = XMMatrixIdentity();
+	transform *= XMMatrixScaling(1.0f, 1.0f, 1.0f);
+
+	XMStoreFloat4x4(&m_matrices.world, XMMatrixTranspose(transform));
+	XMStoreFloat4x4(&m_matrices.view, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&m_matrices.projection, XMMatrixTranspose(projection));
+	m_matrices.useMatrices.x = 2;
+	manager->createConstantBuffer("Matrices", &m_matrices, sizeof(Matrices));
+
+	// FXAA
 	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
 		XMFLOAT2 texelSizeXY;
-		float FXAA_blur_Texels_Threshhold; //hur m?nga texlar som kommer blurras ?t varje h?ll
-		float minimumBlurThreshhold; //hur mycket som kr?vs f?r att den ens ska blurra
+		float FXAA_blur_Texels_Threshhold; //hur många texlar som kommer blurras åt varje håll
+		float minimumBlurThreshhold; //hur mycket som krävs för att den ens ska blurra
 		float FXAA_reduce_MULTIPLIER;
-		float FXAA_reduce_MIN; //s? dirOffset inte ska bli noll
+		float FXAA_reduce_MIN; //så dirOffset inte ska bli noll
 		XMFLOAT2 pad;
 	}FXAA_PS_cb;
 
-	FXAA_PS_cb.texelSizeXY.x = 1.0f / m_width;
-	FXAA_PS_cb.texelSizeXY.y = 1.0f / m_height;
-	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 5.0f;
+	FXAA_PS_cb.texelSizeXY.x = 1.0f / manager->getWindowWidth();
+	FXAA_PS_cb.texelSizeXY.y = 1.0f / manager->getWindowHeight();
+	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 2.0f;
 	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
 	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
@@ -253,10 +266,15 @@ void Text::InitializeDirect2D()
 	// Get values
 	//m_height = manager->getWindowHeight();
 	//m_width = manager->getWindowWidth();
+	if (m_thesis)
+	{
+		m_height = manager->getWindowHeight() * m_sizeMultiplier;
+		m_width = manager->getWindowWidth() * m_sizeMultiplier;
+	}
 	if (m_ssaa)
 	{
-		m_height *= 4;
-		m_width *= 4;
+		m_height *= m_ssaaSize;
+		m_width *= m_ssaaSize;
 	}
 
 	// Factory
@@ -413,17 +431,6 @@ void Text::RenderText()
 	}
 }
 
-void Text::RotatePlane()
-{
-	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, (float)m_width / (float)m_height, 0.1f, 1000.0f);
-
-	XMMATRIX finalmatrix = view;
-	//finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
-	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(finalmatrix));
-	m_graphicsManager->createConstantBuffer("Rotation", &m_matrix, sizeof(XMFLOAT4X4));
-}
-
 void Text::DirectWriteEdge()
 {
 	// Factory
@@ -446,7 +453,7 @@ void Text::DirectWriteEdge()
 	CheckStatus(m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles), L"CreateFontFileReference");
 
 	CheckStatus(m_writeFactory->CreateFontFace(
-		DWRITE_FONT_FACE_TYPE_TRUETYPE,
+		DWRITE_FONT_FACE_TYPE_CFF,
 		1,
 		&m_fontFiles,
 		0,
@@ -547,9 +554,9 @@ void Text::EdgeRender()
 
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
-			D2D1::Matrix3x2F::Translation(-2000, 2000) * 
-			D2D1::Matrix3x2F::Scale(m_scale, m_scale)*
-			D2D1::Matrix3x2F::Rotation(270.0f)
+			D2D1::Matrix3x2F::Translation(200 * m_ssaaSize * m_sizeMultiplier, 800 * m_ssaaSize * m_sizeMultiplier)
+			//D2D1::Matrix3x2F::Scale(m_scale, m_scale)
+			//D2D1::Matrix3x2F::Rotation(270.0f)
 		);
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
@@ -569,7 +576,7 @@ void Text::CalculateSize()
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
-	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
+	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Matrices"]);
 
 	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_Size_PS"], nullptr, 0);
