@@ -14,7 +14,6 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	{
 		return texUV;
 	}
-	//discard;
 	clip(texUV.w < 0.5f ? -1 : 1);
 	return texUV;
 }

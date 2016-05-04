@@ -35,18 +35,18 @@ private:
 	void CalculateSize();
 
 	// Values
-	bool m_firstTime = true;
-	bool m_edgeRendering = true;
-	bool m_fxaa = false;
-	bool m_ssaa = false;
-	UINT m_height = 0;
-	UINT m_width = 0;
-	float m_uvWidth = 0.0f;
-	float m_uvHeight = 0.0f;
-	float m_textSize = 800.0f;
-	float m_edgeSize = 10.0f;
-	float m_padding = 50.0f;
-	float m_scale = 1.0f;
+	bool m_firstTime;
+	bool m_edgeRendering;
+	bool m_fxaa;
+	bool m_ssaa;
+	UINT m_height;
+	UINT m_width;
+	float m_uvWidth;
+	float m_uvHeight;
+	float m_textSize;
+	float m_edgeSize;
+	float m_padding;
+	float m_scale;
 
 	// Direct3D
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };

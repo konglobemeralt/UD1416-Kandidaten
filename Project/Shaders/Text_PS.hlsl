@@ -27,7 +27,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float2 v = V.Sample(Linear, input.Tex);				// Sample v coordinates from texture
 	float4 uv = float4((u.r), (v.g), 0.0f, 1.0f);		// put u and v toghter to uv
 	color = text.Sample(Linear, saturate(texUV));
-	if (choice == 0 && texUV.w > 0.99f && color.w != 0)
+
+	if (choice == 0 && texUV.w > 0.99f && color.w >= 0.01f)
 	{
 		return color;
 	}
@@ -55,7 +56,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	{
 		return float4(input.Tex, 0.0f, 1.0f);
 	}
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	return float4(1.0f, 0.0f, 0.0f, 0.0f);
 
 	//return float4(input.Tex.x, input.Tex.y, 0.0f, 1.0f);
 

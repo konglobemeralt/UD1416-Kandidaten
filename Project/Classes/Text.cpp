@@ -14,6 +14,19 @@ Text::Text()
 
 		m_pathGeometry[i] = nullptr;
 	}
+
+	m_firstTime = true;
+	m_edgeRendering = true;
+	m_fxaa = false;
+	m_ssaa = false;
+	m_height = 0;
+	m_width = 0;
+	m_uvWidth = 0.0f;
+	m_uvHeight = 0.0f;
+	m_textSize = 800.0f;
+	m_edgeSize = 10.0f;
+	m_padding = 50.0f;
+	m_scale = 1.0f;
 }
 
 Text::~Text()
@@ -57,14 +70,14 @@ void Text::Render()
 	{
 		CalculateSize();
 		// Initialize Systems
-		m_text[0] = L"TTText";
+		m_text[0] = L"Text";
 		m_text[1] = L"Pommes";
 		m_text[2] = L"68";
 		InitializeDirect2D();
 		if(m_edgeRendering)
 			DirectWriteEdge();
 		else
-		InitializeDirectWrite();
+			InitializeDirectWrite();
 		RotatePlane();
 		m_firstTime = false;
 	}
@@ -75,6 +88,7 @@ void Text::Render()
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
+	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
 	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
 
 	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
@@ -87,20 +101,23 @@ void Text::Render()
 		EdgeRender();
 	else
 		RenderText();
-	//manager->saveImage("Fonts/UV/saved.png", d2dTextureTarget[0]);
 
 	// FXAA
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
 	if (m_fxaa)
+	{
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
 		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	}
 
 	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
+	//gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
 	gdeviceContext->Draw(4, 0);
+
+	//manager->saveImage("Fonts/UV/saved.png", manager->pBackBuffer);
 
 	// Render FXAA
 	if (m_fxaa)
@@ -109,8 +126,6 @@ void Text::Render()
 		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
 		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
 		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
-		gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Linear"]);
-		gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
 		gdeviceContext->Draw(4, 0);
 	}
 
@@ -195,11 +210,10 @@ void Text::Initialize() {
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
 
 	manager->attachImage("Fonts/Images/Checker.png", "Erik");
-	manager->attachImage("Fonts/UV/test4.png", "UV");
+	manager->attachImage("Fonts/UV/uv7.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ID3D11Texture2D* texture;
 	ID3D11Resource* resource;
 	resources.shaderResourceViews["UV"]->GetResource(&resource);
@@ -458,7 +472,7 @@ void Text::DirectWriteEdge()
 			1.0f, 0.0f,
 			0.0f, 1.0f,
 			//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
-			100,-500
+			0,-0
 		);
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
@@ -533,9 +547,9 @@ void Text::EdgeRender()
 
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
-			//D2D1::Matrix3x2F::Translation(0, -((m_textSize) / 2)) * 
-			D2D1::Matrix3x2F::Scale(m_scale, -m_scale)
-			//D2D1::Matrix3x2F::Rotation(17.0f)
+			D2D1::Matrix3x2F::Translation(-2000, 2000) * 
+			D2D1::Matrix3x2F::Scale(m_scale, m_scale)*
+			D2D1::Matrix3x2F::Rotation(270.0f)
 		);
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
