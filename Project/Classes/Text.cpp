@@ -18,18 +18,27 @@ Text::Text()
 	m_firstTime = true;
 	m_edgeRendering = true;
 	m_fxaa = true;
-	m_ssaa = true;
+	m_ssaa = false;
 	m_thesis = true;
-	m_ssaaSize = 4;
-	m_sizeMultiplier = 0.25f;
+	m_ssaaSize = 1; // 1 when no ssaa
+	m_sizeMultiplier = 1.0f;
 	m_height = 0;
 	m_width = 0;
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
-	m_textSize = 850.0f * m_ssaaSize * m_sizeMultiplier;
-	m_edgeSize = 25.0f * m_ssaaSize * m_sizeMultiplier;
+	m_textSize = 500.0f * m_ssaaSize * m_sizeMultiplier;
+	m_edgeSize = 10.0f * m_ssaaSize * m_sizeMultiplier;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
+
+	d2dClearColor.r = 0.0f;
+	d2dClearColor.g = 0.0f;
+	d2dClearColor.b = 0.0f;
+	d2dClearColor.a = 0.0f;
+
+	camPos = XMFLOAT4(1.0f, 0.0f, -5.0f, 1.0f);
+	camLook = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+	camUp = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
 }
 
 Text::~Text()
@@ -84,6 +93,10 @@ void Text::Render()
 		m_firstTime = false;
 	}
 
+	// Camera
+	DetectInput();
+	UpdateFreeLookCamera();
+
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -92,12 +105,9 @@ void Text::Render()
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
 	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
 	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Matrices"]);
-
 	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
-
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 
 	if (m_edgeRendering)
 		EdgeRender();
@@ -109,17 +119,18 @@ void Text::Render()
 	{
 		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
 		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+		gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
 	}
 
 	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
 	gdeviceContext->Draw(4, 0);
 
-	//manager->saveImage("Fonts/UV/saved.png", manager->pBackBuffer);
+	//manager->saveImage("Fonts/Saved/test1.png", manager->pBackBuffer);
 
 	// Render FXAA
 	if (m_fxaa)
@@ -139,6 +150,8 @@ void Text::Render()
 
 void Text::Initialize() {
 	manager = ApplicationContext::GetInstance().GetGraphicsManager();
+	wndHandle = ApplicationContext::GetInstance().GetWindowManager()->getWindowHandle();
+	InitDirectInput(*ApplicationContext::GetInstance().GetWindowManager()->getHinstance());
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -150,16 +163,17 @@ void Text::Initialize() {
 
 	// Matrices
 	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, (float)manager->getWindowWidth() / (float)manager->getWindowHeight(), 0.1f, 1000.0f);
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), (float)manager->getWindowWidth() / (float)manager->getWindowHeight(), 0.1f, 1000.0f);
+	//projection = XMMatrixOrthographicOffCenterLH(0.0f, (float)manager->getWindowWidth(), (float)manager->getWindowHeight(), 0.0f, 0.1f, 1000.0f);
 
-	XMMATRIX transform = XMMatrixRotationZ(XMConvertToRadians(10));
+	XMMATRIX transform = XMMatrixRotationX(XMConvertToRadians(45));
 	//transform = XMMatrixIdentity();
 	transform *= XMMatrixScaling(1.0f, 1.0f, 1.0f);
 
 	XMStoreFloat4x4(&m_matrices.world, XMMatrixTranspose(transform));
 	XMStoreFloat4x4(&m_matrices.view, XMMatrixTranspose(view));
 	XMStoreFloat4x4(&m_matrices.projection, XMMatrixTranspose(projection));
-	m_matrices.useMatrices.x = 2;
+	m_matrices.useMatrices.x = 3;
 	manager->createConstantBuffer("Matrices", &m_matrices, sizeof(Matrices));
 
 	// FXAA
@@ -175,8 +189,8 @@ void Text::Initialize() {
 	FXAA_PS_cb.texelSizeXY.x = 1.0f / manager->getWindowWidth();
 	FXAA_PS_cb.texelSizeXY.y = 1.0f / manager->getWindowHeight();
 	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 2.0f;
-	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
-	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 3.0f;
+	FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
+	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 2.0f;
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
 	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
 
@@ -238,9 +252,8 @@ void Text::Initialize() {
 	m_uvWidth = texDesc.Width;
 
 	manager->createTexture2D("Final",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		texDesc.Width,
-		texDesc.Height);
+		DXGI_FORMAT_R32G32B32A32_FLOAT);
+	manager->attachImage("putin.png", "TestImage");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -268,7 +281,7 @@ void Text::InitializeDirect2D()
 	//m_width = manager->getWindowWidth();
 	if (m_thesis)
 	{
-		m_height = manager->getWindowHeight() * m_sizeMultiplier;
+		m_height = manager->getWindowHeight() * m_sizeMultiplier*2.0;
 		m_width = manager->getWindowWidth() * m_sizeMultiplier;
 	}
 	if (m_ssaa)
@@ -548,13 +561,14 @@ void Text::EdgeRender()
 	for (int i = 0; i < 3; i++)
 	{
 		// Clear
+
 		m_d2dRenderTarget[i]->BeginDraw();
 		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
-		m_d2dRenderTarget[i]->Clear(NULL);
+		m_d2dRenderTarget[i]->Clear(d2dClearColor);
 
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
-			D2D1::Matrix3x2F::Translation(200 * m_ssaaSize * m_sizeMultiplier, 800 * m_ssaaSize * m_sizeMultiplier)
+			D2D1::Matrix3x2F::Translation(50 * m_ssaaSize * m_sizeMultiplier, 1200 * m_ssaaSize * m_sizeMultiplier)
 			//D2D1::Matrix3x2F::Scale(m_scale, m_scale)
 			//D2D1::Matrix3x2F::Rotation(270.0f)
 		);
@@ -627,4 +641,114 @@ void Text::CheckStatus(HRESULT hr, LPCTSTR titel)
 		MessageBox(NULL, L"HREULT = E_POINTER", titel, NULL);
 	else if (hr == E_UNEXPECTED)
 		MessageBox(NULL, L"HREULT = E_UNEXPECTED", titel, NULL);
+}
+
+void Text::UpdateFreeLookCamera()
+{
+	XMVECTOR worldForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	XMVECTOR worldRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR camForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	XMVECTOR camRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+	//Convert to XM!
+	XMMATRIX camRotation;
+	XMMATRIX XMViewSpace = XMLoadFloat4x4(&ViewSpace);
+	XMVECTOR XMCamLook = XMLoadFloat4(&camLook);
+	XMVECTOR XMCamUp = XMLoadFloat4(&camUp);
+	XMVECTOR XMCamPos = XMLoadFloat4(&camPos);
+
+	camRotation = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0);		//Function parameters: (Pitch in radians to rotate, Yaw -||-, Roll -||-);
+	XMCamLook = XMVector3TransformCoord(worldForward, camRotation);			//SETS CAMERA TARGET VECTOR
+	XMCamLook = XMVector3Normalize(XMCamLook);								//NORMALIZES CAMERA TARGET VECTOR
+
+	camRight = XMVector3TransformCoord(worldRight, camRotation);			//Update Cam Right Vector relative to rotation
+	camForward = XMVector3TransformCoord(worldForward, camRotation);		//Update Cam Forward Vector relative to rotation
+	XMCamUp = XMVector3Cross(camForward, camRight);							//Set Cam Up Vector with cross product
+
+	XMCamPos += moveLR * camRight;											//Set the left and right position of the camera
+	XMCamPos += moveFB * camForward;										//Set the forward and back position of the camera		//Move Along Cams Forward vector
+
+	XMCamLook += XMCamPos;													//Add the camera position to the target (look) vector
+	XMViewSpace = XMMatrixLookAtLH(XMCamPos, XMCamLook, XMCamUp);			//SET THE NEW CAMERA POSITION PROPERTIES(Updates the view matrix)
+																			//Convert Back to floats!
+	XMCamLook = XMVectorSet(0, 0, 0, 0);
+	XMStoreFloat4(&camLook, XMCamLook);
+	XMStoreFloat4(&camUp, XMCamUp);
+	XMStoreFloat4(&camPos, XMCamPos);
+	XMViewSpace = XMMatrixLookAtLH(XMCamPos, XMCamLook, XMCamUp);
+	XMStoreFloat4x4(&m_matrices.view, XMMatrixTranspose(XMViewSpace));
+	gdeviceContext->UpdateSubresource(resources.constantBuffers["Matrices"], 0, nullptr, &m_matrices, 0, 0);
+}
+
+void Text::DetectInput()
+{
+	DIMOUSESTATE mouseCurrentState;		//Mouse input
+	BYTE keyboardState[256];			//Keyboard input
+
+	DIKeyboard->Acquire();
+	DIMouse->Acquire();
+
+	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrentState);
+	DIKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
+
+	moveLR = 0.0f;
+	moveFB = 0.0f;
+
+	//float speed = 0.01;
+
+	if (keyboardState[DIK_ESCAPE] & 0x80)						//Shuts the window when the ESCAPE key is pressed
+	{
+		PostMessage(*wndHandle, WM_DESTROY, 0, 0);
+	}
+
+	if (keyboardState[DIK_LEFT] || keyboardState[DIK_A])		//Moves left when the A key or the LEFT arrow is pressed
+	{
+		moveLR = -speed;
+	}
+	if (keyboardState[DIK_RIGHT] || keyboardState[DIK_D])		//Moves right when the D key or the RIGHT arrow is pressed
+	{
+		moveLR = speed;
+	}
+	if (keyboardState[DIK_UP] || keyboardState[DIK_W])			//Moves forward when the W key or the UP arrow is pressed
+	{
+		moveFB = speed;
+	}
+	if (keyboardState[DIK_DOWN] || keyboardState[DIK_S])		//Moves backwards when the S key or the DOWN arrow is pressed
+	{
+		moveFB = -speed;
+	}
+	if ((mouseCurrentState.lX != mouseLastState.lX) || (mouseCurrentState.lY != mouseLastState.lY))		//Rotates the camera with the mouse input!
+	{
+		camYaw += mouseCurrentState.lX * 0.001f;				//Rotates camera to the right and left
+		camPitch += mouseCurrentState.lY * 0.001f;				//Rotates camera up and down
+		mouseLastState = mouseCurrentState;
+	}
+}
+
+bool Text::InitDirectInput(HINSTANCE hInstance)
+{
+	HRESULT WINAPI DirectInput8Create(
+		HINSTANCE hinst,
+		DWORD dwVersion,
+		REFIID riidltf,
+		LPVOID *ppvOut,
+		LPUNKNOWN punkOuter
+	);
+
+	HRESULT hr = DirectInput8Create(hInstance,
+		DIRECTINPUT_VERSION,
+		IID_IDirectInput8,
+		(void**)&DirectInput,
+		NULL);
+
+	hr = DirectInput->CreateDevice(GUID_SysKeyboard, &DIKeyboard, NULL);
+
+	hr = DirectInput->CreateDevice(GUID_SysMouse, &DIMouse, NULL);
+
+	hr = DIKeyboard->SetDataFormat(&c_dfDIKeyboard);
+	hr = DIKeyboard->SetCooperativeLevel(*wndHandle, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+
+	hr = DIMouse->SetDataFormat(&c_dfDIMouse);
+	hr = DIMouse->SetCooperativeLevel(*wndHandle, DISCL_EXCLUSIVE | DISCL_NOWINKEY | DISCL_FOREGROUND);
+
+	return true;
 }

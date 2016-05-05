@@ -10,11 +10,18 @@
 
 #include "GraphicsManager.h"
 #include "..\ApplicationContext.h"
+#include "WindowManager.h"
+
+#pragma comment (lib, "dinput8.lib")	//Keyboard/mouse input
+#pragma comment (lib, "dxguid.lib")		//Keyboard/mouse input
+#include <dinput.h>						//Keyboard/mouse input
 
 #define manager m_graphicsManager
 #define resources m_graphicsManager->thesisData
 #define gdevice m_graphicsManager->getDevice()
 #define gdeviceContext m_graphicsManager->getDeviceContext()
+
+using namespace DirectX;
 class GraphicsManager;
 class Text
 {
@@ -24,6 +31,7 @@ public:
 	void Render();
 	void Initialize();
 	ID3D11ShaderResourceView** GetText();
+	bool InitDirectInput(HINSTANCE hInstance);
 
 private:
 	GraphicsManager* m_graphicsManager;
@@ -52,18 +60,10 @@ private:
 	float m_scale;
 
 	// Direct3D
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 	ID3D11Query* m_query;
-
-	struct Matrices
-	{
-		XMFLOAT4X4 world;
-		XMFLOAT4X4 view;
-		XMFLOAT4X4 projection;
-		XMFLOAT4 useMatrices;
-	}m_matrices;
 
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;
@@ -76,6 +76,7 @@ private:
 	ID2D1SolidColorBrush* m_blackBrush[3];
 	ID2D1SolidColorBrush* m_orangeBrush[3];
 	ID3D11ShaderResourceView* finalText[3];
+	D2D1_COLOR_F d2dClearColor;
 
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
@@ -104,9 +105,35 @@ private:
 	void GetTextOutline(const wchar_t* text, int index);
 	void EdgeRender();
 
-	//// Helper functions
-	//template<typename T> 
-	//void SafeDelete(T*& a);
+	// Camera
+	void DetectInput();
+	void UpdateFreeLookCamera();
+	struct Matrices
+	{
+		XMFLOAT4X4 world;
+		XMFLOAT4X4 view;
+		XMFLOAT4X4 projection;
+		XMFLOAT4 useMatrices;
+	}m_matrices;
+	float speed = 0.01f;
+
+	XMFLOAT4 worldForward, worldRight, camForward, camRight;
+	XMFLOAT4X4 ViewSpace;
+	//XMFLOAT4 camPos, camLook, camUp;
+	XMFLOAT4 camPos;
+	XMFLOAT4 camLook;
+	XMFLOAT4 camUp;
+	float moveLR = 0.0f;	//MOVE LEFT AND RIGHT
+	float moveFB = 0.0f;	//MOVE FORWARD AND BACK
+	float camYaw = 0.0f;	//CAMERA ROTATION
+	float camPitch = 0.0f;	//CAMERA ROTATION
+
+	IDirectInputDevice8* DIKeyboard;
+	IDirectInputDevice8* DIMouse;
+	DIMOUSESTATE mouseLastState;
+	LPDIRECTINPUT8 DirectInput;
+
+	HWND* wndHandle;
 };
 
 #endif

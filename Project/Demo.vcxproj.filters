@@ -3,7 +3,6 @@
   <ItemGroup>
     <FxCompile Include="Shaders\CompositingPixelShader.hlsl" />
     <FxCompile Include="Shaders\CompositingVertexShader.hlsl" />
-    <FxCompile Include="Shaders\FXAA_PS.hlsl" />
     <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl" />
     <FxCompile Include="Shaders\LightningDomainShader.hlsl" />
     <FxCompile Include="Shaders\LightningGeometryShader.hlsl" />
@@ -23,6 +22,7 @@
     <FxCompile Include="Shaders\Text_PS.hlsl" />
     <FxCompile Include="Shaders\Text_VS.hlsl" />
     <FxCompile Include="Shaders\Text_Size_PS.hlsl" />
+    <FxCompile Include="Shaders\FXAA_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplicationContext.cpp" />

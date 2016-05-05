@@ -53,8 +53,8 @@ public:
 	GraphicsManager() {};
 	void Render();
 	
-	UINT windowWidth = 1920;
-	UINT windowHeight = 1080;
+	UINT windowWidth = 1024;
+	UINT windowHeight = 1024;
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	ThesisData thesisData;
@@ -85,7 +85,7 @@ public:
 		std::string name,
 		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT,
 		UINT width = 1024,
-		UINT height = 760,
+		UINT height = 1024,
 		bool renderTarget = true,
 		bool shaderResource = true,
 		ID3D11Texture2D* texture = nullptr
