@@ -1,14 +1,16 @@
 struct DS_OUTPUT
 {
 	float4 Pos : SV_POSITION;
-	float2 Tex : TEXCOORD;
+	//float3 Normal : NORMAL;
+	float2 BranchLevel : TEXCOORD;
 };
 
 // Output control point
 struct HS_CONTROL_POINT_OUTPUT
 {
 	float4 Pos : SV_POSITION;
-	float2 Tex : TEXCOORD;
+	//float3 Normal : NORMAL;
+	float2 BranchLevel : TEXCOORD;
 };
 
 // Output patch constant data.
@@ -19,38 +21,57 @@ struct HS_CONSTANT_DATA_OUTPUT
 	// TODO: change/add other stuff
 };
 
+float randomizes(in float2 uv)
+{
+	float2 noise = (frac(sin(dot(uv, float2(12.9898, 78.233)*2.0)) * 43758.5453));
+	return abs(noise.x + noise.y) * 0.5;
+}
+
 #define NUM_CONTROL_POINTS 2
 
 [domain("isoline")]
-DS_OUTPUT DS_main(
-	HS_CONSTANT_DATA_OUTPUT input,
-	float2 domain : SV_DomainLocation,	//float2 quad patch, float3 tri patch, float2 isoline
-	const OutputPatch<HS_CONTROL_POINT_OUTPUT, NUM_CONTROL_POINTS> patch)
+DS_OUTPUT DS_main(HS_CONSTANT_DATA_OUTPUT input, float2 uv : SV_DomainLocation,	//float2 quad patch, float3 tri patch, float2 isoline
+	const OutputPatch<HS_CONTROL_POINT_OUTPUT, NUM_CONTROL_POINTS> cpoint, uint id : SV_PrimitiveID)
 {
-	DS_OUTPUT Output;
-	float dx = domain.x;
-	float dy = domain.y;
+	DS_OUTPUT output;
 
-	//Output.Pos = (patch[0].Pos * domain.x + patch[1].Pos * domain.y, 1, 1);
-	//Output.Pos = (patch[0].Pos * domain.x + patch[1].Pos * domain.y + patch[0].Pos * domain.x, 1.0f);
+	float4 p1 = cpoint[0].Pos; 
+	float4 p2 = cpoint[1].Pos;
 
+	//Calculate Line Vectors
+	float3 lineDir = normalize(p2 - p1);
+	float3 up = float3(0.0f, 1.0f, 0.0f);
+	float3 right = normalize(cross(lineDir, up));
+	float3 left = normalize(cross(right, lineDir));
+
+	//float x = uv.x + uv.y * input.EdgeTessFactor[0];
+	float x = uv.x / input.EdgeTessFactor[0] + uv.y;	//http://xboxforums.create.msdn.com/forums/p/54604/331853.aspx
+
+	//Case1
+	//float randOffsX = saturate(randomizes(uv + p1.xz));
+	//float randOffsZ = saturate(randomizes(uv + p2.xz));
+
+	float randOffsX = clamp((randomizes(uv + p1.xz)), -1.0f, 1.0f);
+	float randOffsZ = clamp((randomizes(uv + p2.xz)), -1.0f, 1.0f);
+
+
+	float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+
+
+
+	float randScale = 0.7;
+
+
+	float3 vPos = lerp(cpoint[0].Pos, cpoint[1].Pos, x);
+
+	if(uv.x == 0 || uv.x == 1)
+		output.Pos = float4(vPos, 1.0f);
+	else
+		output.Pos = float4((vPos + (newPos * randScale)), 1.0f);
 	
-	//float3 pos = pow(1.0f - t, 3.0f) * patch[0].Pos + 3.0f * pow(1.0f - t, 2.0f) * t * patch[1].Pos + 3.0f * (1.0f - t) * pow(t, 2.0f) * patch[2].Pos + pow(t, 3.0f) * patch[3].Pos;
+	//output.Normal = cpoint[0].Normal;
+	output.BranchLevel = cpoint[1].BranchLevel;
+	//output.BranchLevel = float2(0, 0);
 
-	/////GOOD
-	//Output.Pos = float4((patch[0].Pos.x * dx), (patch[0].Pos.y * dy), 0.0f, 1.0f);	//Z = DEPTHPOS
-	Output.Pos = pow(1.0f - dx, 3.0f) * patch[0].Pos + 3.0f * pow(1.0f - dx, 2.0f) * dx * patch[1].Pos;
-	/////GOOD
-
-	//Output.Pos = ((patch[0].Pos * dx) + (patch[0].Pos), dx, 1);
-	//Output.Pos = float4(pos, 1.0f);
-
-	//Output.Pos = patch[1].Pos * (t * 2);
-
-	//Output.Pos = float4((patch[0].Pos * pos), 1.0f);
-
-	Output.Tex = patch[0].Tex;
-	//Original Backup
-	//Output.Pos = float4(patch[0].vPosition * domain.x + patch[1].vPosition * domain.y + patch[2].vPosition * domain.z, 1);
-	return Output;
+	return output;
 }

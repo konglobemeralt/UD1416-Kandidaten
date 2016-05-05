@@ -141,5 +141,11 @@
     <FxCompile Include="Shaders\VertexShader.hlsl">
       <Filter>Resource Files\Text\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\CubeLightningGeometryShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningSOGeometryShader.hlsl">
+      <Filter>Resource Files\Lightning\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

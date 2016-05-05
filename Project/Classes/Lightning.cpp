@@ -13,24 +13,40 @@ Lightning::~Lightning()
 
 void Lightning::createVertexBuffer()
 {
-	struct LightningVertex
+	
+	LightningVertex lightningVertices[2] =
 	{
-		float x, y, z;
-		float u, v;
-	}
-	lightningVertices[4] =
-	{
-		-1.0f, 1.0f, 0.0f,	//v0 pos
-		0.0f, 0.0f,	//v0 tex
+		-4.0f, 20.0f, 1.0f,	//v0 pos
+		1.0f, 1.0f,
 
-		1.0f, 1.0f, 0.0f,	//v1
-		1.0f, 0.0f,	//v1 tex
+		5.0f, -20.0f, 5.0f,	//v1
+		1.0f, 1.0f, 
 
-		-1.0f, -1.0f, 0.0f, //v2
-		0.0f, 1.0f,	//v2 tex
+		//-1.0f, -4.0f, -1.0f,	//v1
+		//1.0f, 1.0f, 
 
-		1.0f, -1.0f, 0.0f,   //v3
-		1.0f, 1.0f	//v3 color
+		//3.0f, -8.0f, 1.0f,	//v1
+		//1.0f, 1.0f
+
+		//ZIG-ZAG Verts
+		//-1.0f, 1.0f, 0.0f,	//v0 pos
+		//0.0f, 0.0f,	//v0 tex
+
+		//1.0f, 0.0f, 0.0f,	//v1	
+		//1.0f, 0.0f,	//v1 tex
+
+		//1.0f, 0.0f, 0.0f,	//v1
+		//1.0f, 0.0f,	//v1 tex
+
+		//-1.0f, -1.0f, 0.0f, //v2
+		//0.0f, 1.0f,	//v2 tex
+
+		//-1.0f, -1.0f, 0.0f, //v2
+		//0.0f, 1.0f,	//v2 tex
+
+		//1.0f, -2.0f, 0.0f,   //v3
+		//1.0f, 1.0f	//v3 color
+
 	};
 
 	D3D11_BUFFER_DESC bufferDesc2;
@@ -42,12 +58,26 @@ void Lightning::createVertexBuffer()
 	D3D11_SUBRESOURCE_DATA data2;
 	data2.pSysMem = lightningVertices;
 	gdevice->CreateBuffer(&bufferDesc2, &data2, &lightningBuffer);
+}
 
+void Lightning::createStreamVertexBuffer()
+{
+	D3D11_BUFFER_DESC SOVBD;
+	memset(&SOVBD, 0, sizeof(SOVBD));
+	SOVBD.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_STREAM_OUTPUT;
+	SOVBD.Usage = D3D11_USAGE_DEFAULT;
+	SOVBD.ByteWidth = sizeof(LightningVertex) * ((baseLightningSegments * 2) * 5);
+	SOVBD.CPUAccessFlags = 0;
+	SOVBD.MiscFlags = 0;
 
+	//D3D11_SUBRESOURCE_DATA data2;
+	//data2.pSysMem = lightningVertices;
+	gdevice->CreateBuffer(&SOVBD, 0,/*&data2,*/ &SOlightningBuffer);
 }
 
 void Lightning::Render() {
 	float clearColor[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	//float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
@@ -57,7 +87,7 @@ void Lightning::Render() {
 	detectInput();
 	updateFreeLookCamera();
 
-	XMMATRIX WVP, World, Projection;
+	XMMATRIX WVP, World, Projection, WV;
 
 	XMMATRIX XMViewSpace = XMLoadFloat4x4(&ViewSpace);
 	XMVECTOR XMCamPos, XMCamLook, XMCamUp;
@@ -75,99 +105,162 @@ void Lightning::Render() {
 	//Projection = XMMatrixOrthographicLH(20, 20, 0.5f, 20.0f);
 	World = XMMatrixIdentity();
 	WVP = World * XMViewSpace * Projection;
+	WV = World * XMViewSpace;
+	//WVP = Projection * XMViewSpace * World;
+	//WV = XMViewSpace * World;
+	//WVP = XMMatrixInverse(nullptr, WVP);
+	//XMMatrixInverse;
 
-	//constantBuffer.WVP = XMMatrixTranspose(WVP);	//OLD Version
-	XMStoreFloat4x4(&lightningCBuffer.World, XMMatrixTranspose(World));
-	XMStoreFloat4x4(&lightningCBuffer.WVP, XMMatrixTranspose(WVP));
+	World = XMMatrixTranspose(World);
+	WV = XMMatrixTranspose(WV);
+	WVP = XMMatrixTranspose(WVP);
+	XMViewSpace = XMMatrixTranspose(XMViewSpace);
+	Projection = XMMatrixTranspose(Projection);
+
+	XMStoreFloat4x4(&lightningCBuffer.World, World);
+	XMStoreFloat4x4(&lightningCBuffer.WV, WV);
+	XMStoreFloat4x4(&lightningCBuffer.WVP, WVP);
+	XMStoreFloat4x4(&lightningCBuffer.projection, Projection);
 	lightningCBuffer.camPos = camPos;
 	lightningCBuffer.lineWidth = 0.1f;
+	lightningCBuffer.baseLightningSegments = baseLightningSegments;
+	lightningCBuffer.seed = randSeed;
 
 	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);	//PATCHLIST 2 POINTS
-	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
-	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
+	//gdeviceContext->DrawAuto();
+	
+	//gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+	//gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+
+
+	gdeviceContext->IASetVertexBuffers(0, 1, &lightningBuffer, &vertexSize, &offset);
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
+
+	gdeviceContext->SOSetTargets(1, &SOlightningBuffer, &offset);
+
 	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
+	gdeviceContext->GSSetShader(StreamOutGS, nullptr, 0);
+	gdeviceContext->HSSetShader(NULL, nullptr, 0);
+	gdeviceContext->DSSetShader(NULL, nullptr, 0);
+	gdeviceContext->PSSetShader(NULL, nullptr, 0);
+	//gdeviceContext->OMSetDepthStencilState(NULL, 0);
 
+	gdeviceContext->Draw(2, 0);
+	//gdeviceContext->DrawAuto();
+
+	gdeviceContext->SOSetTargets(1, &nullBuffer[0], &offset);
+
+
+
+	
+	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);	//PATCHLIST 2 POINTS
+	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	gdeviceContext->IASetVertexBuffers(0, 1, &SOlightningBuffer, &vertexSize, &offset);
+
+	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
+	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+	
 	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
 	gdeviceContext->HSSetShader(m_graphicsManager->thesisData.hullShaders["LightningHullShader"], nullptr, 0);
 	gdeviceContext->DSSetShader(m_graphicsManager->thesisData.domainShaders["LightningDomainShader"], nullptr, 0);
-	gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
+	if (GS == 1)
+		gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
+	else
+		gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["CubeLightningGeometryShader"], nullptr, 0);
 	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["LightningPixelShader"], nullptr, 0);
+	
+	
+	//gdeviceContext->Draw(64, 0);
+	gdeviceContext->DrawAuto();
+}
 
-	gdeviceContext->IASetVertexBuffers(0, 1, &lightningBuffer, &vertexSize, &offset);
-
-	gdeviceContext->Draw(4, 0);
+float RandomNumber(float Min, float Max)
+{
+	srand(time(NULL));
+	return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
 }
 
 void Lightning::Initialize() {
 	m_graphicsManager = ApplicationContext::GetInstance().GetGraphicsManager();
 
+	//	1 = Flat Billboard Geometry Shader		
+	//	2 = CUBE Geometry Shader
+	GS = 2;
+
 	//WIREFRAME //WIREFRAME //WIREFRAME
 	m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_WIREFRAME);
-
 	//SOLID //SOLID  //SOLID //SOLID 
-	//m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_SOLID);
+	m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_SOLID);
 
 	createVertexBuffer();
+	createStreamVertexBuffer();
+	m_graphicsManager->createConstantBuffer("lightningCBuffer", &lightningCBuffer, sizeof(cBuffer));
+
+	//mt19937 generator;
+	//uniform_real_distribution<float> uniform_distribution(-10.0, 10.0);
+	//auto my_rand = bind(uniform_distribution, generator);
+	//randSeed = my_rand();
+	//vector<float> random_numbers(1000);
+	//generate(random_numbers.begin(), random_numbers.end(), my_rand);
+
+	//randSeed = RandomNumber(-10.0f, 10.0f);
+
+	srand(time(NULL));
+	randSeed = rand() % 200 + (-100);	//Range 1 to X
+
+	//randSeed = 1 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (100 - 1)));
+
 	wndHandle = ApplicationContext::GetInstance().GetWindowManager()->getWindowHandle();
 	InitDirectInput(*ApplicationContext::GetInstance().GetWindowManager()->getHinstance());			//Initiates the keyboard/mouse input function thingies
 
 	lightningCBuffer.tessLevel = 1.0f;
-
-	// ###########################################################
-	// ######				Constant buffer					######
-	// ###########################################################
-	//	void createConstantBuffer(
-	//		string name,
-	//		D3D11_BUFFER_DESC desc,
-	//		const void* data
-	//	);
-
-	///////////___________NEW_________________/////////////
-
-	m_graphicsManager->createConstantBuffer("lightningCBuffer", &lightningCBuffer, sizeof(cBuffer));
-
+	lightningCBuffer.density = 1.0f;
 
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
 	gdeviceContext->HSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
 	gdeviceContext->GSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
 
-	///////////___________NEW_________________/////////////
-
-	// ###########################################################
-	// ######				Vertex Shader					######
-	// ###########################################################
-	//	void createVertexShader(
-	//		string shaderName,
-	//		string layoutName,
-	//		D3D11_INPUT_ELEMENT_DESC* desc,
-	//		UINT size);
-
 	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	m_graphicsManager->createVertexShader("LightningVertexShader", "FirstLayout", layoutDesc, ARRAYSIZE(layoutDesc));
 
-
-
-	// ###########################################################
-	// ######				Other Shaders					######
-	// ###########################################################
-	//	void createPixelShader(
-	//		string name
-	//			);
-
 	m_graphicsManager->createHullShader("LightningHullShader");
 	m_graphicsManager->createDomainShader("LightningDomainShader");
-	m_graphicsManager->createGeometryShader("LightningGeometryShader");
+	
+	if(GS == 1)
+		m_graphicsManager->createGeometryShader("LightningGeometryShader");
+	else
+		m_graphicsManager->createGeometryShader("CubeLightningGeometryShader");
+
 	m_graphicsManager->createPixelShader("LightningPixelShader"); // Name has to match shader name without .hlsl
+
+	D3D11_SO_DECLARATION_ENTRY SODeclaration[] =
+	{
+		// semantic name, semantic index, start component, component count, output slot
+		{ 0, "SV_POSITION", 0, 0, 3, 0 },   // output all components of position
+		//{ 0, "NORMAL", 0, 0, 3, 0 },     // output the first 3 of the normal
+		{ 0, "TEXCOORD", 0, 0, 2, 0 },     // output the first 2 texture coordinates
+	};
+
+	wstring shaderName = L"Shaders/LightningSOGeometryShader.hlsl";
+	D3DCompileFromFile(shaderName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "GS_main", "gs_5_0", D3DCOMPILE_DEBUG, NULL, &ppShader, nullptr);
+	
+	gdevice->CreateGeometryShaderWithStreamOutput(ppShader->GetBufferPointer(), ppShader->GetBufferSize(), SODeclaration, ARRAYSIZE(SODeclaration), NULL, 0, 0, NULL, &StreamOutGS);
+
+	//gdevice->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &StreamOutGS);
+
 
 
 
@@ -300,13 +393,31 @@ void Lightning::detectInput()
 
 		mouseLastState = mouseCurrentState;
 	}
-	if (keyboardState[DIK_R])		//Moves backwards when the S key or the DOWN arrow is pressed
+	if (keyboardState[DIK_R])
 	{
 		lightningCBuffer.tessLevel += 0.005f;
+		if (lightningCBuffer.tessLevel > 64.0f)
+			lightningCBuffer.tessLevel = 64.0f;
 	}
-	if (keyboardState[DIK_F])		//Moves backwards when the S key or the DOWN arrow is pressed
+	if (keyboardState[DIK_F])
 	{
 		lightningCBuffer.tessLevel -= 0.005f;
+		if (lightningCBuffer.tessLevel < 1.0f)
+			lightningCBuffer.tessLevel = 1.0f;
+	}
+	if (keyboardState[DIK_T])
+	{	
+		dens += 0.005f;
+		if (dens > 10.0f)
+			dens = 10.0f;
+		lightningCBuffer.density = dens;
+	}
+	if (keyboardState[DIK_G])
+	{
+		dens -= 0.005f;
+		if (dens < 1.0f)
+			dens = 1.0f;
+		lightningCBuffer.density = dens;
 	}
 }
 
@@ -344,3 +455,31 @@ bool Lightning::InitDirectInput(HINSTANCE hInstance)
 
 	return true;
 }
+
+
+//OLD PIPELINE
+//
+//gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);
+//
+//gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+//gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+//
+//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);	//PATCHLIST 2 POINTS
+//																							//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST);	//PATCHLIST 6 POINTS
+//																							//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
+//																							//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
+//gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
+//gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+//
+//gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
+//gdeviceContext->HSSetShader(m_graphicsManager->thesisData.hullShaders["LightningHullShader"], nullptr, 0);
+//gdeviceContext->DSSetShader(m_graphicsManager->thesisData.domainShaders["LightningDomainShader"], nullptr, 0);
+//if (GS == 1)
+//gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
+//else
+//gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["CubeLightningGeometryShader"], nullptr, 0);
+//gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["LightningPixelShader"], nullptr, 0);
+//
+//gdeviceContext->IASetVertexBuffers(0, 1, &lightningBuffer, &vertexSize, &offset);
+//
+//gdeviceContext->Draw(4, 0);
