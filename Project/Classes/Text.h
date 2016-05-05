@@ -60,7 +60,7 @@ private:
 	float m_scale;
 
 	// Direct3D
-	float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 	ID3D11Query* m_query;
@@ -81,7 +81,7 @@ private:
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
 	const wchar_t* m_text[3];
-	CString m_font = "DINNextLTPro-Regular.otf";
+	CString m_font = "arial.ttf";
 	UINT32 m_textLength[3];
 	D2D1_RECT_F m_layoutRect;
 	IDWriteTextFormat* m_writeTextFormat[3];

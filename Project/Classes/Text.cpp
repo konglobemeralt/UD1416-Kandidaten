@@ -17,17 +17,17 @@ Text::Text()
 
 	m_firstTime = true;
 	m_edgeRendering = true;
-	m_fxaa = true;
+	m_fxaa = false;
 	m_ssaa = false;
 	m_thesis = true;
 	m_ssaaSize = 1; // 1 when no ssaa
-	m_sizeMultiplier = 1.0f;
+	m_sizeMultiplier = 0.4f;
 	m_height = 0;
 	m_width = 0;
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
-	m_textSize = 500.0f * m_ssaaSize * m_sizeMultiplier;
-	m_edgeSize = 10.0f * m_ssaaSize * m_sizeMultiplier;
+	m_textSize = 400.0f * m_ssaaSize * m_sizeMultiplier;
+	m_edgeSize = 16.0f * m_ssaaSize * m_sizeMultiplier;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
 
@@ -36,7 +36,8 @@ Text::Text()
 	d2dClearColor.b = 0.0f;
 	d2dClearColor.a = 0.0f;
 
-	camPos = XMFLOAT4(1.0f, 0.0f, -5.0f, 1.0f);
+	// Camera
+	camPos = XMFLOAT4(-0.2f, 0.0f, -2.0f, 1.0f);
 	camLook = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	camUp = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
 }
@@ -130,17 +131,18 @@ void Text::Render()
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
 	gdeviceContext->Draw(4, 0);
 
-	//manager->saveImage("Fonts/Saved/test1.png", manager->pBackBuffer);
-
 	// Render FXAA
 	if (m_fxaa)
 	{
 		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+		gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
 		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
 		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
 		gdeviceContext->Draw(4, 0);
 	}
+
+	//manager->saveImage("Fonts/Saved/Arial/1024_0.4_Tilted_Utan.png", manager->pBackBuffer);
 
 	//// Genereate mip maps
 	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
@@ -166,7 +168,8 @@ void Text::Initialize() {
 	XMMATRIX projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), (float)manager->getWindowWidth() / (float)manager->getWindowHeight(), 0.1f, 1000.0f);
 	//projection = XMMatrixOrthographicOffCenterLH(0.0f, (float)manager->getWindowWidth(), (float)manager->getWindowHeight(), 0.0f, 0.1f, 1000.0f);
 
-	XMMATRIX transform = XMMatrixRotationX(XMConvertToRadians(45));
+	XMMATRIX transform = XMMatrixRotationY(XMConvertToRadians(-65)) * XMMatrixRotationZ(XMConvertToRadians(45));
+	//XMMATRIX transform = XMMatrixIdentity();
 	//transform = XMMatrixIdentity();
 	transform *= XMMatrixScaling(1.0f, 1.0f, 1.0f);
 
@@ -466,7 +469,7 @@ void Text::DirectWriteEdge()
 	CheckStatus(m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles), L"CreateFontFileReference");
 
 	CheckStatus(m_writeFactory->CreateFontFace(
-		DWRITE_FONT_FACE_TYPE_CFF,
+		DWRITE_FONT_FACE_TYPE_TRUETYPE,
 		1,
 		&m_fontFiles,
 		0,
@@ -546,7 +549,7 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 			D2D1_CAP_STYLE_FLAT,
 			D2D1_CAP_STYLE_FLAT,
 			D2D1_CAP_STYLE_FLAT,
-			D2D1_LINE_JOIN_MITER,
+			D2D1_LINE_JOIN_MITER_OR_BEVEL,
 			10.0f,
 			D2D1_DASH_STYLE_SOLID,
 			0.0f),
@@ -572,7 +575,7 @@ void Text::EdgeRender()
 			//D2D1::Matrix3x2F::Scale(m_scale, m_scale)
 			//D2D1::Matrix3x2F::Rotation(270.0f)
 		);
-		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
+		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize, m_strokeStyle);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 
 		m_d2dRenderTarget[i]->EndDraw();
@@ -670,7 +673,7 @@ void Text::UpdateFreeLookCamera()
 	XMCamLook += XMCamPos;													//Add the camera position to the target (look) vector
 	XMViewSpace = XMMatrixLookAtLH(XMCamPos, XMCamLook, XMCamUp);			//SET THE NEW CAMERA POSITION PROPERTIES(Updates the view matrix)
 																			//Convert Back to floats!
-	XMCamLook = XMVectorSet(0, 0, 0, 0);
+	//XMCamLook = XMVectorSet(0, 0, 0, 0);
 	XMStoreFloat4(&camLook, XMCamLook);
 	XMStoreFloat4(&camUp, XMCamUp);
 	XMStoreFloat4(&camPos, XMCamPos);
