@@ -47,6 +47,8 @@ private:
 	bool m_edgeRendering;
 	bool m_fxaa;
 	bool m_ssaa;
+	bool m_imageFXAA;
+	bool m_imageSSAA;
 	bool m_thesis;
 	unsigned int m_ssaaSize;
 	float m_sizeMultiplier;
@@ -64,6 +66,7 @@ private:
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 	ID3D11Query* m_query;
+	ID3D11DepthStencilView *m_depthStencilView;
 
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;

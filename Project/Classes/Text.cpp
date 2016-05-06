@@ -15,19 +15,21 @@ Text::Text()
 		m_pathGeometry[i] = nullptr;
 	}
 
+	m_imageSSAA = true;
+	m_imageFXAA = false;
 	m_firstTime = true;
 	m_edgeRendering = true;
 	m_fxaa = false;
 	m_ssaa = false;
 	m_thesis = true;
 	m_ssaaSize = 1; // 1 when no ssaa
-	m_sizeMultiplier = 0.4f;
+	m_sizeMultiplier = 1.0f;
 	m_height = 0;
 	m_width = 0;
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
-	m_textSize = 400.0f * m_ssaaSize * m_sizeMultiplier;
-	m_edgeSize = 16.0f * m_ssaaSize * m_sizeMultiplier;
+	m_textSize = 50.0f * m_ssaaSize * m_sizeMultiplier;
+	m_edgeSize = 3.0f * m_ssaaSize * m_sizeMultiplier;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
 
@@ -37,7 +39,7 @@ Text::Text()
 	d2dClearColor.a = 0.0f;
 
 	// Camera
-	camPos = XMFLOAT4(-0.2f, 0.0f, -2.0f, 1.0f);
+	camPos = XMFLOAT4(-0.0f, 0.0f, -0.1f, 1.0f);
 	camLook = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	camUp = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
 }
@@ -83,9 +85,9 @@ void Text::Render()
 	{
 		CalculateSize();
 		// Initialize Systems
-		m_text[0] = L"Text";
-		m_text[1] = L"Pommes";
-		m_text[2] = L"68";
+		m_text[0] = L"Shit";
+		m_text[1] = L"This is";
+		m_text[2] = L"a test!";
 		InitializeDirect2D();
 		if(m_edgeRendering)
 			DirectWriteEdge();
@@ -97,10 +99,11 @@ void Text::Render()
 	// Camera
 	DetectInput();
 	UpdateFreeLookCamera();
+	m_matrices.useMatrices.x = 2;
+	gdeviceContext->UpdateSubresource(resources.constantBuffers["Matrices"], 0, nullptr, &m_matrices, 0, 0);
 
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), m_depthStencilView);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
@@ -115,34 +118,77 @@ void Text::Render()
 	else
 		RenderText();
 
-	// FXAA
-	if (m_fxaa)
-	{
-		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
-		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
-		gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
-	}
-
-	// Set textures
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
-	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
+	// Simon
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Simon"]);
 	gdeviceContext->Draw(4, 0);
+
+	// Text
+	m_matrices.useMatrices.x = 0;
+	gdeviceContext->UpdateSubresource(resources.constantBuffers["Matrices"], 0, nullptr, &m_matrices, 0, 0);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
+
+	//// FXAA
+	//if (m_fxaa)
+	//{
+	//	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
+	//	gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	//	gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
+	//}
 
 	// Render FXAA
 	if (m_fxaa)
 	{
-		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-		gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+		m_matrices.useMatrices.x = 0;
+		gdeviceContext->UpdateSubresource(resources.constantBuffers["Matrices"], 0, nullptr, &m_matrices, 0, 0);
+
+		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), m_depthStencilView);
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Text0"]);
 		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
 		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
-		gdeviceContext->Draw(4, 0);
 	}
+	gdeviceContext->Draw(4, 0);
 
-	//manager->saveImage("Fonts/Saved/Arial/1024_0.4_Tilted_Utan.png", manager->pBackBuffer);
+	////gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
+	//if (m_fxaa)
+	//	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Final"]);
+	//else
+	//	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
+	//gdeviceContext->Draw(4, 0);
+	//
+	//// FXAA
+	//if (m_fxaa)
+	//{
+	//	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
+	//	gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	//	gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
+	//
+	//	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	//	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+	//	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Text0"]);
+	//	gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
+	//	gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
+	//	gdeviceContext->Draw(4, 0);
+	//}
+
+	//manager->saveImage("Fonts/Saved/Arial/TEST.png", manager->pBackBuffer);
+
+	if (m_fxaa && m_imageSSAA)
+		manager->saveImage("Fonts/Saved/Combined/FXAA_SSAA.png", manager->pBackBuffer);
+	else if (m_fxaa && m_imageFXAA)
+		manager->saveImage("Fonts/Saved/Combined/FXAA_FXAA.png", manager->pBackBuffer);
+	else if (m_ssaa && m_imageSSAA)
+		manager->saveImage("Fonts/Saved/Combined/SSAA_SSAA.png", manager->pBackBuffer);
+	else
+		manager->saveImage("Fonts/Saved/Combined/Without.png", manager->pBackBuffer);
+
+	//if(!m_fxaa && !m_ssaa)
+	//	manager->saveImage("Fonts/Saved/Arial/Tilted_Without.png", manager->pBackBuffer);
+	//else if (!m_fxaa && m_ssaa)
+	//	manager->saveImage("Fonts/Saved/Arial/Tilted_SSAA.png", manager->pBackBuffer);
+	//else if (m_fxaa && !m_ssaa)
+	//	manager->saveImage("Fonts/Saved/Arial/Tilted_FXAA.png", manager->pBackBuffer);
+	//else if (m_fxaa && m_ssaa)
+	//	manager->saveImage("Fonts/Saved/Arial/Tilted_Both.png", manager->pBackBuffer);
 
 	//// Genereate mip maps
 	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
@@ -154,6 +200,23 @@ void Text::Initialize() {
 	manager = ApplicationContext::GetInstance().GetGraphicsManager();
 	wndHandle = ApplicationContext::GetInstance().GetWindowManager()->getWindowHandle();
 	InitDirectInput(*ApplicationContext::GetInstance().GetWindowManager()->getHinstance());
+
+	D3D11_TEXTURE2D_DESC dsvDesc;
+	ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+	dsvDesc.Width = manager->getWindowWidth();
+	dsvDesc.Height = manager->getWindowHeight();
+	dsvDesc.MipLevels = 1;
+	dsvDesc.ArraySize = 1;
+	dsvDesc.SampleDesc.Count = 4;
+	dsvDesc.SampleDesc.Quality = 0;
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	dsvDesc.Usage = D3D11_USAGE_DEFAULT;
+	dsvDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	ID3D11Texture2D *stencilTexture;
+	gdevice->CreateTexture2D(&dsvDesc, NULL, &stencilTexture);
+	HRESULT hr = gdevice->CreateDepthStencilView(stencilTexture, NULL, &m_depthStencilView);
+	stencilTexture->Release();
+
 	// ###########################################################
 	// ######				Constant buffer					######
 	// ###########################################################
@@ -164,19 +227,21 @@ void Text::Initialize() {
 	//	);
 
 	// Matrices
-	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	XMMATRIX projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), (float)manager->getWindowWidth() / (float)manager->getWindowHeight(), 0.1f, 1000.0f);
 	//projection = XMMatrixOrthographicOffCenterLH(0.0f, (float)manager->getWindowWidth(), (float)manager->getWindowHeight(), 0.0f, 0.1f, 1000.0f);
 
-	XMMATRIX transform = XMMatrixRotationY(XMConvertToRadians(-65)) * XMMatrixRotationZ(XMConvertToRadians(45));
+	XMMATRIX transform = XMMatrixTranslation(0.0f, 0.0f, 0.1f);
+	//XMMATRIX transform = XMMatrixRotationY(XMConvertToRadians(-65)) * XMMatrixRotationZ(XMConvertToRadians(45));
 	//XMMATRIX transform = XMMatrixIdentity();
 	//transform = XMMatrixIdentity();
-	transform *= XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	float scale = 1.5f;
+	//transform *= XMMatrixScaling(scale, scale, scale);
 
 	XMStoreFloat4x4(&m_matrices.world, XMMatrixTranspose(transform));
 	XMStoreFloat4x4(&m_matrices.view, XMMatrixTranspose(view));
 	XMStoreFloat4x4(&m_matrices.projection, XMMatrixTranspose(projection));
-	m_matrices.useMatrices.x = 3;
+	m_matrices.useMatrices.x = 2;
 	manager->createConstantBuffer("Matrices", &m_matrices, sizeof(Matrices));
 
 	// FXAA
@@ -239,7 +304,10 @@ void Text::Initialize() {
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
 
-	manager->attachImage("Fonts/Images/Checker.png", "Erik");
+	if(!m_imageSSAA)
+		manager->attachImage("Fonts/Images/Simon/RobotsLow.png", "Simon");
+	else
+		manager->attachImage("Fonts/Images/Simon/RobotsMed.png", "Simon");
 	manager->attachImage("Fonts/UV/uv7.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
@@ -256,7 +324,6 @@ void Text::Initialize() {
 
 	manager->createTexture2D("Final",
 		DXGI_FORMAT_R32G32B32A32_FLOAT);
-	manager->attachImage("putin.png", "TestImage");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -284,7 +351,7 @@ void Text::InitializeDirect2D()
 	//m_width = manager->getWindowWidth();
 	if (m_thesis)
 	{
-		m_height = manager->getWindowHeight() * m_sizeMultiplier*2.0;
+		m_height = manager->getWindowHeight() * m_sizeMultiplier;
 		m_width = manager->getWindowWidth() * m_sizeMultiplier;
 	}
 	if (m_ssaa)
@@ -489,14 +556,34 @@ void Text::DirectWriteEdge()
 	m_scale = (m_width - m_padding) / (maxSize - m_padding);
 
 	// Center text
+	D2D1::Matrix3x2F matrix;
 	for (int i = 0; i < 3; i++)
 	{
-		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
-			0,-0
-		);
+		if (i == 0)
+		{
+			matrix = D2D1::Matrix3x2F(
+				1.0f, 0.0f,
+				0.0f, 1.0f,
+				//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
+				0, 0
+			);
+		}
+		else if (i == 1)
+		{
+			matrix = D2D1::Matrix3x2F(
+				1.0f, 0.0f,
+				0.0f, 1.0f,
+				0, 000
+			);
+		}
+		else if (i == 2)
+		{
+			matrix = D2D1::Matrix3x2F(
+				1.0f, 0.0f,
+				0.0f, 1.0f,
+				0, 150* m_ssaaSize
+			);
+		}
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
 			&matrix,
@@ -561,24 +648,23 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 
 void Text::EdgeRender()
 {
+	m_d2dRenderTarget[0]->Clear(d2dClearColor);
 	for (int i = 0; i < 3; i++)
 	{
 		// Clear
-
-		m_d2dRenderTarget[i]->BeginDraw();
-		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
-		m_d2dRenderTarget[i]->Clear(d2dClearColor);
+		m_d2dRenderTarget[0]->BeginDraw();
+		m_d2dRenderTarget[0]->SetTransform(D2D1::IdentityMatrix());
 
 		// // Draw text with outline
-		m_d2dRenderTarget[i]->SetTransform(
-			D2D1::Matrix3x2F::Translation(50 * m_ssaaSize * m_sizeMultiplier, 1200 * m_ssaaSize * m_sizeMultiplier)
+		m_d2dRenderTarget[0]->SetTransform(
+			D2D1::Matrix3x2F::Translation(75 * m_ssaaSize * m_sizeMultiplier, 225 * m_ssaaSize * m_sizeMultiplier)
 			//D2D1::Matrix3x2F::Scale(m_scale, m_scale)
 			//D2D1::Matrix3x2F::Rotation(270.0f)
 		);
-		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize, m_strokeStyle);
-		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
+		m_d2dRenderTarget[0]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize, m_strokeStyle);
+		m_d2dRenderTarget[0]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 
-		m_d2dRenderTarget[i]->EndDraw();
+		m_d2dRenderTarget[0]->EndDraw();
 	}
 }
 
