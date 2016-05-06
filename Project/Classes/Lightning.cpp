@@ -81,23 +81,20 @@ void Lightning::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	//float lineWidth;
-	//lineWidth = 0.1f;
+	if(fillMode == 1)
+		m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_WIREFRAME);	//WIREFRAME
+	else
+		m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_SOLID);	//SOLID
 
 	detectInput();
 	updateFreeLookCamera();
 
 	XMMATRIX WVP, World, Projection, WV;
-
 	XMMATRIX XMViewSpace = XMLoadFloat4x4(&ViewSpace);
 	XMVECTOR XMCamPos, XMCamLook, XMCamUp;
 	XMCamPos = XMLoadFloat4(&camPos);
 	XMCamLook = XMLoadFloat4(&camLook);
 	XMCamUp = XMLoadFloat4(&camUp);
-
-	//XMVECTOR camPos2 = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);	// Camera StartPos		//-2.0 Moves camera back 2 units along Z
-	//XMVECTOR camLook2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//XMVECTOR camUp2 = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	//XMViewSpace = XMMatrixLookAtLH(camPos2, camLook2, camUp2);
 	XMViewSpace = XMMatrixLookAtLH(XMCamPos, XMCamLook, XMCamUp);
@@ -128,13 +125,9 @@ void Lightning::Render() {
 
 	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);
 
-	
-
 	//gdeviceContext->DrawAuto();
-	
 	//gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
 	//gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
-
 
 	gdeviceContext->IASetVertexBuffers(0, 1, &lightningBuffer, &vertexSize, &offset);
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
@@ -155,9 +148,6 @@ void Lightning::Render() {
 
 	gdeviceContext->SOSetTargets(1, &nullBuffer[0], &offset);
 
-
-
-	
 	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
 	
@@ -198,7 +188,7 @@ void Lightning::Initialize() {
 	//WIREFRAME //WIREFRAME //WIREFRAME
 	m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_WIREFRAME);
 	//SOLID //SOLID  //SOLID //SOLID 
-	m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_SOLID);
+	//m_graphicsManager->setRasterstate(D3D11_CULL_NONE, D3D11_FILL_SOLID);
 
 	createVertexBuffer();
 	createStreamVertexBuffer();
@@ -418,6 +408,14 @@ void Lightning::detectInput()
 		if (dens < 1.0f)
 			dens = 1.0f;
 		lightningCBuffer.density = dens;
+	}
+	if (keyboardState[DIK_1])
+	{
+		fillMode = 1;
+	}
+	if (keyboardState[DIK_2])
+	{
+		fillMode = 2;
 	}
 }
 

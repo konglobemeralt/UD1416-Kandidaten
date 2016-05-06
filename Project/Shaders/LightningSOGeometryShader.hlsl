@@ -64,72 +64,196 @@ void GS_main(line DS_OUT input[2], inout PointStream<GS_OUT> OutputStream)
 
 	float randomScale = 1.7f;
 	float branchLength = (extrudeLength * 1.7f);
+	float nrOfBranchSegments = 4;
+	bool branch = false;
 
 	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////
 	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////
 	GS_OUT output;
-	float4 prevPos = float4(0, 0, 0, 1);
-	float4 prevPos2 = float4(0, 0, 0, 1);
+	float4 prevPos = p1, prevPos2 = p1;
 	float3 prevDir = float3(0, 0, 0);
-	int k = 0;
-	while (k <= nrOfSegments)
+	int k = 0, branchLevel = 1, prevK = 0;
+	for (int k = 0; k < nrOfSegments; k++)
 	{
-		float randOffsX = randomizes1(k * seed + p1.xz);
-		float randOffsZ = randomizes1(k * seed + p2.xz);
-		randOffsX = saturate(randOffsX);
-		randOffsZ = saturate(randOffsZ);
-		randOffsX = clampMinus1To1(randOffsX);
-		randOffsZ = clampMinus1To1(randOffsZ);
+		for (int i = 0; i < 2; i++)	//For each segment
+		{
+			output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
+			//output.Pos = lerp(p1, p2, k + i);
 
-		float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+			float randOffsX = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.xz)));
+			float randOffsZ = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.zx)));
 
-		if (k == 0)	//If its the first point
-		{
-			output.Pos = input[0].Pos;
-			output.BranchLevel = float2(1, 0);
-			OutputStream.Append(output);
-			prevPos = output.Pos;
-		}
-		else if (k == nrOfSegments)	//If its the last point
-		{
-			output.Pos = input[1].Pos;
-			output.BranchLevel = float2(1, 0);
-			OutputStream.Append(output);
-		}
-		else
-		{
-			for (int i = 0; i < 2; i++)
+			if (branch == true && k == 0 && i == 0)
 			{
-				output.Pos = float4(p1 + (lineDir * (extrudeLength * k)), 1.0f);
+				randOffsX = clampMinus1To1(saturate(randomizes1((prevK + i) * seed + output.Pos.xz)));
+				randOffsZ = clampMinus1To1(saturate(randomizes1((prevK + i) * seed + output.Pos.zx)));
+			}
+			float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+
+			//if (branch == true && k == 0 && i == 0)
+			//	output.Pos = output.Pos + (newPos * randomScale);
+
+			//output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
+			if (k != 0 || k != nrOfSegments)	//All points except the first and last gets a random offset
 				output.Pos = output.Pos + (newPos * randomScale);	//Applies Random Offset To Joint
-				output.BranchLevel = float2(1, 0);
 
-				OutputStream.Append(output);
-				if (i != 0)
-				{
-					prevDir = normalize(output.Pos - prevPos);
-					prevPos = output.Pos;
-					prevPos2 = output.Pos;
-				}
+			output.BranchLevel = float2(branchLevel, 0);
+			OutputStream.Append(output);
+
+			if (i != 0)
+			{
+				prevDir = normalize(output.Pos - prevPos);
+				prevPos = output.Pos;
+				prevPos2 = output.Pos;
 			}
 
-			if (k % 3 == true && k != nrOfSegments && k != 0)
+			if (k % 3 == true && k != nrOfSegments && k != 0 && i != 0 && branch == false)
 			{
-				randOffsX = randomizes1(k + seed - p1.xz);
-				randOffsZ = randomizes1(k + seed * p2.xz);
-				newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
-
-
-				output.Pos = float4((prevPos + (prevDir * branchLength)), 1.0f);
-				output.Pos = output.Pos + (newPos * 0.2f);
-				output.BranchLevel = float2(2, 0);
-				OutputStream.Append(output);
-				
-				output.Pos = prevPos2;
-				output.BranchLevel = float2(1, 0);
-				OutputStream.Append(output);
+				prevK = k;
+				k = 0;
+				nrOfSegments = nrOfBranchSegments;	//Will make the first for-loop run 2 times. 
+				branchLevel = 2;
+				p1 = prevPos;
+				lineDir = prevDir;
+				extrudeLength = branchLength;
+				branch = true;
+			}
+			if (k == nrOfBranchSegments - 1 && branch == true && i != 0)
+			{
+				//Reset
+				k = prevK;
+				nrOfSegments = baseLightningSegments;
+				branchLevel = 1;
+				p1 = input[0].Pos;
+				lineDir = normalize(p2 - p1);
+				extrudeLength = lightningLength / nrOfSegments;
+				branch = false;
 			}
 		}
-		k++;
+		
+		//if (k % 3 == true && k != nrOfSegments && k != 0)
+		//{
+		//	float randOffsX = randomizes1(k + seed - p1.xz);
+		//	float randOffsZ = randomizes1(k + seed * p2.xz);
+		//	float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+
+		//	output.Pos = float4((prevPos + (prevDir * branchLength)), 1.0f);
+		//	output.Pos = output.Pos + (newPos * 0.2f);
+		//	output.BranchLevel = float2(2, 0);
+		//	OutputStream.Append(output);
+		//		
+		//	output.Pos = prevPos2;
+		//	output.BranchLevel = float2(2, 0);
+		//	OutputStream.Append(output);
+		//}
 	}
 }
+
+//while (k <= nrOfSegments)
+//{
+//	float randOffsX = randomizes1(k * seed + p1.xz);
+//	float randOffsZ = randomizes1(k * seed + p2.xz);
+//	randOffsX = saturate(randOffsX);
+//	randOffsZ = saturate(randOffsZ);
+//	randOffsX = clampMinus1To1(randOffsX);
+//	randOffsZ = clampMinus1To1(randOffsZ);
+//
+//	float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+//
+//	if (k == 0)	//If its the first point
+//	{
+//		output.Pos = input[0].Pos;
+//		output.BranchLevel = float2(1, 0);
+//		OutputStream.Append(output);
+//		prevPos = output.Pos;
+//	}
+//	else if (k == nrOfSegments)	//If its the last point
+//	{
+//		output.Pos = input[1].Pos;
+//		output.BranchLevel = float2(1, 0);
+//		OutputStream.Append(output);
+//	}
+//	else
+//	{
+//		for (int i = 0; i < 2; i++)
+//		{
+//			output.Pos = float4(p1 + (lineDir * (extrudeLength * k)), 1.0f);
+//			output.Pos = output.Pos + (newPos * randomScale);	//Applies Random Offset To Joint
+//			output.BranchLevel = float2(1, 0);
+//
+//			OutputStream.Append(output);
+//			if (i != 0)
+//			{
+//				prevDir = normalize(output.Pos - prevPos);
+//				prevPos = output.Pos;
+//				prevPos2 = output.Pos;
+//			}
+//		}
+//
+//		if (k % 3 == true && k != nrOfSegments && k != 0)
+//		{
+//			randOffsX = randomizes1(k + seed - p1.xz);
+//			randOffsZ = randomizes1(k + seed * p2.xz);
+//			newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+//
+//
+//			output.Pos = float4((prevPos + (prevDir * branchLength)), 1.0f);
+//			output.Pos = output.Pos + (newPos * 0.2f);
+//			output.BranchLevel = float2(2, 0);
+//			OutputStream.Append(output);
+//
+//			output.Pos = prevPos2;
+//			output.BranchLevel = float2(1, 0);
+//			OutputStream.Append(output);
+//		}
+//	}
+//	k++;
+//}
+
+
+
+//
+//float branches = 1;
+//for (int b = 0; b < branches; b++)
+//{
+//	for (int i = 0; i < 2; i++)	//For each segment
+//	{
+//		output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
+//		//output.Pos = lerp(p1, p2, k + i);
+//
+//		float randOffsX = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.xz)));
+//		float randOffsZ = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.zx)));
+//		float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
+//
+//		//output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
+//		if (k != 0 || k != nrOfSegments)	//All points except the first and last gets a random offset
+//			output.Pos = output.Pos + (newPos * randomScale);	//Applies Random Offset To Joint
+//		output.BranchLevel = float2(branchLevel, 0);
+//		OutputStream.Append(output);
+//
+//		if (i != 0)
+//		{
+//			prevDir = normalize(output.Pos - prevPos);
+//			prevPos = output.Pos;
+//			prevPos2 = output.Pos;
+//		}
+//
+//		if (k % 3 == true && k != nrOfSegments && k != 0 && i != 0)
+//		{
+//			branches = 2;	//Will make the first for-loop run 2 times. 
+//			branchLevel = 2;
+//			p1 = prevPos;
+//			lineDir = prevDir;
+//			extrudeLength = branchLength;
+//
+//		}
+//		if (branches == 2)
+//		{
+//			//Reset
+//			p1 = input[0].Pos;
+//			branchLevel = 1;
+//			lineDir = normalize(p2 - p1);
+//			extrudeLength = lightningLength / nrOfSegments;
+//		}
+//	}
+//}

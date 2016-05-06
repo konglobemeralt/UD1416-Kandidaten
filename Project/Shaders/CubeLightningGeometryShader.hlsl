@@ -113,7 +113,7 @@ void GS_main(line DS_OUT input[2], inout TriangleStream<GS_OUT> OutputStream)
 	//v[6].Pos = p2 + float4((-r * perpVec) + (-r * depthVec), 1.0f);
 	//v[7].Pos = p2 + float4((-r * perpVec) + (r * depthVec), 1.0f);
 
-	float overlapDivide = 0.5f;
+	float overlapDivide = 0.0f;
 
 	////Cubes overlap eachother.
 	v[0].Pos = p1 + float4((r * perpVec) + (r * depthVec), 1.0f) + float4((-r * overlapDivide) * lineDir, 1.0f);

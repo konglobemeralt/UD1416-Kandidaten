@@ -43,6 +43,7 @@ private:
 	float speed = 0.002f;
 	int baseLightningSegments = 16; //To a maximum of 64 segments
 	float randSeed;
+	float fillMode;
 
 	XMFLOAT4 worldForward, worldRight, camForward, camRight;
 	XMFLOAT4X4 ViewSpace;
