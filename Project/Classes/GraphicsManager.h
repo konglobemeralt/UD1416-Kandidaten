@@ -32,7 +32,7 @@ private:
 
 	void setRasterstate(D3D11_CULL_MODE cullmode);
 	HRESULT CreateDirect3DContext();
-	void ResetViews();
+	
 
 	// Quad
 	ID3D11Buffer* gQuadBuffer = nullptr;
@@ -46,6 +46,7 @@ private:
 	ID3D11ShaderResourceView* emptySRV[8];
 	
 public:
+	void ResetViews();
 	/*static GraphicsManager& getInstance(){
 		static GraphicsManager instance;
 		return instance;
@@ -53,8 +54,8 @@ public:
 	GraphicsManager() {};
 	void Render();
 	
-	UINT windowWidth = 1280;
-	UINT windowHeight = 1024;
+	UINT windowWidth = 512; //1280
+	UINT windowHeight = 512; //1024
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	ThesisData thesisData;
