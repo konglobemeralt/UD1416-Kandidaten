@@ -37,7 +37,7 @@ float clampMinus1To1(float x)	//In value must be 0-1, use saturate first.
 	return clamped; 
 }
 
-[maxvertexcount(64)]	//defines the output to be a maximum of x vertices.
+[maxvertexcount(150)]	//defines the output to be a maximum of x vertices.
 void GS_main(line DS_OUT input[2], inout PointStream<GS_OUT> OutputStream)
 {
 	float4 p1 = input[0].Pos; //?
@@ -63,39 +63,39 @@ void GS_main(line DS_OUT input[2], inout PointStream<GS_OUT> OutputStream)
 	float extrudeLength = lightningLength / nrOfSegments;
 
 	float randomScale = 1.7f;
-	float branchLength = (extrudeLength * 1.7f);
-	float nrOfBranchSegments = 4;
+	float branchLength = (extrudeLength * 0.7f);
+	float nrOfBranchSegments = 5;
 	bool branch = false;
 
 	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////
 	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////	/////////OUTPUT STAGE///////////////
 	GS_OUT output;
-	float4 prevPos = p1, prevPos2 = p1;
+	float4 prevPos = p1, prevPos2 = p1, branchPos;
 	float3 prevDir = float3(0, 0, 0);
 	int k = 0, branchLevel = 1, prevK = 0;
+	float randOffsX, randOffsZ;
 	for (int k = 0; k < nrOfSegments; k++)
 	{
 		for (int i = 0; i < 2; i++)	//For each segment
 		{
-			output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
+			if(branch == false || branch == true && i != 0)
+				output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
 			//output.Pos = lerp(p1, p2, k + i);
 
-			float randOffsX = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.xz)));
-			float randOffsZ = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.zx)));
+			randOffsX = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.xz)));
+			randOffsZ = clampMinus1To1(saturate(randomizes1((k + i) * seed + output.Pos.zx)));
 
-			if (branch == true && k == 0 && i == 0)
-			{
-				randOffsX = clampMinus1To1(saturate(randomizes1((prevK + i) * seed + output.Pos.xz)));
-				randOffsZ = clampMinus1To1(saturate(randomizes1((prevK + i) * seed + output.Pos.zx)));
-			}
 			float4 newPos = float4((randOffsX * right) + (randOffsZ * left), 1.0f);
 
-			//if (branch == true && k == 0 && i == 0)
-			//	output.Pos = output.Pos + (newPos * randomScale);
-
 			//output.Pos = float4(p1 + (lineDir * (extrudeLength * (k + i))), 1.0f);
-			if (k != 0 || k != nrOfSegments)	//All points except the first and last gets a random offset
-				output.Pos = output.Pos + (newPos * randomScale);	//Applies Random Offset To Joint
+			if (branch == false || branch == true && i != 0)
+			{
+				if (k != 0 || k != nrOfSegments)	//All points except the first and last gets a random offset
+					output.Pos = output.Pos + (newPos * randomScale);	//Applies Random Offset To Joint
+			}
+			
+			if (branch == true && k == 0 && i == 0)
+				output.Pos = prevPos;
 
 			output.BranchLevel = float2(branchLevel, 0);
 			OutputStream.Append(output);
