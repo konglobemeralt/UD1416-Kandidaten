@@ -51,7 +51,7 @@ void WindowManager::Initialize(HINSTANCE hInstance, WNDPROC WndProc)
 	m_hwnd = CreateWindow(
 		L"BTH_D3D_DEMO",
 		L"BTH Direct3D Demo",
-		WS_EX_TOPMOST | WS_POPUP, // WS_OVERLAPPEDWINDOW
+		WS_OVERLAPPEDWINDOW, // WS_OVERLAPPEDWINDOW
 		0,
 		0,
 		rc.right - rc.left,

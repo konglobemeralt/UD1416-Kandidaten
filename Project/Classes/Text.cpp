@@ -15,21 +15,60 @@ Text::Text()
 		m_pathGeometry[i] = nullptr;
 	}
 
+	m_imageFXAA = false;
+	m_imageSSAA = false;
 	m_firstTime = true;
 	m_edgeRendering = true;
 	m_fxaa = false;
 	m_ssaa = false;
 	m_thesis = true;
 	m_ssaaSize = 1; // 1 when no ssaa
-	m_sizeMultiplier = 0.4f;
+	m_sizeMultiplier = 1.0f;
 	m_height = 0;
 	m_width = 0;
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
-	m_textSize = 400.0f * m_ssaaSize * m_sizeMultiplier;
-	m_edgeSize = 16.0f * m_ssaaSize * m_sizeMultiplier;
+	m_textSize = 75.0f * m_ssaaSize * m_sizeMultiplier;
+	m_edgeSize = 4.0f * m_ssaaSize * m_sizeMultiplier;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
+	m_simonImage = "PowerLine";
+	m_render = NONE;
+
+	if (m_render == FXAA_SSAA)
+	{
+		m_imageFXAA = false;
+		m_imageSSAA = true;
+		m_fxaa = true;
+		m_ssaa = false;
+		m_ssaaSize = 1;
+	}
+	else if (m_render == FXAA_SSAA_FXAA)
+	{
+		m_imageFXAA = true;
+		m_imageSSAA = true;
+		m_fxaa = true;
+		m_ssaa = false;
+		m_ssaaSize = 1;
+	}
+	else if (m_render == SSAA_SSAA)
+	{
+		m_imageFXAA = false;
+		m_imageSSAA = true;
+		m_fxaa = false;
+		m_ssaa = true;
+		m_ssaaSize = 2;
+		m_textSize *= m_ssaaSize;
+		m_edgeSize *= m_ssaaSize;
+	}
+	else if (m_render == NONE)
+	{
+		m_imageFXAA = false;
+		m_imageSSAA = false;
+		m_fxaa = false;
+		m_ssaa = false;
+		m_ssaaSize = 1;
+	}
 
 	d2dClearColor.r = 0.0f;
 	d2dClearColor.g = 0.0f;
@@ -83,9 +122,9 @@ void Text::Render()
 	{
 		CalculateSize();
 		// Initialize Systems
-		m_text[0] = L"Text";
-		m_text[1] = L"Pommes";
-		m_text[2] = L"68";
+		m_text[0] = L"";
+		m_text[1] = L"This is";
+		m_text[2] = L"a test!";
 		InitializeDirect2D();
 		if(m_edgeRendering)
 			DirectWriteEdge();
@@ -110,39 +149,75 @@ void Text::Render()
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 
+	// Text render
 	if (m_edgeRendering)
 		EdgeRender();
 	else
 		RenderText();
 
-	// FXAA
-	if (m_fxaa)
+	// FXAA_SSAA
+	if (m_fxaa && !m_ssaa && !m_imageFXAA && m_imageSSAA)
 	{
-		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
-		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
-		gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Simon"]);
+		gdeviceContext->Draw(4, 0);
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Text0"]);
+		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
+		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
+		gdeviceContext->Draw(4, 0);
 	}
 
-	// Set textures
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
-	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
-	gdeviceContext->Draw(4, 0);
-
-	// Render FXAA
-	if (m_fxaa)
+	// FXAA_SSAA_FXAA
+	else if (m_fxaa && !m_ssaa && m_imageFXAA && m_imageSSAA)
 	{
+		// Set render target view
+		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+		gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
+
+		// Draw textures
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Simon"]);
+		gdeviceContext->Draw(4, 0);
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
+		gdeviceContext->Draw(4, 0);
+
+		// Do FXAA on both at same time
 		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 		gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
 		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
 		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
 		gdeviceContext->Draw(4, 0);
+		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
 	}
 
-	//manager->saveImage("Fonts/Saved/Arial/1024_0.4_Tilted_Utan.png", manager->pBackBuffer);
+	// SSAA_SSAA
+	else if (!m_fxaa && m_ssaa && !m_imageFXAA && m_imageSSAA)
+	{
+		// Set textures
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Simon"]);
+		gdeviceContext->Draw(4, 0);
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
+		gdeviceContext->Draw(4, 0);
+	}
+
+	// Without
+	else if (!m_fxaa && !m_ssaa && !m_imageFXAA && !m_imageSSAA)
+	{
+		// Set textures
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Simon"]);
+		gdeviceContext->Draw(4, 0);
+		gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Text0"]);
+		gdeviceContext->Draw(4, 0);
+	}
+
+	//// Save image
+	//if (m_fxaa && m_imageSSAA)
+	//	manager->saveImage("Fonts/Saved/Combined/" + m_simonImage + "_FXAA_SSAA.png", manager->pBackBuffer);
+	//else if (m_fxaa && m_imageSSAA && m_imageFXAA)
+	//	manager->saveImage("Fonts/Saved/Combined/" + m_simonImage + "_FXAA_SSAA_FXAA.png", manager->pBackBuffer);
+	//else if (m_ssaa && m_imageSSAA)
+	//	manager->saveImage("Fonts/Saved/Combined/" + m_simonImage + "_SAAA_SSAA.png", manager->pBackBuffer);
+	//else if(!m_fxaa && !m_ssaa && !m_imageFXAA && !m_imageSSAA)
+	//	manager->saveImage("Fonts/Saved/Combined/" + m_simonImage + "_None.png", manager->pBackBuffer);
 
 	//// Genereate mip maps
 	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
@@ -176,7 +251,7 @@ void Text::Initialize() {
 	XMStoreFloat4x4(&m_matrices.world, XMMatrixTranspose(transform));
 	XMStoreFloat4x4(&m_matrices.view, XMMatrixTranspose(view));
 	XMStoreFloat4x4(&m_matrices.projection, XMMatrixTranspose(projection));
-	m_matrices.useMatrices.x = 3;
+	m_matrices.useMatrices.x = 0;
 	manager->createConstantBuffer("Matrices", &m_matrices, sizeof(Matrices));
 
 	// FXAA
@@ -192,9 +267,9 @@ void Text::Initialize() {
 	FXAA_PS_cb.texelSizeXY.x = 1.0f / manager->getWindowWidth();
 	FXAA_PS_cb.texelSizeXY.y = 1.0f / manager->getWindowHeight();
 	FXAA_PS_cb.FXAA_blur_Texels_Threshhold = 2.0f;
-	FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
+	//FXAA_PS_cb.minimumBlurThreshhold = 0.0001f;
 	FXAA_PS_cb.FXAA_reduce_MULTIPLIER = 1.0f / 2.0f;
-	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
+	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 64.0f;
 	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
 
 	// ###########################################################
@@ -256,7 +331,12 @@ void Text::Initialize() {
 
 	manager->createTexture2D("Final",
 		DXGI_FORMAT_R32G32B32A32_FLOAT);
-	manager->attachImage("putin.png", "TestImage");
+	
+	string name = "Fonts/Images/Simon/" + m_simonImage;
+	if (m_imageSSAA)
+		manager->attachImage(name + "Med" + ".png", "Simon");
+	else
+		manager->attachImage(name + "Low" + ".png", "Simon");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -275,6 +355,22 @@ void Text::Initialize() {
 	qDesc.MiscFlags = 0;
 	qDesc.Query = D3D11_QUERY_OCCLUSION;
 	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
+
+	// Set transparency to work
+	D3D11_BLEND_DESC blendDesc;
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_DEST_ALPHA;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	gdevice->CreateBlendState(&blendDesc, &m_blendState);
+	float blendfactor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	gdeviceContext->OMSetBlendState(m_blendState, blendfactor, 0xffffffff);
 }
 
 void Text::InitializeDirect2D()
@@ -284,7 +380,7 @@ void Text::InitializeDirect2D()
 	//m_width = manager->getWindowWidth();
 	if (m_thesis)
 	{
-		m_height = manager->getWindowHeight() * m_sizeMultiplier*2.0;
+		m_height = manager->getWindowHeight() * m_sizeMultiplier;
 		m_width = manager->getWindowWidth() * m_sizeMultiplier;
 	}
 	if (m_ssaa)
@@ -489,14 +585,34 @@ void Text::DirectWriteEdge()
 	m_scale = (m_width - m_padding) / (maxSize - m_padding);
 
 	// Center text
+	D2D1::Matrix3x2F matrix;
 	for (int i = 0; i < 3; i++)
 	{
-		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
-			0,-0
-		);
+		if (i == 0)
+		{
+			matrix = D2D1::Matrix3x2F(
+				1.0f, 0.0f,
+				0.0f, 1.0f,
+				//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
+				0, 0
+				);
+		}
+		if (i == 1)
+		{
+			matrix = D2D1::Matrix3x2F(
+				1.0f, 0.0f,
+				0.0f, 1.0f,
+				0, 0 * m_ssaaSize
+				);
+		}
+		if (i == 2)
+		{
+			matrix = D2D1::Matrix3x2F(
+				1.0f, 0.0f,
+				0.0f, 1.0f,
+				0, 75 * m_ssaaSize
+				);
+		}
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
 			&matrix,
@@ -561,24 +677,23 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 
 void Text::EdgeRender()
 {
+	m_d2dRenderTarget[0]->Clear(d2dClearColor);
 	for (int i = 0; i < 3; i++)
 	{
 		// Clear
-
-		m_d2dRenderTarget[i]->BeginDraw();
-		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
-		m_d2dRenderTarget[i]->Clear(d2dClearColor);
+		m_d2dRenderTarget[0]->BeginDraw();
+		m_d2dRenderTarget[0]->SetTransform(D2D1::IdentityMatrix());
 
 		// // Draw text with outline
-		m_d2dRenderTarget[i]->SetTransform(
-			D2D1::Matrix3x2F::Translation(50 * m_ssaaSize * m_sizeMultiplier, 1200 * m_ssaaSize * m_sizeMultiplier)
+		m_d2dRenderTarget[0]->SetTransform(
+			D2D1::Matrix3x2F::Translation(280 * m_ssaaSize * m_sizeMultiplier, 65 * m_ssaaSize * m_sizeMultiplier)
 			//D2D1::Matrix3x2F::Scale(m_scale, m_scale)
 			//D2D1::Matrix3x2F::Rotation(270.0f)
 		);
-		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize, m_strokeStyle);
-		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
+		m_d2dRenderTarget[0]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize, m_strokeStyle);
+		m_d2dRenderTarget[0]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 
-		m_d2dRenderTarget[i]->EndDraw();
+		m_d2dRenderTarget[0]->EndDraw();
 	}
 }
 

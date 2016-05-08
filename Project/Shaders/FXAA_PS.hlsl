@@ -74,8 +74,10 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		return float4(res1.xyz, 1.0f);
 	}
 
-
-	return float4(res2.xyz, 1.0f);
+	if(res2.x < 0.01f && res2.y < 0.01f &&res2.z < 0.01f)
+		return float4(res2.xyz, 0.0f);
+	else
+		return float4(res2.xyz, 1.0f);
 
 
 
