@@ -67,6 +67,7 @@ private:
 	ID2D1SolidColorBrush* m_blackBrush[3];
 	ID2D1SolidColorBrush* m_orangeBrush[3];
 	ID3D11ShaderResourceView* finalText[3];
+	D2D1_COLOR_F d2dClearColor;
 
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;

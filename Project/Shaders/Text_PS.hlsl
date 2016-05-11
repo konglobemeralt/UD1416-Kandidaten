@@ -30,6 +30,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	if (choice == 0 && texUV.w > 0.99f && color.w >= 0.01f)
 	{
+		float2 test = float2(texUV.x, 1.0f - texUV.y);
+		return text.Sample(Linear, test);
 		return color;
 	}
 	else if (choice == 1)

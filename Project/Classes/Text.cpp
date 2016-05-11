@@ -24,9 +24,14 @@ Text::Text()
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
 	m_textSize = 800.0f;
-	m_edgeSize = 10.0f;
+	m_edgeSize = 20.0f;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
+
+	d2dClearColor.r = 1.0f;
+	d2dClearColor.g = 0.0f;
+	d2dClearColor.b = 0.0f;
+	d2dClearColor.a = 1.0f;
 }
 
 Text::~Text()
@@ -111,7 +116,7 @@ void Text::Render()
 
 	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Erik"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Checker"]);
 	//gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
@@ -209,8 +214,8 @@ void Text::Initialize() {
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
 
-	manager->attachImage("Fonts/Images/Checker.png", "Erik");
-	manager->attachImage("Fonts/UV/uv7.png", "UV");
+	manager->attachImage("Fonts/Images/Checker3.png", "Checker");
+	manager->attachImage("Fonts/UV/CorrectRotation.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
 
@@ -238,8 +243,16 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("Linear", D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
+
+	// Check support
+	D3D11_FEATURE_DATA_D3D11_OPTIONS1 formatSupport;
+	gdevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &formatSupport, sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS1));
+	// TiledResourceTier D3D11_TILED_RESOURCES_TIER_1	=	(1)
+	// MinMaxFiltering									=	0
+	// ClearViewAlsoSupportsDepthOnlyFormats			=	1
+	// MapOnDefaultBuffers								=	1
 
 	// Query
 	D3D11_QUERY_DESC qDesc;
@@ -543,13 +556,14 @@ void Text::EdgeRender()
 		// Clear
 		m_d2dRenderTarget[i]->BeginDraw();
 		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
-		m_d2dRenderTarget[i]->Clear(NULL);
+		m_d2dRenderTarget[i]->Clear(d2dClearColor);
 
 		// // Draw text with outline
 		m_d2dRenderTarget[i]->SetTransform(
-			D2D1::Matrix3x2F::Translation(-2000, 2000) * 
-			D2D1::Matrix3x2F::Scale(m_scale, m_scale)*
-			D2D1::Matrix3x2F::Rotation(270.0f)
+			//D2D1::Matrix3x2F::Translation(-2000, 2000) * 
+			D2D1::Matrix3x2F::Translation(800, 1500) *
+			D2D1::Matrix3x2F::Scale(m_scale, m_scale)
+			//D2D1::Matrix3x2F::Rotation(270.0f)
 		);
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
