@@ -6,10 +6,10 @@ struct VS_OUT
 
 cbuffer Corners : register(b0)
 {
-	float4 leftup;
-	float4 leftdown;
-	float4 rightup;
-	float4 rightdown;
+	float2 leftup;
+	float2 leftdown;
+	float2 rightup;
+	float2 rightdown;
 };
 
 Texture2D textUV : register(t0);
