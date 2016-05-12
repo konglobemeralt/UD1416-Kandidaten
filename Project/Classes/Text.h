@@ -54,6 +54,10 @@ private:
 	UINT offset = 0;
 	XMFLOAT4X4 m_matrix;
 	ID3D11Query* m_query;
+	ID3D11UnorderedAccessView* m_nullUAV = nullptr;
+	ID3D11Buffer* m_buffer;
+	ID3D11Buffer* m_buffer2;
+	ID3D11UnorderedAccessView* m_uav = nullptr;
 	void RotatePlane();
 
 	// Direct2D

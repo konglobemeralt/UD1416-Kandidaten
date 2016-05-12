@@ -101,6 +101,7 @@ void Text::Render()
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
+	gdeviceContext->PSGetConstantBuffers(0, 1, &m_buffer);
 
 	if (m_edgeRendering)
 		EdgeRender();
@@ -117,8 +118,8 @@ void Text::Render()
 	// Set textures
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Checker"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
+	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
+	//gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
 	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
 	gdeviceContext->Draw(4, 0);
 
@@ -172,6 +173,39 @@ void Text::Initialize() {
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
 	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
 
+	// To compute shader
+	struct Corners
+	{
+		XMFLOAT4 leftup;
+		XMFLOAT4 leftdown;
+		XMFLOAT4 rightup;
+		XMFLOAT4 rightdown;
+	}corners;
+	corners.leftup = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	corners.leftdown = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
+	corners.rightup = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+	corners.rightdown = XMFLOAT4(1.0f, 1.0f, 0.0f, 0.0f);
+
+	D3D11_BUFFER_DESC bufferDesc;
+	memset(&bufferDesc, 0, sizeof(bufferDesc));
+	bufferDesc.ByteWidth = sizeof(XMFLOAT4) * 8;
+	bufferDesc.StructureByteStride = sizeof(XMFLOAT4) * 8;
+	bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA subData;
+	subData.pSysMem = &corners;
+	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer);
+	
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.NumElements = 1;
+	uavDesc.Buffer.Flags = 0;
+	gdevice->CreateUnorderedAccessView(m_buffer, &uavDesc, &m_uav);
+
 	// ###########################################################
 	// ######				Vertex Shader					######
 	// ###########################################################
@@ -198,6 +232,7 @@ void Text::Initialize() {
 	manager->createPixelShader("Text_PS"); // Name has to match shader name without .hlsl
 	manager->createPixelShader("Text_Size_PS");
 	manager->createPixelShader("FXAA_PS");
+	manager->createComputeShader("Text_CS");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -605,6 +640,14 @@ void Text::CalculateSize()
 		m_height = sqrt(m_height);
 		m_width = m_height * (m_uvWidth / m_uvHeight);
 	}
+
+	//// ComputeShader
+	//gdeviceContext->CSSetUnorderedAccessViews(0, 1, &m_uav, nullptr);
+	//gdeviceContext->CSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
+	//gdeviceContext->CSSetShader(resources.computeShaders["Text_CS"], nullptr, 0);
+	//gdeviceContext->Dispatch(1, 1, 1);
+	//gdeviceContext->CSSetUnorderedAccessViews(0, 1, &m_nullUAV, nullptr);
+	//gdeviceContext->CSSetShader(nullptr, nullptr, 0);
 }
 
 ID3D11ShaderResourceView** Text::GetText()

@@ -4,6 +4,14 @@ struct VS_OUT
 	float2 Tex : TEXCOORD;
 };
 
+cbuffer Corners : register(b0)
+{
+	float4 leftup;
+	float4 leftdown;
+	float4 rightup;
+	float4 rightdown;
+};
+
 Texture2D textUV : register(t0);
 Texture2D text : register(t1);
 Texture2D U : register(t2);
@@ -13,13 +21,15 @@ SamplerState Point : register(s1);
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
-	unsigned int choice = 0;
+	unsigned int choice = 3;
 	// 0 = one texture uv
 	// 1 = two texture uv
 	// 2 = quad uv
-	// 3 = show one texture uv
-	// 4 = show two texture uv
-	// 5 = show quad uv
+	// 3 = lerp rendering
+	// 4 = show one texture uv
+	// 5 = show two texture uv
+	// 6 = show quad uv
+	// 7 = show lerp uv
 	
 	float4 color = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 texUV = textUV.Sample(Linear, input.Tex);	// Sample uv coordinates from texture
@@ -28,10 +38,17 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 uv = float4((u.r), (v.g), 0.0f, 1.0f);		// put u and v toghter to uv
 	color = text.Sample(Linear, saturate(texUV));
 
+	float x = lerp(0.0f, 1.0f, saturate(input.Tex.x));
+	float y = lerp(0.0f, 1.0f, saturate(input.Tex.y));
+	x = lerp(leftdown.x, rightup.x, saturate(input.Tex.x));
+	y = lerp(leftup.y, rightdown.y, saturate(input.Tex.y));
+	float2 xy = float2(x, y);
+	float4 lerpColor = text.Sample(Linear, xy);
+
 	if (choice == 0 && texUV.w > 0.99f && color.w >= 0.01f)
 	{
-		float2 test = float2(texUV.x, 1.0f - texUV.y);
-		return text.Sample(Linear, test);
+		//float2 test = float2(texUV.x, 1.0f - texUV.y);
+		//return text.Sample(Linear, test);
 		return color;
 	}
 	else if (choice == 1)
@@ -44,11 +61,11 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	}
 	else if (choice == 3)
 	{
-		return textUV.Sample(Linear, input.Tex);
+		return lerpColor;
 	}
 	else if (choice == 4)
 	{
-		return texUV;
+		return textUV.Sample(Linear, input.Tex);
 	}
 	else if (choice == 5)
 	{
@@ -58,12 +75,9 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	{
 		return float4(input.Tex, 0.0f, 1.0f);
 	}
+	else if (choice == 7)
+	{
+		return float4(xy, 0.0f, 1.0f);
+	}
 	return float4(1.0f, 0.0f, 0.0f, 0.0f);
-
-	//return float4(input.Tex.x, input.Tex.y, 0.0f, 1.0f);
-
-	//if (input.Tex.y > 0.5f)
-	//	return txDiffuse.Sample(sampAni, input.Tex);
-	//else
-	//	return txDiffuse.Sample(sampPoint, input.Tex);
 }

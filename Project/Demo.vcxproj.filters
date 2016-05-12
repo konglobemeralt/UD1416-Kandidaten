@@ -23,6 +23,8 @@
     <FxCompile Include="Shaders\Text_PS.hlsl" />
     <FxCompile Include="Shaders\Text_VS.hlsl" />
     <FxCompile Include="Shaders\Text_Size_PS.hlsl" />
+    <FxCompile Include="Shaders\Text_CS.hlsl" />
+    <FxCompile Include="Shaders\TextCorners_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplicationContext.cpp" />
