@@ -84,15 +84,15 @@ void Compositing::Render() {
 
 	if (m_imageCount == 2)
 	{
-		manager->attachImage("dickbutt.png", "PlayerSRV");
+		manager->attachImage("dickbutt3.png", "PlayerSRV");
 	}
 	if (m_imageCount == 30)
 	{
-		manager->attachImage("bert.png", "PlayerSRV");
+		manager->attachImage("putin.png", "PlayerSRV");
 	}
 	if (m_imageCount == 90)
 	{
-		manager->attachImage("dickbutt.png", "PlayerSRV");
+		manager->attachImage("dickbutt3.png", "PlayerSRV");
 	}
 
 
@@ -102,7 +102,7 @@ void Compositing::Render() {
 	string beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
 	string diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
 	string specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
-	string irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
+	string refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".png";
 	string shadowString = m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
 	string reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
 	
@@ -139,10 +139,10 @@ void Compositing::Render() {
 		manager->attachImage(specularString, "SpecularSRV");
 		gdeviceContext->PSSetShaderResources(5, 1, &resources.shaderResourceViews["SpecularSRV"]);
 	}
-	if (m_renderIrradiance)
+	if (m_renderReflectionDistorion)
 	{
-		manager->attachImage(irradianceString, "IrradianceSRV");
-		gdeviceContext->PSSetShaderResources(6, 1, &resources.shaderResourceViews["IrradianceSRV"]);
+		manager->attachImage(refDistortString, "ReflectiveDistortSRV");
+		gdeviceContext->PSSetShaderResources(6, 1, &resources.shaderResourceViews["ReflectiveDistortSRV"]);
 	}
 	if (m_renderShadow)
 	{
@@ -202,8 +202,11 @@ void Compositing::Render() {
 	m_imageCount++;
 	if (m_imageCount == m_imageSum+1)
 		m_imageCount = m_startFrame;
-	//manager->saveImage("Fonts/UV/uv2.png", texture);
-
+	if (!m_shotTaken)
+	{
+		manager->saveImage("PresImg_13M//13Maj_Isolated_NoDistort.png", manager->pBackBuffer);
+		m_shotTaken = false;
+	}
 }
 
 void Compositing::Initialize() {
@@ -305,19 +308,19 @@ void Compositing::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("dickbutt.png", "PlayerSRV");
+	manager->attachImage("LogoSquareFlippedSM.png", "PlayerSRV");
 
 
 
 
-	m_UVFrame = "uvLayer/MasterBeauty.";
-	m_UVReflectionFrame = "uvRefLayer/uvRef_Reflection.";
-	m_beautyFrame = "baseLayer/MasterBeauty.";
-	m_diffuseFrame = "baseLayer/all_Diffuse.";
-	m_specularFrame = "baseLayer/all_SpecularNoShadow.";
-	m_irradianceFrame = "baseLayer/all_DirectIrradianceNoShadow.";
-	m_shadowFrame = "baseLayer/all_ShadowRaw.";
-	m_reflectionFrame = "baseLayer/all_Reflection.";
+	m_UVFrame = "13Maj_Renders/uvLayer/MasterBeauty.";
+	m_UVReflectionFrame = "13Maj_Renders/uvRefLayer/MasterBeauty.";
+	m_beautyFrame = "13Maj_Renders/GoldStandard12Maj.";
+	m_diffuseFrame = "13Maj_Renders/baseLayer/all_Diffuse.";
+	m_specularFrame = "13Maj_Renders/baseLayer/all_Specular.";
+	m_refDistortFrame = "13Maj_Renders/matouk/MasterBeauty.";
+	m_shadowFrame = "MorePuckPasses/baseLayer/all_ShadowRaw.";
+	m_reflectionFrame = "13Maj_Renders/baseLayer/all_Reflection.";
 
 	m_textFrame1 = "textPlane1/untitled.";
 	m_textFrame2 = "textPlane2/untitled.";
@@ -329,11 +332,11 @@ void Compositing::Initialize() {
 	m_textureConstantBuffer.m_beauty = m_renderBeauty;
 	m_textureConstantBuffer.m_diffuse = m_renderDiffuse;
 	m_textureConstantBuffer.m_specular = m_renderSpecular;
-	m_textureConstantBuffer.m_irradiance = m_renderIrradiance;
+	m_textureConstantBuffer.m_irradiance = m_renderReflectionDistorion;
 	m_textureConstantBuffer.m_shadow = m_renderShadow;
 	m_textureConstantBuffer.m_reflection = m_renderReflection;
 
-	m_textureConstantBuffer.m_text = m_renderText;
+	//m_textureConstantBuffer.m_text = m_renderText;
 
 
 	manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));

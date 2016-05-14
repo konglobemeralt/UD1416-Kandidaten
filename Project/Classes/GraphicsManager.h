@@ -53,8 +53,8 @@ public:
 	GraphicsManager() {};
 	void Render();
 	
-	UINT windowWidth = 1024;
-	UINT windowHeight = 760;
+	UINT windowWidth = 1280;
+	UINT windowHeight = 720;
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	ThesisData thesisData;
