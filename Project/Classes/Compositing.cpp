@@ -95,20 +95,49 @@ void Compositing::Render() {
 		manager->attachImage("dickbutt3.png", "PlayerSRV");
 	}
 
+	string uvString;
+	string uvRefString;
+	string beautyString;
+	string diffuseString;
+	string specularString;
+	string refDistortString;
+	string shadowString;
+	string reflectionString;
 
+	string textPlane1String;
+	string textPlane2String;
+	string textPlane3String;
 	//Concatenate to filename to find correct UV and Backgroudn image.
-	string uvString = m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
-	string uvRefString = m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
-	string beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
-	string diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
-	string specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
-	string refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".png";
-	string shadowString = m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
-	string reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
-	
-	string textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
-	string textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
-	string textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+	if (m_renderSequence)
+	{
+		uvString			= m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
+		uvRefString		= m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+		beautyString		= m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
+		diffuseString	= m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
+		specularString	= m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
+		refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".png";
+		shadowString		= m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
+		reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+
+		textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
+		textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
+		textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+	}
+	else
+	{
+		uvString = m_UVFrame + ".png";
+		uvRefString = m_UVReflectionFrame + ".png";
+		beautyString = m_beautyFrame + ".png";
+		diffuseString = m_diffuseFrame  + ".png";
+		specularString = m_specularFrame + ".png";
+		refDistortString = m_refDistortFrame + ".png";
+		shadowString = m_shadowFrame + ".png";
+		reflectionString = m_reflectionFrame + ".png";
+
+		textPlane1String = m_textFrame1 + ".png";
+		textPlane2String = m_textFrame2 + ".png";
+		textPlane3String = m_textFrame3 + ".png";
+	}
 
 	//Create and attach shader resources
 	if (m_renderUV)
@@ -204,8 +233,8 @@ void Compositing::Render() {
 		m_imageCount = m_startFrame;
 	if (!m_shotTaken)
 	{
-		manager->saveImage("PresImg_13M//13Maj_Isolated_NoDistort.png", manager->pBackBuffer);
-		m_shotTaken = false;
+		//manager->saveImage("PresImg_13M//13Maj_Isolated_NoDistort.png", manager->pBackBuffer);
+		m_shotTaken = true;
 	}
 }
 
@@ -308,19 +337,19 @@ void Compositing::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("LogoSquareFlippedSM.png", "PlayerSRV");
+	manager->attachImage("BlueCircles.png", "PlayerSRV");
 
 
 
 
-	m_UVFrame = "13Maj_Renders/uvLayer/MasterBeauty.";
-	m_UVReflectionFrame = "13Maj_Renders/uvRefLayer/MasterBeauty.";
-	m_beautyFrame = "13Maj_Renders/GoldStandard12Maj.";
-	m_diffuseFrame = "13Maj_Renders/baseLayer/all_Diffuse.";
-	m_specularFrame = "13Maj_Renders/baseLayer/all_Specular.";
-	m_refDistortFrame = "13Maj_Renders/matouk/MasterBeauty.";
-	m_shadowFrame = "MorePuckPasses/baseLayer/all_ShadowRaw.";
-	m_reflectionFrame = "13Maj_Renders/baseLayer/all_Reflection.";
+	m_UVFrame =					"RenderCube/UV/MasterBeauty_1080AA";
+	m_UVReflectionFrame =		"";
+	m_beautyFrame =				"RenderCube/Floor/f_beauty";
+	m_diffuseFrame =			"RenderCube/Floor/f_Diffuse";
+	m_specularFrame =			"RenderCube/Floor/f_Specular";
+	m_refDistortFrame =			"RenderCube/Floor/f_DirectIrradiance";
+	m_shadowFrame =				"RenderCube/Floor/f_Indirect";
+	m_reflectionFrame =			"13Maj_Renders/baseLayer/all_Reflection";
 
 	m_textFrame1 = "textPlane1/untitled.";
 	m_textFrame2 = "textPlane2/untitled.";

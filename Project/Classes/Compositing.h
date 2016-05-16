@@ -37,6 +37,8 @@ private:
 	string m_textFrame2;
 	string m_textFrame3;
 	
+	bool m_renderSequence = false;
+
 	bool m_renderUV					= true;
 	bool m_renderUVReflection		= true;
 	bool m_renderBeauty				= true;
