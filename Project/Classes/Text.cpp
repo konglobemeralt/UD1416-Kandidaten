@@ -310,7 +310,7 @@ void Text::Initialize() {
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
 
 	manager->attachImage("Fonts/Images/Checker3.png", "Checker");
-	manager->attachImage("Fonts/UV/CorrectRotation.png", "UV");
+	manager->attachImage("Fonts/UV/CorrectRotationHalf.png", "UV");
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
 
