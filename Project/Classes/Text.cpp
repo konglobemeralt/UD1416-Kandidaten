@@ -101,7 +101,7 @@ void Text::Render()
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer);
+	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer2);
 
 	if (m_edgeRendering)
 		EdgeRender();
@@ -206,32 +206,65 @@ void Text::Initialize() {
 	//uavDesc.Buffer.Flags = 0;
 	//gdevice->CreateUnorderedAccessView(m_buffer, &uavDesc, &m_uav);
 
+	//D3D11_BUFFER_DESC bufferDesc;
+	//memset(&bufferDesc, 0, sizeof(bufferDesc));
+	//bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
+	//bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//D3D11_SUBRESOURCE_DATA subData;
+	//subData.pSysMem = &corners;
+	//gdevice->CreateBuffer(&bufferDesc, nullptr, &m_buffer);
+	//
+	//memset(&bufferDesc, 0, sizeof(bufferDesc));
+	//bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
+	//bufferDesc.StructureByteStride = sizeof(XMFLOAT2) * 4;
+	//bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	//bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+	//bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	//bufferDesc.CPUAccessFlags = 0;
+	//gdevice->CreateBuffer(&bufferDesc, nullptr, &m_buffer2);
+	//
+	//D3D11_UNORDERED_ACCESS_VIEW_DESC particleUAVDesc;
+	//particleUAVDesc.Format = DXGI_FORMAT_UNKNOWN;
+	//particleUAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	//particleUAVDesc.Buffer.FirstElement = 0;
+	//particleUAVDesc.Buffer.NumElements = 1;
+	//particleUAVDesc.Buffer.Flags = 0;
+	//gdevice->CreateUnorderedAccessView(m_buffer2, &particleUAVDesc, &m_uav);
+
+	D3D11_SUBRESOURCE_DATA subData;
+	subData.pSysMem = &corners;
+
 	D3D11_BUFFER_DESC bufferDesc;
 	memset(&bufferDesc, 0, sizeof(bufferDesc));
 	bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
+	bufferDesc.StructureByteStride = 0;
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+	bufferDesc.MiscFlags = 0;
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	D3D11_SUBRESOURCE_DATA subData;
-	subData.pSysMem = &corners;
-	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer);
-	
+	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer2);
+
 	memset(&bufferDesc, 0, sizeof(bufferDesc));
 	bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
 	bufferDesc.StructureByteStride = sizeof(XMFLOAT2) * 4;
-	bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
 	bufferDesc.CPUAccessFlags = 0;
-	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer2);
-	
+	bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	bufferDesc.CPUAccessFlags = 0;
+	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer);
+
 	D3D11_UNORDERED_ACCESS_VIEW_DESC particleUAVDesc;
 	particleUAVDesc.Format = DXGI_FORMAT_UNKNOWN;
 	particleUAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	particleUAVDesc.Buffer.FirstElement = 0;
 	particleUAVDesc.Buffer.NumElements = 1;
+	//particleUAVDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 	particleUAVDesc.Buffer.Flags = 0;
-	gdevice->CreateUnorderedAccessView(m_buffer2, &particleUAVDesc, &m_uav);
+	gdevice->CreateUnorderedAccessView(m_buffer, &particleUAVDesc, &m_uav);
 
 	// ###########################################################
 	// ######				Vertex Shader					######
@@ -243,7 +276,7 @@ void Text::Initialize() {
 	//		UINT size);
 
 	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
@@ -672,9 +705,17 @@ void Text::CalculateSize()
 	gdeviceContext->CSSetUnorderedAccessViews(0, 1, &m_uav, nullptr);
 	gdeviceContext->CSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 	gdeviceContext->CSSetShader(resources.computeShaders["Text_CS"], nullptr, 0);
+	gdeviceContext->CSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
+	//gdeviceContext->Dispatch(32, 40, 1);
 	gdeviceContext->Dispatch(1, 1, 1);
 	gdeviceContext->CSSetUnorderedAccessViews(0, 1, &m_nullUAV, nullptr);
 	gdeviceContext->CSSetShader(nullptr, nullptr, 0);
+	gdeviceContext->CopyResource(m_buffer2, m_buffer);
+
+	//// Pixel shader corner location
+	//gdeviceContext->PSSetShader(resources.pixelShaders["TextCorners_PS"], nullptr, 0);
+	//gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer);
+	//gdeviceContext->Draw(4, 0);
 }
 
 ID3D11ShaderResourceView** Text::GetText()

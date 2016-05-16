@@ -1,6 +1,6 @@
 struct VS_IN
 {
-	float3 Pos : POSITION;
+	float3 Pos : POSITION : SV_POSITION;
 	float2 Tex : TEXCOORD;
 };
 

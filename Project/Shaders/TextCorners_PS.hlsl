@@ -12,11 +12,12 @@ struct Corners
 	float2 rightdown;
 };
 
-RWStructuredBuffer<Corners> output : register(u0);
+RWStructuredBuffer<Corners> output;
 SamplerState Linear : register(s0);
 SamplerState Point : register(s1);
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
+	//return float4(output.leftup.x, output.leftup.x, output.leftup.x, output.leftup.x);
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }

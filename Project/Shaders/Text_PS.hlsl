@@ -12,6 +12,15 @@ cbuffer Corners : register(b0)
 	float2 rightdown;
 };
 
+//struct Test
+//{
+//	float2 leftup;
+//	float2 leftdown;
+//	float2 rightup;
+//	float2 rightdown;
+//};
+//StructuredBuffer<Test> test;
+
 Texture2D textUV : register(t0);
 Texture2D text : register(t1);
 Texture2D U : register(t2);
