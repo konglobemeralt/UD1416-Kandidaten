@@ -5,6 +5,8 @@
 #include <d2d1_1helper.h>
 #include <dwrite_1.h>
 #include <atlstr.h>
+#include <fstream>
+#include <vector>
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "Dwrite")
 
@@ -49,7 +51,7 @@ private:
 	float m_scale;
 
 	// Direct3D
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float clearColor[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 	XMFLOAT4X4 m_matrix;
@@ -58,6 +60,7 @@ private:
 	ID3D11Buffer* m_buffer;
 	ID3D11Buffer* m_buffer2;
 	ID3D11UnorderedAccessView* m_uav = nullptr;
+	ID3D11Buffer* m_textPlaneBuffer = nullptr;
 	void RotatePlane();
 
 	// Direct2D

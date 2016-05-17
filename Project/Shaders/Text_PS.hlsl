@@ -30,7 +30,7 @@ SamplerState Point : register(s1);
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
-	unsigned int choice = 3;
+	unsigned int choice = 2;
 	// 0 = one texture uv
 	// 1 = two texture uv
 	// 2 = quad uv
@@ -40,6 +40,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	// 6 = show quad uv
 	// 7 = show lerp uv
 	
+	float small = 0.001f;
 	float4 color = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 texUV = textUV.Sample(Linear, input.Tex);	// Sample uv coordinates from texture
 	float2 u = U.Sample(Linear, input.Tex);				// Sample u coordinates from texture
@@ -88,5 +89,5 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	{
 		return float4(xy, 0.0f, 1.0f);
 	}
-	return float4(1.0f, 0.0f, 0.0f, 0.0f);
+	return float4(0.0f, 1.0f, 0.0f, 0.0f);
 }

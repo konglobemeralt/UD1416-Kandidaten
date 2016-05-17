@@ -99,7 +99,7 @@ void Text::Render()
 	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
 
-	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+	gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer, &vertexSize, &offset);
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer2);
 
@@ -338,7 +338,7 @@ void Text::Initialize() {
 	//		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_CLAMP
 	//	);
 
-	manager->createSamplerState("Linear", D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
 	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
 
 	// Check support
@@ -354,6 +354,48 @@ void Text::Initialize() {
 	qDesc.MiscFlags = 0;
 	qDesc.Query = D3D11_QUERY_OCCLUSION;
 	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
+
+	// Read files
+	struct QuadData
+	{
+		XMFLOAT3 pos;
+		XMFLOAT2 uv;
+	}*quadData, quad[4];
+	XMFLOAT2 uvs[4];
+	int framesAmount = 0;
+	ifstream infile;
+	infile.open("Assets/Fonts/Test.bin", std::ofstream::binary);
+	if (infile)
+	{
+		infile.read((char*)&framesAmount, sizeof(int));
+		quadData = new QuadData[framesAmount];
+		infile.read((char*)quadData, sizeof(QuadData) * framesAmount);
+	}
+	infile.close();
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		quad[i] = quadData[i];
+	}
+
+	//for (size_t i = 0; i < 4; i++)
+	//{
+	//	triangleVertex[i].pos = vertices[i];
+	//}
+	//
+	//triangleVertex[0].uv = XMFLOAT2(0, 0);
+	//triangleVertex[1].uv = XMFLOAT2(1, 0);
+	//triangleVertex[2].uv = XMFLOAT2(0, 1);
+	//triangleVertex[3].uv = XMFLOAT2(1, 1);
+
+	memset(&bufferDesc, 0, sizeof(bufferDesc));
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(QuadData);
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = &quad;
+	gdevice->CreateBuffer(&bufferDesc, &data, &m_textPlaneBuffer);
 }
 
 void Text::InitializeDirect2D()

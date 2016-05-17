@@ -28,7 +28,7 @@ void CS_main(uint3 id : SV_DispatchThreadID)
 	//output.Append(corners);
 
 	output[0].leftup	=	float2(0.0f, 0.0f);
-	output[0].leftdown	=	float2(0.5f, 1.0f);
+	output[0].leftdown	=	float2(0.0f, 1.0f);
 	output[0].rightup	=	float2(1.0f, 0.0f);
 	output[0].rightdown	=	float2(1.0f, 1.0f);
 
@@ -53,7 +53,6 @@ void CS_main(uint3 id : SV_DispatchThreadID)
 	{
 		for (unsigned int j = 0; j < sizeY; j++)
 		{
-
 			pixels[0] = float2(saturate(float(i)), saturate(float(j)));
 			colors[0] = tex.SampleLevel(Linear, pixels[0], 0);
 
@@ -63,7 +62,7 @@ void CS_main(uint3 id : SV_DispatchThreadID)
 			pixels[2] = float2(saturate(float(i)), saturate(float(j - 1)));
 			colors[2] = tex.SampleLevel(Linear, pixels[2], 0);
 
-			pixels[3] = float2(saturate(float(i+1)), saturate(float(j + 1)));
+			pixels[3] = float2(saturate(float(i + 1)), saturate(float(j + 1)));
 			colors[3] = tex.SampleLevel(Linear, pixels[3], 0);
 
 			pixels[4] = float2(saturate(float(i - 1)), saturate(float(j)));
