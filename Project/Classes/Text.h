@@ -63,6 +63,21 @@ private:
 	ID3D11Buffer* m_textPlaneBuffer = nullptr;
 	void RotatePlane();
 
+	// Custom solution
+	struct QuadData
+	{
+		XMFLOAT3 pos;
+		XMFLOAT2 uv;
+	};
+	QuadData* m_quadData = nullptr;
+	QuadData* m_quad = nullptr;
+	unsigned int m_framesAmount = 0;
+	unsigned int m_vertexAmount = 0;
+	unsigned int m_frameIndex = 0;
+	float m_timer = 0.0f;
+	ifstream m_infile;
+	void UpdateTextQuad();
+
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;
 	IDXGIDevice* m_dxgiDevice = nullptr;

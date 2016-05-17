@@ -87,6 +87,7 @@ void Text::Render()
 		m_firstTime = false;
 	}
 
+	UpdateTextQuad();
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -356,45 +357,30 @@ void Text::Initialize() {
 	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
 
 	// Read files
-	struct QuadData
+	m_infile.open("Assets/Fonts/Test.bin", std::ofstream::binary);
+	if (m_infile)
 	{
-		XMFLOAT3 pos;
-		XMFLOAT2 uv;
-	}*quadData, quad[4];
-	XMFLOAT2 uvs[4];
-	int framesAmount = 0;
-	ifstream infile;
-	infile.open("Assets/Fonts/Test.bin", std::ofstream::binary);
-	if (infile)
-	{
-		infile.read((char*)&framesAmount, sizeof(int));
-		quadData = new QuadData[framesAmount];
-		infile.read((char*)quadData, sizeof(QuadData) * framesAmount);
+		m_infile.read((char*)&m_framesAmount, sizeof(int));
+		m_infile.read((char*)&m_vertexAmount, sizeof(int));
+		m_quadData = new QuadData[m_framesAmount * m_vertexAmount];
+		m_infile.read((char*)m_quadData, sizeof(QuadData) * m_framesAmount * m_vertexAmount);
 	}
-	infile.close();
+	m_infile.close();
 
-	for (size_t i = 0; i < 4; i++)
+	m_quad = new QuadData[m_vertexAmount];
+	for (size_t i = 0; i < m_vertexAmount; i++)
 	{
-		quad[i] = quadData[i];
+		m_quad[i] = m_quadData[i];
 	}
-
-	//for (size_t i = 0; i < 4; i++)
-	//{
-	//	triangleVertex[i].pos = vertices[i];
-	//}
-	//
-	//triangleVertex[0].uv = XMFLOAT2(0, 0);
-	//triangleVertex[1].uv = XMFLOAT2(1, 0);
-	//triangleVertex[2].uv = XMFLOAT2(0, 1);
-	//triangleVertex[3].uv = XMFLOAT2(1, 1);
 
 	memset(&bufferDesc, 0, sizeof(bufferDesc));
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(QuadData);
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.ByteWidth = sizeof(QuadData) * m_vertexAmount;
 
 	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = &quad;
+	data.pSysMem = m_quad;
 	gdevice->CreateBuffer(&bufferDesc, &data, &m_textPlaneBuffer);
 }
 
@@ -572,6 +558,28 @@ void Text::RotatePlane()
 	//finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
 	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(finalmatrix));
 	m_graphicsManager->createConstantBuffer("Rotation", &m_matrix, sizeof(XMFLOAT4X4));
+}
+
+void Text::UpdateTextQuad()
+{
+	m_timer += 0.01f;
+	if (m_timer >= 1.0f)
+	{
+		D3D11_MAPPED_SUBRESOURCE mapsub;
+		gdeviceContext->Map(m_textPlaneBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
+		memcpy(mapsub.pData, (char*)m_quadData + (sizeof(QuadData) * m_frameIndex * m_vertexAmount), sizeof(QuadData) * m_vertexAmount);
+		gdeviceContext->Unmap(m_textPlaneBuffer, 0);
+
+		if (m_frameIndex >= m_framesAmount-1)
+		{
+			m_frameIndex = 0;
+		}
+		else
+		{
+			m_frameIndex++;
+		}
+		m_timer = 0.0f;
+	}
 }
 
 void Text::DirectWriteEdge()
