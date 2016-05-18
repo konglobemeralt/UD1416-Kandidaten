@@ -102,6 +102,7 @@ void Text::Render()
 
 	gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer, &vertexSize, &offset);
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
+	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Matrices"]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer2);
 
 	if (m_edgeRendering)
@@ -315,20 +316,20 @@ void Text::Initialize() {
 	manager->attachImage("Fonts/UV/XUV.png", "U");
 	manager->attachImage("Fonts/UV/VUV.png", "V");
 
-	ID3D11Texture2D* texture;
-	ID3D11Resource* resource;
-	resources.shaderResourceViews["UV"]->GetResource(&resource);
-	resource->QueryInterface<ID3D11Texture2D>(&texture);
-	D3D11_TEXTURE2D_DESC texDesc;
-	texture->GetDesc(&texDesc);
+	//ID3D11Texture2D* texture;
+	//ID3D11Resource* resource;
+	//resources.shaderResourceViews["UV"]->GetResource(&resource);
+	//resource->QueryInterface<ID3D11Texture2D>(&texture);
+	//D3D11_TEXTURE2D_DESC texDesc;
+	//texture->GetDesc(&texDesc);
 
-	m_uvHeight = texDesc.Height;
-	m_uvWidth = texDesc.Width;
+	//m_uvHeight = texDesc.Height;
+	//m_uvWidth = texDesc.Width;
 
-	manager->createTexture2D("Final",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		texDesc.Width,
-		texDesc.Height);
+	//manager->createTexture2D("Final",
+	//	DXGI_FORMAT_R32G32B32A32_FLOAT,
+	//	texDesc.Width,
+	//	texDesc.Height);
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -382,13 +383,17 @@ void Text::Initialize() {
 	D3D11_SUBRESOURCE_DATA data;
 	data.pSysMem = m_quad;
 	gdevice->CreateBuffer(&bufferDesc, &data, &m_textPlaneBuffer);
+
+	XMStoreFloat4x4(&m_matrices.view, XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
+	XMStoreFloat4x4(&m_matrices.projection, XMMatrixPerspectiveFovLH(XM_PI * 0.45f, float(m_width) / float(m_height), 0.1f, 1000.0f));
+	manager->createConstantBuffer("Matrices", &m_matrices, sizeof(Matrices));
 }
 
 void Text::InitializeDirect2D()
 {
 	// Get values
-	//m_height = manager->getWindowHeight();
-	//m_width = manager->getWindowWidth();
+	m_height = manager->getWindowHeight();
+	m_width = manager->getWindowWidth();
 	if (m_ssaa)
 	{
 		m_height *= 4;
@@ -431,6 +436,7 @@ void Text::InitializeDirect2D()
 	for (int i = 0; i < 3; i++)
 	{
 		CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget[i]), L"CreateTexture2D");
+		//gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget[i]);
 
 		d2dTextureTarget[i]->QueryInterface(&m_idxgSurface[i]);
 		d2dTextureTarget[i]->Release();
@@ -562,7 +568,7 @@ void Text::RotatePlane()
 
 void Text::UpdateTextQuad()
 {
-	m_timer += 0.01f;
+	m_timer += 0.06f;
 	if (m_timer >= 1.0f)
 	{
 		D3D11_MAPPED_SUBRESOURCE mapsub;

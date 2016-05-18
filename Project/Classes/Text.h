@@ -1,6 +1,8 @@
 #ifndef H_TEXT
 #define H_TEXT
 
+//#define _MSC_VER 1700
+
 #include <d2d1_1.h>
 #include <d2d1_1helper.h>
 #include <dwrite_1.h>
@@ -76,6 +78,11 @@ private:
 	unsigned int m_frameIndex = 0;
 	float m_timer = 0.0f;
 	ifstream m_infile;
+	struct Matrices
+	{
+		XMFLOAT4X4 view;
+		XMFLOAT4X4 projection;
+	}m_matrices;
 	void UpdateTextQuad();
 
 	// Direct2D

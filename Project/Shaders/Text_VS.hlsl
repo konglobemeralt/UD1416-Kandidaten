@@ -10,16 +10,18 @@ struct VS_OUT
 	float2 Tex : TEXCOORD;
 };
 
-cbuffer Matrix : register(b0)
+cbuffer Matrices : register(b0)
 {
-	matrix rotationM;
+	matrix view;
+	matrix projection;
 }
 
 VS_OUT VS_main(VS_IN input)
 {
 	VS_OUT output;
-	//output.Pos = mul(float4(input.Pos, 1.0f), rotationM);
-	output.Pos = float4(input.Pos, 1.0f);
+	//output.Pos = float4(input.Pos, 1.0f);
+	//output.Pos = mul(float4(input.Pos, 1.0f), mul(view, projection));
+	output.Pos = mul(float4(input.Pos, 1.0f), view);
 	output.Tex = input.Tex;
 
 	return output;
