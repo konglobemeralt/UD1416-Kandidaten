@@ -73,6 +73,8 @@ private:
 	};
 	QuadData* m_quadData = nullptr;
 	QuadData* m_quad = nullptr;
+	float m_quadWidth = 0.0f;
+	float m_quadHeight = 0.0f;
 	unsigned int m_framesAmount = 0;
 	unsigned int m_vertexAmount = 0;
 	unsigned int m_frameIndex = 0;

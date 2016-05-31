@@ -23,8 +23,8 @@ Text::Text()
 	m_width = 0;
 	m_uvWidth = 0.0f;
 	m_uvHeight = 0.0f;
-	m_textSize = 800.0f;
-	m_edgeSize = 20.0f;
+	m_textSize = 100.0f;
+	m_edgeSize = 3.0f;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
 
@@ -157,6 +157,8 @@ void Text::Initialize() {
 		XMFLOAT4X4 matrix;
 	}myMatrix;
 	manager->createConstantBuffer("myMatrix", &myMatrix, sizeof(cBuffer));
+	m_height = manager->getWindowHeight();
+	m_width = manager->getWindowWidth();
 
 	struct FXAA_PS_ConstantBuffer { //texelsize n shiet
 		XMFLOAT2 texelSizeXY;
@@ -374,6 +376,9 @@ void Text::Initialize() {
 		m_quad[i] = m_quadData[i];
 	}
 
+	m_quadWidth = (m_quad[3].pos.x - m_quad[0].pos.x) * 0.5f * m_width;
+	m_quadHeight = (m_quad[3].pos.y - m_quad[0].pos.y) * 0.5f * m_height;
+
 	memset(&bufferDesc, 0, sizeof(bufferDesc));
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -392,12 +397,10 @@ void Text::Initialize() {
 void Text::InitializeDirect2D()
 {
 	// Get values
-	m_height = manager->getWindowHeight();
-	m_width = manager->getWindowWidth();
 	if (m_ssaa)
 	{
-		m_height *= 4;
-		m_width *= 4;
+		m_quadHeight *= 4;
+		m_quadWidth *= 4;
 	}
 
 	// Factory
@@ -414,8 +417,8 @@ void Text::InitializeDirect2D()
 	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = m_height;
-	texDesc.Width = m_width;
+	texDesc.Height = m_quadHeight;
+	texDesc.Width = m_quadWidth;
 	texDesc.MipLevels = 1;
 	texDesc.MiscFlags = 0;
 	texDesc.SampleDesc.Count = 1;
@@ -450,8 +453,8 @@ void Text::InitializeDirect2D()
 		manager->createTexture2D(
 			"Text" + to_string(i),
 			texDesc.Format,
-			m_width,
-			m_height,
+			m_quadWidth,
+			m_quadHeight,
 			true,
 			true,
 			d2dTextureTarget[i]
@@ -624,20 +627,27 @@ void Text::DirectWriteEdge()
 	{
 		GetTextOutline(m_text[i], i);
 		if (bound[i].right > maxSize)
-			maxSize = bound[i].right;
+			maxSize = bound[i].right + bound[i].left;
 	}
 	// Scale text
-	m_scale = (m_width - m_padding) / (maxSize - m_padding);
+	m_scale = (m_quadWidth) / ((maxSize) + m_padding);
 
 	// Center text
 	for (int i = 0; i < 3; i++)
 	{
+		//D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
+		//	1.0f, 0.0f,
+		//	0.0f, 1.0f,
+		//	0,-0
+		//);
 		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			//(m_uvWidth * 2) - (bound[i].right / 2), m_uvHeight*2 + bound[i].bottom
-			0,-0
-		);
+			m_scale, 0.0f,
+			0.0f, -m_scale,
+			//(m_quadWidth * 2) - (bound[i].right / 2), m_quadHeight * 2 + bound[i].bottom
+			//m_padding / 2.0f, (m_quadHeight / m_scale) + (bound[0].top + bound[0].bottom)
+			//m_padding / 2.0f, (m_quadHeight / 2.0f) - ((abs(bound[0].top) + bound[0].bottom))
+			(m_padding * m_scale) / 2.0f, (m_padding * m_scale) / 2.0f
+			);
 		m_d2dFactory->CreateTransformedGeometry(
 			m_pathGeometry[i],
 			&matrix,
@@ -682,6 +692,8 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 	CheckStatus(m_geometrySink->Close(), L"Close");
 	
 	m_pathGeometry[index]->GetBounds(D2D1::IdentityMatrix(), &bound[index]);
+	float hej;
+	m_pathGeometry[0]->ComputeLength(D2D1::IdentityMatrix(), &hej);
 
 	// Stroke style
 	float dashes[] = { 0.0f };
@@ -709,14 +721,14 @@ void Text::EdgeRender()
 		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
 		m_d2dRenderTarget[i]->Clear(d2dClearColor);
 
-		// // Draw text with outline
-		m_d2dRenderTarget[i]->SetTransform(
-			//D2D1::Matrix3x2F::Translation(-2000, 2000) * 
-			D2D1::Matrix3x2F::Translation(800, 1500) *
-			D2D1::Matrix3x2F::Scale(m_scale, m_scale)
-			//D2D1::Matrix3x2F::Rotation(270.0f)
-		);
-		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize);
+		//// // Draw text with outline
+		//m_d2dRenderTarget[i]->SetTransform(
+		//	//D2D1::Matrix3x2F::Translation(-2000, 2000) * 
+		//	D2D1::Matrix3x2F::Translation(800, -800) *
+		//	D2D1::Matrix3x2F::Scale(m_scale, -m_scale)
+		//	//D2D1::Matrix3x2F::Rotation(270.0f)
+		//);
+		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize * m_scale);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 
 		m_d2dRenderTarget[i]->EndDraw();
