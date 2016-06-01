@@ -33,9 +33,7 @@ private:
 	GraphicsManager* m_graphicsManager;
 
 	void InitializeDirect2D();
-	void InitializeDirectWrite();
 	void CheckStatus(HRESULT hr, LPCTSTR titel);
-	void RenderText();
 	void CalculateSize();
 
 	// Values

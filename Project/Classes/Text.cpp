@@ -79,10 +79,7 @@ void Text::Render()
 		m_text[1] = L"Pommes";
 		m_text[2] = L"68";
 		InitializeDirect2D();
-		if(m_edgeRendering)
-			DirectWriteEdge();
-		else
-			InitializeDirectWrite();
+		DirectWriteEdge();
 		RotatePlane();
 		m_firstTime = false;
 	}
@@ -105,10 +102,7 @@ void Text::Render()
 	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Matrices"]);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer2);
 
-	if (m_edgeRendering)
-		EdgeRender();
-	else
-		RenderText();
+	EdgeRender();
 
 	// FXAA
 	if (m_fxaa)
@@ -498,64 +492,6 @@ void Text::InitializeDirect2D()
 	//	true,
 	//	tempD2DTexture
 	//);
-}
-
-void Text::InitializeDirectWrite()
-{
-	// Factory
-	CheckStatus(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-		__uuidof(IDWriteFactory),
-		reinterpret_cast<IUnknown**>(&m_writeFactory)),
-		L"DWriteCreateFactory");
-
-	// Font
-	for (int i = 0; i < 3; i++)
-	{
-		m_textLength[i] = (UINT32)wcslen(m_text[i]);
-		CheckStatus(m_writeFactory->CreateTextFormat(
-			L"Arial",
-			NULL,
-			DWRITE_FONT_WEIGHT_REGULAR,
-			DWRITE_FONT_STYLE_NORMAL,
-			DWRITE_FONT_STRETCH_NORMAL,
-			m_textSize,
-			L"en-us",
-			&m_writeTextFormat[i]),
-			L"CreateTextFormat");
-
-		// Center align the text.
-		CheckStatus(m_writeTextFormat[i]->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER), L"SetTextAlignment");
-		CheckStatus(m_writeTextFormat[i]->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER), L"SetParagraphAlignment");
-
-		// layout to draw on
-		m_layoutRect = D2D1::RectF(
-			static_cast<FLOAT>(0.0f),
-			static_cast<FLOAT>(0.0f),
-			static_cast<FLOAT>(manager->getWindowWidth()),
-			static_cast<FLOAT>(manager->getWindowHeight())
-			);
-	}
-}
-
-void Text::RenderText()
-{
-	for (int i = 0; i < 3; i++)
-	{
-		m_d2dRenderTarget[i]->BeginDraw();
-		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
-		//m_d2dRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(-1.0f, 1.0f) * D2D1::Matrix3x2F::Translation(1000, 0));	// Must flip texture before send to Compositing
-		m_d2dRenderTarget[i]->Clear(NULL);
-		// Call the DrawText method of this class.
-		//m_d2dRenderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE::D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
-		m_d2dRenderTarget[i]->DrawText(
-			m_text[i],					// The string to render.
-			m_textLength[i],			// The string's length.
-			m_writeTextFormat[i],		// The text format.
-			m_layoutRect,			// The region of the window where the text will be rendered.
-			m_orangeBrush[i]			// The brush used to draw the text.
-			);
-		m_d2dRenderTarget[i]->EndDraw();
-	}
 }
 
 void Text::RotatePlane()
