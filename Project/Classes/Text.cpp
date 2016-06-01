@@ -73,7 +73,6 @@ void Text::Render()
 {
 	if (m_firstTime)
 	{
-		CalculateSize();
 		// Initialize Systems
 		m_text[0] = L"Text";
 		m_text[1] = L"Pommes";
@@ -669,57 +668,6 @@ void Text::EdgeRender()
 
 		m_d2dRenderTarget[i]->EndDraw();
 	}
-}
-
-void Text::CalculateSize()
-{
-	// Standard
-	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
-	//gdeviceContext->ClearRenderTargetView(resources.renderTargetViews["Final"], clearColor);
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
-	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
-
-	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
-	gdeviceContext->PSSetShader(resources.pixelShaders["Text_Size_PS"], nullptr, 0);
-
-	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->Begin(m_query);
-	gdeviceContext->Draw(4, 0);
-
-	// Query
-	gdeviceContext->End(m_query);
-	UINT64 queryData;
-	while (S_OK != gdeviceContext->GetData(m_query, &queryData, m_query->GetDataSize(), 0)){}
-	
-	// Calculate texture size
-	if (queryData > 0)
-	{
-		m_height = queryData / (m_uvWidth / m_uvHeight);
-		m_height = sqrt(m_height);
-		m_width = m_height * (m_uvWidth / m_uvHeight);
-	}
-
-	// ComputeShader
-	gdeviceContext->CSSetUnorderedAccessViews(0, 1, &m_uav, nullptr);
-	gdeviceContext->CSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->CSSetShader(resources.computeShaders["Text_CS"], nullptr, 0);
-	gdeviceContext->CSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
-	//gdeviceContext->Dispatch(32, 40, 1);
-	gdeviceContext->Dispatch(1, 1, 1);
-	gdeviceContext->CSSetUnorderedAccessViews(0, 1, &m_nullUAV, nullptr);
-	gdeviceContext->CSSetShader(nullptr, nullptr, 0);
-	gdeviceContext->CopyResource(m_buffer2, m_buffer);
-
-	//// Pixel shader corner location
-	//gdeviceContext->PSSetShader(resources.pixelShaders["TextCorners_PS"], nullptr, 0);
-	//gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer);
-	//gdeviceContext->Draw(4, 0);
 }
 
 ID3D11ShaderResourceView** Text::GetText()

@@ -34,7 +34,6 @@ private:
 
 	void InitializeDirect2D();
 	void CheckStatus(HRESULT hr, LPCTSTR titel);
-	void CalculateSize();
 
 	// Values
 	bool m_firstTime;
