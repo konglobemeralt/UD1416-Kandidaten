@@ -79,11 +79,10 @@ void Text::Render()
 		m_text[2] = L"68";
 		InitializeDirect2D();
 		DirectWriteEdge();
-		RotatePlane();
 		m_firstTime = false;
 	}
 
-	UpdateTextQuad();
+	Update();
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
@@ -98,7 +97,7 @@ void Text::Render()
 
 	gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer, &vertexSize, &offset);
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Matrices"]);
+	gdeviceContext->VSSetConstantBuffers(0, 1, &m_cameraBuffer);
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer2);
 
 	EdgeRender();
@@ -359,7 +358,9 @@ void Text::Initialize() {
 		m_infile.read((char*)&m_framesAmount, sizeof(int));
 		m_infile.read((char*)&m_vertexAmount, sizeof(int));
 		m_quadData = new QuadData[m_framesAmount * m_vertexAmount];
+		m_camPositions = new XMFLOAT3[m_framesAmount];
 		m_infile.read((char*)m_quadData, sizeof(QuadData) * m_framesAmount * m_vertexAmount);
+		m_infile.read((char*)m_camPositions, sizeof(XMFLOAT3) * m_framesAmount);
 	}
 	m_infile.close();
 
@@ -382,9 +383,15 @@ void Text::Initialize() {
 	data.pSysMem = m_quad;
 	gdevice->CreateBuffer(&bufferDesc, &data, &m_textPlaneBuffer);
 
-	XMStoreFloat4x4(&m_matrices.view, XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -1.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
-	XMStoreFloat4x4(&m_matrices.projection, XMMatrixPerspectiveFovLH(XM_PI * 0.45f, float(m_width) / float(m_height), 0.1f, 1000.0f));
-	manager->createConstantBuffer("Matrices", &m_matrices, sizeof(Matrices));
+	// Camera
+	XMMATRIX view = XMMatrixLookAtLH(
+		XMVectorSet(m_camPositions[0].x, m_camPositions[0].y, m_camPositions[0].z, 0.0f),
+		XMVectorSet(m_camPositions[0].x, m_camPositions[0].y, m_camPositions[0].z + 1, 0.0f),
+		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(view));
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	data.pSysMem = &m_matrix;
+	gdevice->CreateBuffer(&bufferDesc, &data, &m_cameraBuffer);
 }
 
 void Text::InitializeDirect2D()
@@ -493,19 +500,20 @@ void Text::InitializeDirect2D()
 	//);
 }
 
-void Text::RotatePlane()
+void Text::Update()
 {
-	XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(XM_PI * 0.45f, (float)m_width / (float)m_height, 0.1f, 1000.0f);
+	//XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	XMMATRIX view = XMMatrixLookAtLH(
+		XMVectorSet(m_camPositions[m_frameIndex].x, m_camPositions[m_frameIndex].y, m_camPositions[m_frameIndex].z, 0.0f),
+		XMVectorSet(m_camPositions[m_frameIndex].x, m_camPositions[m_frameIndex].y, m_camPositions[m_frameIndex].z + 1, 0.0f),
+		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(view));
 
-	XMMATRIX finalmatrix = view;
-	//finalmatrix *= XMMatrixRotationZ(XMConvertToRadians(45)) * XMMatrixScaling(1.0f, 1.0f, 1.0f);;
-	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(finalmatrix));
-	m_graphicsManager->createConstantBuffer("Rotation", &m_matrix, sizeof(XMFLOAT4X4));
-}
+	D3D11_MAPPED_SUBRESOURCE mapsub;
+	gdeviceContext->Map(m_cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
+	memcpy(mapsub.pData, (char*)&m_matrix, sizeof(XMFLOAT4X4));
+	gdeviceContext->Unmap(m_cameraBuffer, 0);
 
-void Text::UpdateTextQuad()
-{
 	m_timer += 0.06f;
 	if (m_timer >= 1.0f)
 	{

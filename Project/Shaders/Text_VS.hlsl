@@ -13,7 +13,6 @@ struct VS_OUT
 cbuffer Matrices : register(b0)
 {
 	matrix view;
-	matrix projection;
 }
 
 VS_OUT VS_main(VS_IN input)

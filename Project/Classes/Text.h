@@ -60,7 +60,7 @@ private:
 	ID3D11Buffer* m_buffer2;
 	ID3D11UnorderedAccessView* m_uav = nullptr;
 	ID3D11Buffer* m_textPlaneBuffer = nullptr;
-	void RotatePlane();
+	ID3D11Buffer* m_cameraBuffer = nullptr;
 
 	// Custom solution
 	struct QuadData
@@ -70,6 +70,7 @@ private:
 	};
 	QuadData* m_quadData = nullptr;
 	QuadData* m_quad = nullptr;
+	XMFLOAT3* m_camPositions = nullptr;
 	float m_quadWidth = 0.0f;
 	float m_quadHeight = 0.0f;
 	unsigned int m_framesAmount = 0;
@@ -82,7 +83,7 @@ private:
 		XMFLOAT4X4 view;
 		XMFLOAT4X4 projection;
 	}m_matrices;
-	void UpdateTextQuad();
+	void Update();
 
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;
