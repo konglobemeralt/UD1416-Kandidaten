@@ -9,10 +9,11 @@ Text::Text()
 		m_d2dRenderTarget[i] = nullptr;
 		m_blackBrush[i] = nullptr;
 		m_orangeBrush[i] = nullptr;
-
 		m_writeTextFormat[i] = nullptr;
-
 		m_pathGeometry[i] = nullptr;
+
+		m_timer[i] = 0.0f;
+		m_frameIndex[i] = 0;
 	}
 
 	m_firstTime = true;
@@ -82,57 +83,47 @@ void Text::Render()
 		m_firstTime = false;
 	}
 
-	Update();
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
-	gdeviceContext->PSSetSamplers(1, 1, &resources.samplerStates["Point"]);
-	//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
-
-	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
-	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
-
-	gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer, &vertexSize, &offset);
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	gdeviceContext->VSSetConstantBuffers(0, 1, &m_cameraBuffer);
-	gdeviceContext->PSSetConstantBuffers(0, 1, &m_buffer2);
-
-	EdgeRender();
-
-	// FXAA
-	if (m_fxaa)
+	for (size_t i = 0; i < 3; i++)
 	{
-		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
-		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
-	}
-
-	// Set textures
-	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UV"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["Checker"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &finalText[0]);
-	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["U"]);
-	gdeviceContext->PSSetShaderResources(3, 1, &resources.shaderResourceViews["V"]);
-	gdeviceContext->Draw(4, 0);
-
-	//manager->saveImage("Fonts/UV/saved.png", manager->pBackBuffer);
-
-	// Render FXAA
-	if (m_fxaa)
-	{
+		Update(i);
 		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-		gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
-		gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
-		gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
-		gdeviceContext->Draw(4, 0);
-	}
+		gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
-	//// Genereate mip maps
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["NULL"]);
-	//gdeviceContext->CopyResource(tempD2DTexture, d2dTextureTarget);
-	//gdeviceContext->GenerateMips(resources.shaderResourceViews["Text"]);
+		gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+		gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
+		//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
+
+		gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
+		gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
+
+		gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer[i], &vertexSize, &offset);
+		gdeviceContext->VSSetConstantBuffers(0, 1, &m_cameraBuffer);
+
+		EdgeRender();
+
+		// FXAA
+		if (m_fxaa)
+		{
+			gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+		}
+
+		// Set textures
+		gdeviceContext->PSSetShaderResources(0, 1, &finalText[i]);
+		gdeviceContext->Draw(4, 0);
+
+		//manager->saveImage("Fonts/UV/saved.png", manager->pBackBuffer);
+
+		// Render FXAA
+		if (m_fxaa)
+		{
+			gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+			gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+			gdeviceContext->PSSetShader(resources.pixelShaders["FXAA_PS"], nullptr, 0);
+			gdeviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["FXAA_PS_cb"]);
+			gdeviceContext->Draw(4, 0);
+		}
+	}
 }
 
 void Text::Initialize() {
@@ -169,99 +160,6 @@ void Text::Initialize() {
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 32.0f;
 	manager->createConstantBuffer("FXAA_PS_cb", &FXAA_PS_cb, sizeof(FXAA_PS_ConstantBuffer));
 
-	// To compute shader
-	struct Corners
-	{
-		XMFLOAT2 leftup;
-		XMFLOAT2 leftdown;
-		XMFLOAT2 rightup;
-		XMFLOAT2 rightdown;
-	}corners;
-	corners.leftup = XMFLOAT2(0.0f, 0.0f);
-	corners.leftdown = XMFLOAT2(0.0f, 1.0f);
-	corners.rightup = XMFLOAT2(1.0f, 0.0f);
-	corners.rightdown = XMFLOAT2(1.0f, 1.0f);
-
-	//D3D11_BUFFER_DESC bufferDesc;
-	//memset(&bufferDesc, 0, sizeof(bufferDesc));
-	//bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
-	//bufferDesc.StructureByteStride = sizeof(XMFLOAT2) * 4;
-	//bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	//bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	//bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	//bufferDesc.CPUAccessFlags = 0;
-	//D3D11_SUBRESOURCE_DATA subData;
-	//subData.pSysMem = &corners;
-	//gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer);
-	//
-	//D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-	//uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-	//uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	//uavDesc.Buffer.FirstElement = 0;
-	//uavDesc.Buffer.NumElements = 1;
-	//uavDesc.Buffer.Flags = 0;
-	//gdevice->CreateUnorderedAccessView(m_buffer, &uavDesc, &m_uav);
-
-	//D3D11_BUFFER_DESC bufferDesc;
-	//memset(&bufferDesc, 0, sizeof(bufferDesc));
-	//bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
-	//bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	//bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	//D3D11_SUBRESOURCE_DATA subData;
-	//subData.pSysMem = &corners;
-	//gdevice->CreateBuffer(&bufferDesc, nullptr, &m_buffer);
-	//
-	//memset(&bufferDesc, 0, sizeof(bufferDesc));
-	//bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
-	//bufferDesc.StructureByteStride = sizeof(XMFLOAT2) * 4;
-	//bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	//bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-	//bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	//bufferDesc.CPUAccessFlags = 0;
-	//gdevice->CreateBuffer(&bufferDesc, nullptr, &m_buffer2);
-	//
-	//D3D11_UNORDERED_ACCESS_VIEW_DESC particleUAVDesc;
-	//particleUAVDesc.Format = DXGI_FORMAT_UNKNOWN;
-	//particleUAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	//particleUAVDesc.Buffer.FirstElement = 0;
-	//particleUAVDesc.Buffer.NumElements = 1;
-	//particleUAVDesc.Buffer.Flags = 0;
-	//gdevice->CreateUnorderedAccessView(m_buffer2, &particleUAVDesc, &m_uav);
-
-	D3D11_SUBRESOURCE_DATA subData;
-	subData.pSysMem = &corners;
-
-	D3D11_BUFFER_DESC bufferDesc;
-	memset(&bufferDesc, 0, sizeof(bufferDesc));
-	bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
-	bufferDesc.StructureByteStride = 0;
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = 0;
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer2);
-
-	memset(&bufferDesc, 0, sizeof(bufferDesc));
-	bufferDesc.ByteWidth = sizeof(XMFLOAT2) * 4;
-	bufferDesc.StructureByteStride = sizeof(XMFLOAT2) * 4;
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	bufferDesc.CPUAccessFlags = 0;
-	gdevice->CreateBuffer(&bufferDesc, &subData, &m_buffer);
-
-	D3D11_UNORDERED_ACCESS_VIEW_DESC particleUAVDesc;
-	particleUAVDesc.Format = DXGI_FORMAT_UNKNOWN;
-	particleUAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	particleUAVDesc.Buffer.FirstElement = 0;
-	particleUAVDesc.Buffer.NumElements = 1;
-	//particleUAVDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
-	particleUAVDesc.Buffer.Flags = 0;
-	gdevice->CreateUnorderedAccessView(m_buffer, &particleUAVDesc, &m_uav);
-
 	// ###########################################################
 	// ######				Vertex Shader					######
 	// ###########################################################
@@ -286,9 +184,7 @@ void Text::Initialize() {
 	//			);
 
 	manager->createPixelShader("Text_PS"); // Name has to match shader name without .hlsl
-	manager->createPixelShader("Text_Size_PS");
 	manager->createPixelShader("FXAA_PS");
-	manager->createComputeShader("Text_CS");
 
 	// ###########################################################
 	// ######		Render target & shader resource			######
@@ -304,11 +200,6 @@ void Text::Initialize() {
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
 	//m_graphicsManager->attachImage("ToneMapping/Arches_E_PineTree_Preview.jpg", "mySRV");
-
-	manager->attachImage("Fonts/Images/Checker3.png", "Checker");
-	manager->attachImage("Fonts/UV/CorrectRotationHalf.png", "UV");
-	manager->attachImage("Fonts/UV/XUV.png", "U");
-	manager->attachImage("Fonts/UV/VUV.png", "V");
 
 	//ID3D11Texture2D* texture;
 	//ID3D11Resource* resource;
@@ -335,58 +226,74 @@ void Text::Initialize() {
 	//	);
 
 	manager->createSamplerState("Linear", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-	manager->createSamplerState("Point", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-
-	// Check support
-	D3D11_FEATURE_DATA_D3D11_OPTIONS1 formatSupport;
-	gdevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &formatSupport, sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS1));
-	// TiledResourceTier D3D11_TILED_RESOURCES_TIER_1	=	(1)
-	// MinMaxFiltering									=	0
-	// ClearViewAlsoSupportsDepthOnlyFormats			=	1
-	// MapOnDefaultBuffers								=	1
-
-	// Query
-	D3D11_QUERY_DESC qDesc;
-	qDesc.MiscFlags = 0;
-	qDesc.Query = D3D11_QUERY_OCCLUSION;
-	CheckStatus(gdevice->CreateQuery(&qDesc, &m_query), L"CreateQuery");
 
 	// Read files
-	m_infile.open("Assets/Fonts/Test.bin", std::ofstream::binary);
-	if (m_infile)
-	{
-		m_infile.read((char*)&m_framesAmount, sizeof(int));
-		m_infile.read((char*)&m_vertexAmount, sizeof(int));
-		m_quadData = new QuadData[m_framesAmount * m_vertexAmount];
-		m_camPositions = new XMFLOAT3[m_framesAmount];
-		m_infile.read((char*)m_quadData, sizeof(QuadData) * m_framesAmount * m_vertexAmount);
-		m_infile.read((char*)m_camPositions, sizeof(XMFLOAT3) * m_framesAmount);
-	}
-	m_infile.close();
-
-	m_quad = new QuadData[m_vertexAmount];
-	for (size_t i = 0; i < m_vertexAmount; i++)
-	{
-		m_quad[i] = m_quadData[i];
-	}
-
-	m_quadWidth = (m_quad[3].pos.x - m_quad[0].pos.x) * 0.5f * m_width;
-	m_quadHeight = (m_quad[3].pos.y - m_quad[0].pos.y) * 0.5f * m_height;
-
-	memset(&bufferDesc, 0, sizeof(bufferDesc));
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bufferDesc.ByteWidth = sizeof(QuadData) * m_vertexAmount;
-
+	D3D11_BUFFER_DESC bufferDesc;
 	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = m_quad;
-	gdevice->CreateBuffer(&bufferDesc, &data, &m_textPlaneBuffer);
+	m_quadData = new QuadData*[3];
+	m_quad = new QuadData*[3];
+	for (size_t i = 0; i < 3; i++)
+	{
+		if(i == 0)
+			m_infile.open("Assets/Fonts/TextPlane1.bin", std::ofstream::binary);
+		else if (i == 1)
+			m_infile.open("Assets/Fonts/TextPlane2.bin", std::ofstream::binary);
+		else if (i == 2)
+			m_infile.open("Assets/Fonts/TextPlane3.bin", std::ofstream::binary);
+		if (m_infile)
+		{
+			m_infile.read((char*)&m_framesAmount[i], sizeof(int));
+			m_infile.read((char*)&m_vertexAmount[i], sizeof(int));
+			m_quadData[i] = new QuadData[m_framesAmount[i] * m_vertexAmount[i]];
+			m_camData = new CameraData[m_framesAmount[i]];
+			m_infile.read((char*)m_quadData[i], sizeof(QuadData) * m_framesAmount[i] * m_vertexAmount[i]);
+			m_infile.read((char*)m_camData, sizeof(CameraData) * m_framesAmount[i]);
+		}
+		m_infile.close();
+
+		m_quad[i] = new QuadData[m_vertexAmount[i]];
+		float maxX = -D3D11_FLOAT32_MAX;
+		float minX = D3D11_FLOAT32_MAX;
+		float maxY = -D3D11_FLOAT32_MAX;
+		float minY = D3D11_FLOAT32_MAX;
+		for (size_t j = 0; j < m_vertexAmount[i]; j++)
+		{
+			m_quad[i][j] = m_quadData[i][j];
+			if (m_quad[i][j].pos.x > maxX)
+			{
+				maxX = m_quad[i][j].pos.x;
+			}
+			if (m_quad[i][j].pos.x < minX)
+			{
+				minX = m_quad[i][j].pos.x;
+			}
+
+			if (m_quad[i][j].pos.y > maxY)
+			{
+				maxY = m_quad[i][j].pos.y;
+			}
+			if (m_quad[i][j].pos.y < minY)
+			{
+				minY = m_quad[i][j].pos.y;
+			}
+		}
+		m_quadWidth[i] = (maxX - minX) * 0.5f * m_width;
+		m_quadHeight[i] = (maxY - minY) * 0.5f * m_height;
+
+		memset(&bufferDesc, 0, sizeof(bufferDesc));
+		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bufferDesc.ByteWidth = sizeof(QuadData) * m_vertexAmount[i];
+
+		data.pSysMem = m_quad[i];
+		gdevice->CreateBuffer(&bufferDesc, &data, &m_textPlaneBuffer[i]);
+	}
 
 	// Camera
 	XMMATRIX view = XMMatrixLookAtLH(
-		XMVectorSet(m_camPositions[0].x, m_camPositions[0].y, m_camPositions[0].z, 0.0f),
-		XMVectorSet(m_camPositions[0].x, m_camPositions[0].y, m_camPositions[0].z + 1, 0.0f),
+		XMVectorSet(m_camData[0].position.x, m_camData[0].position.y, m_camData[0].position.z, 0.0f),
+		XMVectorSet(m_camData[0].focus.x, m_camData[0].focus.y, m_camData[0].focus.z, 0.0f),
 		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(view));
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -396,13 +303,6 @@ void Text::Initialize() {
 
 void Text::InitializeDirect2D()
 {
-	// Get values
-	if (m_ssaa)
-	{
-		m_quadHeight *= 4;
-		m_quadWidth *= 4;
-	}
-
 	// Factory
 	CheckStatus(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory), L"D2D1CreateFactory");
 
@@ -411,35 +311,38 @@ void Text::InitializeDirect2D()
 	CheckStatus(m_d2dFactory->CreateDevice(m_dxgiDevice, &m_d2dDev), L"CreateDevice");
 	CheckStatus(m_d2dDev->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &m_d2dDevcon), L"CreateDeviceContext");
 
-	// Rendertarget
-	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.ArraySize = 1;
-	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	texDesc.Height = m_quadHeight;
-	texDesc.Width = m_quadWidth;
-	texDesc.MipLevels = 1;
-	texDesc.MiscFlags = 0;
-	texDesc.SampleDesc.Count = 1;
-	texDesc.SampleDesc.Quality = 0;
-	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	D2D1_RENDER_TARGET_PROPERTIES props =
-		D2D1::RenderTargetProperties(
-			D2D1_RENDER_TARGET_TYPE_DEFAULT,
-			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-			96,
-			96);
-	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-	renderTargetViewDesc.Format = texDesc.Format;
-	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	renderTargetViewDesc.Texture2D.MipSlice = 0;
-	resources.shaderResourceViews["NULL"] = nullptr;
-
 	for (int i = 0; i < 3; i++)
 	{
+		if (m_ssaa)
+		{
+			m_quadHeight[i] *= 4;
+			m_quadWidth[i] *= 4;
+		}
+		// Rendertarget
+		D3D11_TEXTURE2D_DESC texDesc;
+		texDesc.ArraySize = 1;
+		texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		texDesc.CPUAccessFlags = 0;
+		texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		texDesc.Height = m_quadHeight[i];
+		texDesc.Width = m_quadWidth[i];
+		texDesc.MipLevels = 1;
+		texDesc.MiscFlags = 0;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Usage = D3D11_USAGE_DEFAULT;
+		D2D1_RENDER_TARGET_PROPERTIES props =
+			D2D1::RenderTargetProperties(
+				D2D1_RENDER_TARGET_TYPE_DEFAULT,
+				D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+				96,
+				96);
+		D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+		renderTargetViewDesc.Format = texDesc.Format;
+		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		renderTargetViewDesc.Texture2D.MipSlice = 0;
+
 		CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget[i]), L"CreateTexture2D");
-		//gdevice->CreateTexture2D(&texDesc, NULL, &d2dTextureTarget[i]);
 
 		d2dTextureTarget[i]->QueryInterface(&m_idxgSurface[i]);
 		d2dTextureTarget[i]->Release();
@@ -453,84 +356,49 @@ void Text::InitializeDirect2D()
 		manager->createTexture2D(
 			"Text" + to_string(i),
 			texDesc.Format,
-			m_quadWidth,
-			m_quadHeight,
+			m_quadWidth[i],
+			m_quadHeight[i],
 			true,
 			true,
 			d2dTextureTarget[i]
 		);
 		finalText[i] = resources.shaderResourceViews["Text" + to_string(i)];
 	}
-
-	//// With mipmaps
-	//texDesc.ArraySize = 1;
-	//texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	//texDesc.CPUAccessFlags = 0;
-	//texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	//texDesc.Height = doubleHeight;
-	//texDesc.Width = doubleWidth;
-	//texDesc.MipLevels = 1;
-	//texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-	////texDesc.SampleDesc.Count = 1;
-	////texDesc.SampleDesc.Quality = 0;
-	//texDesc.Usage = D3D11_USAGE_DEFAULT;
-	//CheckStatus(gdevice->CreateTexture2D(&texDesc, NULL, &tempD2DTexture), L"CreateTexture2D");
-	//
-	//ID3D11ShaderResourceView* srv;
-	//D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	//srvDesc.Format = texDesc.Format;
-	//srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	//srvDesc.Texture2D.MostDetailedMip = 0;
-	//srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
-	//CheckStatus(gdevice->CreateShaderResourceView(d2dTextureTarget, &srvDesc, &srv), L"CreateShaderResourceView");
-	//for (int i = 0; i < 3; i++)
-	//{
-	//	finalText[i] = srv;
-	//}
-	//resources.shaderResourceViews["Text"] = srv;
-
-	//manager->createTexture2D(
-	//	"Text",
-	//	texDesc.Format,
-	//	manager->getWindowWidth(),
-	//	manager->getWindowHeight(),
-	//	false,
-	//	true,
-	//	tempD2DTexture
-	//);
 }
 
-void Text::Update()
+void Text::Update(unsigned int id)
 {
-	//XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	XMMATRIX view = XMMatrixLookAtLH(
-		XMVectorSet(m_camPositions[m_frameIndex].x, m_camPositions[m_frameIndex].y, m_camPositions[m_frameIndex].z, 0.0f),
-		XMVectorSet(m_camPositions[m_frameIndex].x, m_camPositions[m_frameIndex].y, m_camPositions[m_frameIndex].z + 1, 0.0f),
-		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(view));
-
-	D3D11_MAPPED_SUBRESOURCE mapsub;
-	gdeviceContext->Map(m_cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
-	memcpy(mapsub.pData, (char*)&m_matrix, sizeof(XMFLOAT4X4));
-	gdeviceContext->Unmap(m_cameraBuffer, 0);
-
-	m_timer += 0.06f;
-	if (m_timer >= 1.0f)
+	m_timer[id] += 0.06f;
+	if (m_timer[id] >= 1.0f)
 	{
 		D3D11_MAPPED_SUBRESOURCE mapsub;
-		gdeviceContext->Map(m_textPlaneBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
-		memcpy(mapsub.pData, (char*)m_quadData + (sizeof(QuadData) * m_frameIndex * m_vertexAmount), sizeof(QuadData) * m_vertexAmount);
-		gdeviceContext->Unmap(m_textPlaneBuffer, 0);
+		gdeviceContext->Map(m_textPlaneBuffer[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
+		memcpy(mapsub.pData, (char*)m_quadData[id] + (sizeof(QuadData) * m_frameIndex[id] * m_vertexAmount[id]), sizeof(QuadData) * m_vertexAmount[id]);
+		gdeviceContext->Unmap(m_textPlaneBuffer[id], 0);
 
-		if (m_frameIndex >= m_framesAmount-1)
+		if (id == 0)
 		{
-			m_frameIndex = 0;
+			//XMMATRIX view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+			XMMATRIX view = XMMatrixLookAtLH(
+				XMVectorSet(m_camData[m_frameIndex[id]].position.x, m_camData[m_frameIndex[id]].position.y, m_camData[m_frameIndex[id]].position.z, 0.0f),
+				XMVectorSet(m_camData[m_frameIndex[id]].focus.x, m_camData[m_frameIndex[id]].focus.y, m_camData[m_frameIndex[id]].focus.z, 0.0f),
+				XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+			XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(view));
+
+			gdeviceContext->Map(m_cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
+			memcpy(mapsub.pData, (char*)&m_matrix, sizeof(XMFLOAT4X4));
+			gdeviceContext->Unmap(m_cameraBuffer, 0);
+		}
+
+		if (m_frameIndex[id] >= m_framesAmount[id] -1)
+		{
+			m_frameIndex[id] = 0;
 		}
 		else
 		{
-			m_frameIndex++;
+			m_frameIndex[id]++;
 		}
-		m_timer = 0.0f;
+		m_timer[id] = 0.0f;
 	}
 }
 
@@ -573,7 +441,7 @@ void Text::DirectWriteEdge()
 			maxSize = bound[i].right + bound[i].left;
 	}
 	// Scale text
-	m_scale = (m_quadWidth) / ((maxSize) + m_padding);
+	m_scale = (m_quadWidth[0]) / ((maxSize) + m_padding);
 
 	// Center text
 	for (int i = 0; i < 3; i++)

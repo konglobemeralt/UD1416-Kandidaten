@@ -54,12 +54,7 @@ private:
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 	XMFLOAT4X4 m_matrix;
-	ID3D11Query* m_query;
-	ID3D11UnorderedAccessView* m_nullUAV = nullptr;
-	ID3D11Buffer* m_buffer;
-	ID3D11Buffer* m_buffer2;
-	ID3D11UnorderedAccessView* m_uav = nullptr;
-	ID3D11Buffer* m_textPlaneBuffer = nullptr;
+	ID3D11Buffer* m_textPlaneBuffer[3];
 	ID3D11Buffer* m_cameraBuffer = nullptr;
 
 	// Custom solution
@@ -68,22 +63,26 @@ private:
 		XMFLOAT3 pos;
 		XMFLOAT2 uv;
 	};
-	QuadData* m_quadData = nullptr;
-	QuadData* m_quad = nullptr;
-	XMFLOAT3* m_camPositions = nullptr;
-	float m_quadWidth = 0.0f;
-	float m_quadHeight = 0.0f;
-	unsigned int m_framesAmount = 0;
-	unsigned int m_vertexAmount = 0;
-	unsigned int m_frameIndex = 0;
-	float m_timer = 0.0f;
+	QuadData** m_quadData;
+	QuadData** m_quad;
+	struct CameraData
+	{
+		XMFLOAT3 position;
+		XMFLOAT3 focus;
+	}* m_camData;
+	float m_quadWidth[3];
+	float m_quadHeight[3];
+	unsigned int m_framesAmount[3];
+	unsigned int m_vertexAmount[3];
+	unsigned int m_frameIndex[3];
+	float m_timer[3];
 	ifstream m_infile;
 	struct Matrices
 	{
 		XMFLOAT4X4 view;
 		XMFLOAT4X4 projection;
 	}m_matrices;
-	void Update();
+	void Update(unsigned int id);
 
 	// Direct2D
 	ID2D1Factory1* m_d2dFactory = nullptr;
