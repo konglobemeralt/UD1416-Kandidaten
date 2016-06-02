@@ -29,7 +29,8 @@ private:
     };
     
     vector<char*> fileNames;
-    vector<int> fileNamesPlayerNr; //innehåller i samma ordning som fileNames de olika spelar indexen
+    vector<int> playerOrderNr; //innehåller i samma ordning som fileNames de olika spelar indexen
+    vector<int> playerNr;
     vector<PlayerName> playerNames;
 
 public:
@@ -87,76 +88,99 @@ private:
         //int maxIndex = 0, minIndex = 0;
         for (int i = 0; i < fileNames.size(); i++)
         {
-            int playerNr = 0;
+            int playerOrder = 0;
             int startNameIndex = 0;
 
             if (fileNames[i][1] > 47 && fileNames[i][1] < 58)
             {
-                playerNr += ((int)(fileNames[i][0]) - 48) * 10;
-                playerNr += ((int)(fileNames[i][1]) - 48);
+                playerOrder += ((int)(fileNames[i][0]) - 48) * 10;
+                playerOrder += ((int)(fileNames[i][1]) - 48);
                 startNameIndex = 2;
             }
             else 
             {
                 startNameIndex = 1;
-                playerNr += ((int)(fileNames[i][0]) - 48);
+                playerOrder += ((int)(fileNames[i][0]) - 48);
             }
 
             //spelar namnen!!!
             //TA REDA PÅ FÖRNAMNET
-            int firstNameSize = 1; //gör inte while checken på första bokstaven för den är redan stor
-            while (fileNames[i][firstNameSize+startNameIndex] < 'A' || fileNames[i][firstNameSize+startNameIndex] > 'Z') //det är en liten bokstav eller liknande
+            int firstNameSize = 0; //gör inte while checken på första bokstaven för den är redan stor
+            while (fileNames[i][firstNameSize+startNameIndex] != '_') //det är en liten bokstav eller liknande //fileNames[i][firstNameSize+startNameIndex] < 'A' || fileNames[i][firstNameSize+startNameIndex] > 'Z'
             {
                 firstNameSize++;
             }
-            firstNameSize += startNameIndex;
+            //firstNameSize += startNameIndex;
 
-            char* playerFirstName = new char[firstNameSize];
-            for (int f = startNameIndex; f < firstNameSize; f++)
+            char* playerFirstName = new char[firstNameSize+1];
+            for (int f = 0; f < firstNameSize; f++)
             {
-                playerFirstName[f - startNameIndex] = fileNames[i][f];
+                playerFirstName[f] = fileNames[i][f + startNameIndex];
             }
-            playerFirstName[firstNameSize-startNameIndex] = '\0';
+            playerFirstName[firstNameSize] = '\0';
 
             //TA REDA PÅ EFTERNAMNET
-            int lastNameSize = 1; //gör inte while checken på första bokstaven för den är redan stor
-            while (fileNames[i][firstNameSize + lastNameSize + startNameIndex] > 'a' && fileNames[i][firstNameSize + lastNameSize + startNameIndex] < 'z') //det är en liten bokstav eller liknande
+            int lastNameSize = 0; //gör inte while checken på första bokstaven för den är redan stor
+            while (fileNames[i][firstNameSize + lastNameSize + startNameIndex + 1] != '_') //+1 för att inte fastna på förnamnets '_'
             {
                 lastNameSize++;
             }
-            lastNameSize += startNameIndex;
+            //lastNameSize += startNameIndex;
 
-            char* playerLastName = new char[lastNameSize];
-            for (int f = startNameIndex; f < lastNameSize+startNameIndex; f++)
+            char* playerLastName = new char[lastNameSize+1];
+            for (int f = 0; f < lastNameSize; f++)
             {
-                playerLastName[f - startNameIndex] = fileNames[i][firstNameSize+f-startNameIndex];
+                playerLastName[f] = fileNames[i][firstNameSize+f+startNameIndex+1]; //+1 för att den hoppar över '_'
             }
             playerLastName[lastNameSize] = '\0';
             //**************************
+
+            //SPELARNUMMER - enda kvar
+            int playerNR = 0;
+            int playerNRStartSpot = firstNameSize + lastNameSize + startNameIndex + 2;
+
+            if (fileNames[i][playerNRStartSpot+1] > 47 && fileNames[i][playerNRStartSpot+1] < 58)
+            {
+                playerNR += ((int)(fileNames[i][playerNRStartSpot]) - 48) * 10;
+                playerNR += ((int)(fileNames[i][playerNRStartSpot+1]) - 48);
+            }
+            else
+            {
+                playerNR += ((int)(fileNames[i][playerNRStartSpot]) - 48);
+            }
+            //*************
+
             PlayerName playerName;
             playerName.firstName = playerFirstName;
             playerName.lastName = playerLastName;
 
             playerNames.push_back(playerName);
-            fileNamesPlayerNr.push_back(playerNr);
+            playerOrderNr.push_back(playerOrder);
+            playerNr.push_back(playerNR);
         }
         //sortera!
         for (int i = 0; i < fileNames.size(); i++)
         {
             for (int y = 0; y < fileNames.size(); y++)
             {
-                if (fileNamesPlayerNr[i] < fileNamesPlayerNr[y])
+                if (playerOrderNr[i] < playerOrderNr[y])
                 {
-                    int tempPlayerNr = fileNamesPlayerNr[i];
+                    int tempPlayerOrderNr = playerOrderNr[i];
                     char* tempName = fileNames[i];
                     PlayerName tempPlayerName = playerNames[i];
+                    int tempPlayerNr = playerNr[i];
 
                     fileNames[i] = fileNames[y];
                     fileNames[y] = tempName;
-                    fileNamesPlayerNr[i] = fileNamesPlayerNr[y];
-                    fileNamesPlayerNr[y] = tempPlayerNr;
+
+                    playerOrderNr[i] = playerOrderNr[y];
+                    playerOrderNr[y] = tempPlayerOrderNr;
+
                     playerNames[i] = playerNames[y];
                     playerNames[y] = tempPlayerName;
+
+                    playerNr[i] = playerNr[y];
+                    playerNr[y] = tempPlayerNr;
                 }
             }
         }
@@ -165,11 +189,11 @@ private:
         {
             PlayerInfo pInfo;
             pInfo.fileName = fileNames[i];
-            pInfo.playerNr = fileNamesPlayerNr[i];
+            pInfo.playerNr = playerNr[i];
             pInfo.playerName = playerNames[i];
             playerInfo.push_back(pInfo);
         }
-        string bajs = "hej";
+
     }
 };
 
