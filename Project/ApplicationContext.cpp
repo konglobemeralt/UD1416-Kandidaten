@@ -7,6 +7,7 @@
 #include "Classes\Text.h"
 #include "Classes\ToneMapping.h"
 #include "Classes\WindowManager.h"
+#include "InfoRetriever.h"
 
 ApplicationContext* ApplicationContext::applicationContext = nullptr;
 ApplicationContext::ApplicationContext()
@@ -19,6 +20,7 @@ ApplicationContext::ApplicationContext()
 	m_toneMapping = new ToneMapping;
 	m_graphicsManager = new GraphicsManager;
 	m_windowManager = new WindowManager;
+    m_InfoRetriever = new InfoRetriever;
 }
 
 ApplicationContext::~ApplicationContext()
@@ -60,6 +62,7 @@ void ApplicationContext::Shutdown()
 void ApplicationContext::Initialize()
 {
 	//applicationContext->m_graphicsManager->initGraphics();
+    applicationContext->m_InfoRetriever->Initialize();
 	switch (applicationContext->m_user)
 	{
 	case TEXT:

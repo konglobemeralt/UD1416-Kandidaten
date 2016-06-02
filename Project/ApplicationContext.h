@@ -10,6 +10,7 @@ class AntiAliasing;
 class ToneMapping;
 class GraphicsManager;
 class WindowManager;
+class InfoRetriever;
 class ApplicationContext
 {
 public:
@@ -38,6 +39,7 @@ private:
 	ToneMapping* m_toneMapping = nullptr;
 	GraphicsManager* m_graphicsManager = nullptr;
 	WindowManager* m_windowManager = nullptr;
+    InfoRetriever* m_InfoRetriever = nullptr;
 	int m_user;
 
 
