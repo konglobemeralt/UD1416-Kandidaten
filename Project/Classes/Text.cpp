@@ -11,7 +11,9 @@ Text::Text()
 		m_orangeBrush[i] = nullptr;
 		m_writeTextFormat[i] = nullptr;
 		m_pathGeometry[i] = nullptr;
-
+	}
+	for (size_t i = 0; i < fileCount; i++)
+	{
 		m_timer[i] = 0.0f;
 		m_frameIndex[i] = 0;
 	}
@@ -19,7 +21,7 @@ Text::Text()
 	m_firstTime = true;
 	m_edgeRendering = true;
 	m_fxaa = false;
-	m_ssaa = false;
+	m_ssaa = true;
 	m_height = 0;
 	m_width = 0;
 	m_uvWidth = 0.0f;
@@ -94,9 +96,11 @@ void Text::Render()
 	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
 	gdeviceContext->VSSetConstantBuffers(0, 1, &m_cameraBuffer);
 
-	for (size_t i = 0; i < 3; i++)
+	for (size_t i = 0; i < fileCount; i++)
 	{
-			Update(i);
+		if (calc == 15 && i == 2)
+			int hej = 0;
+		Update(i);
 		gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer[i], &vertexSize, &offset);
 		EdgeRender();
 
@@ -107,8 +111,11 @@ void Text::Render()
 		}
 
 		// Set textures
-		gdeviceContext->PSSetShaderResources(0, 1, &finalText[i]);
-		gdeviceContext->Draw(4, 0);
+		if(i < planeCount)
+			gdeviceContext->PSSetShaderResources(0, 1, &finalText[i]);
+		else
+			gdeviceContext->PSSetShaderResources(0, 1, &finalText[0]);
+		gdeviceContext->Draw(m_vertexAmount[i], 0);
 
 		//manager->saveImage("Fonts/UV/saved.png", manager->pBackBuffer);
 
@@ -122,6 +129,7 @@ void Text::Render()
 			gdeviceContext->Draw(4, 0);
 		}
 	}
+	calc++;
 }
 
 void Text::Initialize() {
@@ -228,9 +236,9 @@ void Text::Initialize() {
 	// Read files
 	D3D11_BUFFER_DESC bufferDesc;
 	D3D11_SUBRESOURCE_DATA data;
-	m_quadData = new QuadData*[3];
-	m_quad = new QuadData*[3];
-	for (size_t i = 0; i < 3; i++)
+	m_quadData = new QuadData*[fileCount];
+	m_quad = new QuadData*[fileCount];
+	for (size_t i = 0; i < fileCount; i++)
 	{
 		if(i == 0)
 			m_infile.open("Assets/Fonts/TextPlane1.bin", std::ofstream::binary);
@@ -238,6 +246,8 @@ void Text::Initialize() {
 			m_infile.open("Assets/Fonts/TextPlane2.bin", std::ofstream::binary);
 		else if (i == 2)
 			m_infile.open("Assets/Fonts/TextPlane3.bin", std::ofstream::binary);
+		else if (i == 3)
+			m_infile.open("Assets/Fonts/Puck.bin", std::ofstream::binary);
 		if (m_infile)
 		{
 			m_infile.read((char*)&m_framesAmount[i], sizeof(int));
@@ -277,6 +287,8 @@ void Text::Initialize() {
 		}
 		m_quadWidth[i] = (maxX - minX) * 0.5f * m_width;
 		m_quadHeight[i] = (maxY - minY) * 0.5f * m_height;
+		m_quadWidth[i] = 512;
+		m_quadHeight[i] = 512;
 
 		memset(&bufferDesc, 0, sizeof(bufferDesc));
 		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -295,6 +307,7 @@ void Text::Initialize() {
 		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	XMStoreFloat4x4(&m_matrix, XMMatrixTranspose(view));
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.ByteWidth = sizeof(XMFLOAT4X4);
 	data.pSysMem = &m_matrix;
 	gdevice->CreateBuffer(&bufferDesc, &data, &m_cameraBuffer);
 
@@ -324,7 +337,7 @@ void Text::InitializeDirect2D()
 	CheckStatus(m_d2dFactory->CreateDevice(m_dxgiDevice, &m_d2dDev), L"CreateDevice");
 	CheckStatus(m_d2dDev->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &m_d2dDevcon), L"CreateDeviceContext");
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < planeCount; i++)
 	{
 		if (m_ssaa)
 		{
@@ -447,7 +460,7 @@ void Text::DirectWriteEdge()
 	m_fontFaceBeginning->QueryInterface<IDWriteFontFace1>(&m_fontFace);
 
 	float maxSize = 0.0f;
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < planeCount; i++)
 	{
 		GetTextOutline(m_text[i], i);
 		if (bound[i].right > maxSize)
@@ -457,7 +470,7 @@ void Text::DirectWriteEdge()
 	m_scale = (m_quadWidth[0]) / ((maxSize) + m_padding);
 
 	// Center text
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < planeCount; i++)
 	{
 		//D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
 		//	1.0f, 0.0f,
@@ -538,7 +551,7 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 
 void Text::EdgeRender()
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < planeCount; i++)
 	{
 		// Clear
 		m_d2dRenderTarget[i]->BeginDraw();

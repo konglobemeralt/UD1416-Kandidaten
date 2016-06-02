@@ -48,15 +48,18 @@ private:
 	float m_edgeSize;
 	float m_padding;
 	float m_scale;
+	unsigned int fileCount = 4;
+	unsigned int planeCount = 3;
 
 	// Direct3D
 	float clearColor[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 	XMFLOAT4X4 m_matrix;
-	ID3D11Buffer* m_textPlaneBuffer[3];
+	ID3D11Buffer* m_textPlaneBuffer[4];
 	ID3D11Buffer* m_cameraBuffer = nullptr;
 	ID3D11BlendState* m_blendState;
+	unsigned int calc = 0;
 
 	// Custom solution
 	struct QuadData
@@ -71,12 +74,12 @@ private:
 		XMFLOAT3 position;
 		XMFLOAT3 focus;
 	}* m_camData;
-	float m_quadWidth[3];
-	float m_quadHeight[3];
-	unsigned int m_framesAmount[3];
-	unsigned int m_vertexAmount[3];
-	unsigned int m_frameIndex[3];
-	float m_timer[3];
+	float m_quadWidth[4];
+	float m_quadHeight[4];
+	unsigned int m_framesAmount[4];
+	unsigned int m_vertexAmount[4];
+	unsigned int m_frameIndex[4];
+	float m_timer[4];
 	ifstream m_infile;
 	struct Matrices
 	{
