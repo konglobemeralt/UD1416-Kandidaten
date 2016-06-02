@@ -56,6 +56,7 @@ private:
 	XMFLOAT4X4 m_matrix;
 	ID3D11Buffer* m_textPlaneBuffer[3];
 	ID3D11Buffer* m_cameraBuffer = nullptr;
+	ID3D11BlendState* m_blendState;
 
 	// Custom solution
 	struct QuadData

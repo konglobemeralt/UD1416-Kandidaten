@@ -83,23 +83,21 @@ void Text::Render()
 		m_firstTime = false;
 	}
 
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+
+	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
+	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
+
+	gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
+	gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
+	gdeviceContext->VSSetConstantBuffers(0, 1, &m_cameraBuffer);
+
 	for (size_t i = 0; i < 3; i++)
 	{
-		Update(i);
-		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-		gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
-		gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
-		gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["Linear"]);
-		//gdeviceContext->VSSetConstantBuffers(0, 1, &resources.constantBuffers["Rotation"]);
-
-		gdeviceContext->VSSetShader(resources.vertexShaders["Text_VS"], nullptr, 0);
-		gdeviceContext->PSSetShader(resources.pixelShaders["Text_PS"], nullptr, 0);
-
+			Update(i);
 		gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer[i], &vertexSize, &offset);
-		gdeviceContext->VSSetConstantBuffers(0, 1, &m_cameraBuffer);
-
 		EdgeRender();
 
 		// FXAA
@@ -299,6 +297,21 @@ void Text::Initialize() {
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	data.pSysMem = &m_matrix;
 	gdevice->CreateBuffer(&bufferDesc, &data, &m_cameraBuffer);
+
+	D3D11_BLEND_DESC blendDesc;
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_DEST_ALPHA;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	gdevice->CreateBlendState(&blendDesc, &m_blendState);
+	float blendfactor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	gdeviceContext->OMSetBlendState(m_blendState, blendfactor, 0xffffffff);
 }
 
 void Text::InitializeDirect2D()
@@ -530,7 +543,7 @@ void Text::EdgeRender()
 		// Clear
 		m_d2dRenderTarget[i]->BeginDraw();
 		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
-		m_d2dRenderTarget[i]->Clear(d2dClearColor);
+		m_d2dRenderTarget[i]->Clear(NULL);
 
 		//// // Draw text with outline
 		//m_d2dRenderTarget[i]->SetTransform(
