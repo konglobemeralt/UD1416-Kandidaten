@@ -84,7 +84,7 @@ void Text::Render()
 	}
 
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+	//gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["FirstLayout"]);
@@ -381,9 +381,9 @@ void Text::InitializeDirect2D()
 
 void Text::Update(unsigned int id)
 {
-	m_timer[id] += 0.06f;
-	if (m_timer[id] >= 1.0f)
-	{
+	//m_timer[id] += 0.06f;
+	//if (m_timer[id] >= 1.0f)
+	//{
 		D3D11_MAPPED_SUBRESOURCE mapsub;
 		gdeviceContext->Map(m_textPlaneBuffer[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &mapsub);
 		memcpy(mapsub.pData, (char*)m_quadData[id] + (sizeof(QuadData) * m_frameIndex[id] * m_vertexAmount[id]), sizeof(QuadData) * m_vertexAmount[id]);
@@ -412,7 +412,7 @@ void Text::Update(unsigned int id)
 			m_frameIndex[id]++;
 		}
 		m_timer[id] = 0.0f;
-	}
+	//}
 }
 
 void Text::DirectWriteEdge()
