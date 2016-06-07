@@ -84,31 +84,60 @@ void Compositing::Render() {
 
 	if (m_imageCount == 2)
 	{
-		manager->attachImage("dickbutt.png", "PlayerSRV");
+		manager->attachImage("dickbutt3.png", "PlayerSRV");
 	}
 	if (m_imageCount == 30)
 	{
-		manager->attachImage("bert.png", "PlayerSRV");
+		manager->attachImage("putin.png", "PlayerSRV");
 	}
 	if (m_imageCount == 90)
 	{
-		manager->attachImage("dickbutt.png", "PlayerSRV");
+		manager->attachImage("dickbutt3.png", "PlayerSRV");
 	}
 
-
+	string uvString;
+	string uvRefString;
+	string beautyString;
+	string diffuseString;
+	string specularString;
+	string refDistortString;
+	string irradianceString;
+	string reflectionString;
+	string indirectString;
+	string textPlane1String;
+	string textPlane2String;
+	string textPlane3String;
 	//Concatenate to filename to find correct UV and Backgroudn image.
-	string uvString = m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
-	string uvRefString = m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
-	string beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
-	string diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
-	string specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
-	string irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
-	string shadowString = m_shadowFrame + framePadding + to_string(m_imageCount) + ".png";
-	string reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
-	
-	string textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
-	string textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
-	string textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+	if (m_renderSequence)
+	{
+		uvString			= m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
+		uvRefString		= m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+		beautyString		= m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
+		diffuseString	= m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
+		specularString	= m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
+		refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".png";
+		irradianceString		= m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
+		reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+		indirectString = m_indirectFrame + framePadding + to_string(m_imageCount) + ".png";
+		textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
+		textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
+		textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+	}
+	else
+	{
+		uvString = m_UVFrame + ".png";
+		uvRefString = m_UVReflectionFrame + ".png";
+		beautyString = m_beautyFrame + ".png";
+		diffuseString = m_diffuseFrame  + ".png";
+		specularString = m_specularFrame + ".png";
+		refDistortString = m_refDistortFrame + ".png";
+		irradianceString = m_irradianceFrame + ".png";
+		reflectionString = m_reflectionFrame + ".png";
+		indirectString = m_indirectFrame + ".png";
+		textPlane1String = m_textFrame1 + ".png";
+		textPlane2String = m_textFrame2 + ".png";
+		textPlane3String = m_textFrame3 + ".png";
+	}
 
 	//Create and attach shader resources
 	if (m_renderUV)
@@ -139,41 +168,45 @@ void Compositing::Render() {
 		manager->attachImage(specularString, "SpecularSRV");
 		gdeviceContext->PSSetShaderResources(5, 1, &resources.shaderResourceViews["SpecularSRV"]);
 	}
+	if (m_renderReflectionDistorion)
+	{
+		manager->attachImage(refDistortString, "ReflectiveDistortSRV");
+		gdeviceContext->PSSetShaderResources(6, 1, &resources.shaderResourceViews["ReflectiveDistortSRV"]);
+	}
 	if (m_renderIrradiance)
 	{
 		manager->attachImage(irradianceString, "IrradianceSRV");
-		gdeviceContext->PSSetShaderResources(6, 1, &resources.shaderResourceViews["IrradianceSRV"]);
-	}
-	if (m_renderShadow)
-	{
-		manager->attachImage(shadowString, "ShadowSRV");
-		gdeviceContext->PSSetShaderResources(7, 1, &resources.shaderResourceViews["ShadowSRV"]);
+		gdeviceContext->PSSetShaderResources(7, 1, &resources.shaderResourceViews["IrradianceSRV"]);
 	}
 	if (m_renderReflection)
 	{
 		manager->attachImage(reflectionString, "ReflectionSRV");
 		gdeviceContext->PSSetShaderResources(8, 1, &resources.shaderResourceViews["ReflectionSRV"]);
 	}
-
+	if (m_renderIndirect)
+	{
+		manager->attachImage(indirectString, "IndirectSRV");
+		gdeviceContext->PSSetShaderResources(9, 1, &resources.shaderResourceViews["IndirectSRV"]);
+	}
 	if (m_renderText)
 	{
 		manager->attachImage("textPlane1/untitled.046.png", "Text1SRV");
-		gdeviceContext->PSSetShaderResources(9, 1, &resources.shaderResourceViews["Text1SRV"]);
+		gdeviceContext->PSSetShaderResources(10, 1, &resources.shaderResourceViews["Text1SRV"]);
 
 		manager->attachImage(textPlane2String, "Text2SRV");
-		gdeviceContext->PSSetShaderResources(10, 1, &resources.shaderResourceViews["Text2SRV"]);
+		gdeviceContext->PSSetShaderResources(11, 1, &resources.shaderResourceViews["Text2SRV"]);
 
 		manager->attachImage(textPlane3String, "Text3SRV");
-		gdeviceContext->PSSetShaderResources(11, 1, &resources.shaderResourceViews["Text3SRV"]);
+		gdeviceContext->PSSetShaderResources(12, 1, &resources.shaderResourceViews["Text3SRV"]);
 
 		//manager->attachImage("firstName.png", "FirstNameSRV");
-		gdeviceContext->PSSetShaderResources(12, 1, &resources.shaderResourceViews["FirstNameSRV"]);
+		gdeviceContext->PSSetShaderResources(13, 1, &resources.shaderResourceViews["FirstNameSRV"]);
 
 		//manager->attachImage("lastName.png", "LastNameSRV");
-		gdeviceContext->PSSetShaderResources(13, 1, &resources.shaderResourceViews["LastNameSRV"]);
+		gdeviceContext->PSSetShaderResources(14, 1, &resources.shaderResourceViews["LastNameSRV"]);
 
 		//manager->attachImage("number.png", "NumberSRV");
-		gdeviceContext->PSSetShaderResources(14, 1, &resources.shaderResourceViews["NumberSRV"]);
+		gdeviceContext->PSSetShaderResources(15, 1, &resources.shaderResourceViews["NumberSRV"]);
 
 
 	}
@@ -202,8 +235,11 @@ void Compositing::Render() {
 	m_imageCount++;
 	if (m_imageCount == m_imageSum+1)
 		m_imageCount = m_startFrame;
-	//manager->saveImage("Fonts/UV/uv2.png", texture);
-
+	if (!m_shotTaken)
+	{
+		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
+		m_shotTaken = true;
+	}
 }
 
 void Compositing::Initialize() {
@@ -305,20 +341,20 @@ void Compositing::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("dickbutt.png", "PlayerSRV");
+	manager->attachImage("BlueCircles.png", "PlayerSRV");
 
 
 
 
-	m_UVFrame = "uvLayer/MasterBeauty.";
-	m_UVReflectionFrame = "uvRefLayer/uvRef_Reflection.";
-	m_beautyFrame = "baseLayer/MasterBeauty.";
-	m_diffuseFrame = "baseLayer/all_Diffuse.";
-	m_specularFrame = "baseLayer/all_SpecularNoShadow.";
-	m_irradianceFrame = "baseLayer/all_DirectIrradianceNoShadow.";
-	m_shadowFrame = "baseLayer/all_ShadowRaw.";
-	m_reflectionFrame = "baseLayer/all_Reflection.";
-
+	m_UVFrame =					"RenderCube/UV/MasterBeauty_1080AA";
+	m_UVReflectionFrame =		"";
+	m_beautyFrame =				"RenderCube/Floor/f_DirrectIrradiance";
+	m_diffuseFrame =			"RenderCube/Floor/f_DiffuseMaterialColor";
+	m_specularFrame =			"RenderCube/Floor/f_Specular";
+	m_refDistortFrame =			"";
+	m_indirectFrame =			"RenderCube/Floor/f_Indirect";
+	//m_reflectionFrame =			"RenderCube/Floor/f_Reflection";
+	m_irradianceFrame =			"RenderCube/Floor/f_DirectIrradiance";
 	m_textFrame1 = "textPlane1/untitled.";
 	m_textFrame2 = "textPlane2/untitled.";
 	m_textFrame3 = "textPlane3/untitled.";
@@ -329,11 +365,11 @@ void Compositing::Initialize() {
 	m_textureConstantBuffer.m_beauty = m_renderBeauty;
 	m_textureConstantBuffer.m_diffuse = m_renderDiffuse;
 	m_textureConstantBuffer.m_specular = m_renderSpecular;
-	m_textureConstantBuffer.m_irradiance = m_renderIrradiance;
-	m_textureConstantBuffer.m_shadow = m_renderShadow;
+	m_textureConstantBuffer.m_irradiance = m_renderReflectionDistorion;
+	m_textureConstantBuffer.m_shadow = m_renderIrradiance;
 	m_textureConstantBuffer.m_reflection = m_renderReflection;
 
-	m_textureConstantBuffer.m_text = m_renderText;
+	//m_textureConstantBuffer.m_text = m_renderText;
 
 
 	manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));
