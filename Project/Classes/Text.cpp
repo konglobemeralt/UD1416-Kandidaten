@@ -74,14 +74,14 @@ void Text::Render()
 	{
 		// Initialize Systems
 		m_text[0] = L"Text";
-		m_text[1] = L"Pomme";
+		m_text[1] = L"Pommes";
 		m_text[2] = L"68";
 		InitializeDirect2D();
 		DirectWriteEdge();
 		m_firstTime = false;
 	}
 
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbufferRTV(), nullptr);
 	//gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

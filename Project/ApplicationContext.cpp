@@ -81,7 +81,7 @@ void ApplicationContext::Initialize()
 		applicationContext->m_text->Initialize();
 		applicationContext->m_compositing->Initialize();
 		//applicationContext->m_toneMapping->Initialize();
-		//applicationContext->m_antiAliasing->Initialize();
+		applicationContext->m_antiAliasing->Initialize();
 		//applicationContext->m_lightning->Initialize();
 		break;
 	default:

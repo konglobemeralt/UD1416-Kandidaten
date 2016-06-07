@@ -17,8 +17,8 @@ void Compositing::Render() {
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbufferRTV(), nullptr);
+	gdeviceContext->ClearRenderTargetView(*manager->getBackbufferRTV(), clearColor);
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);

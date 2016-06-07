@@ -67,7 +67,7 @@ void GraphicsManager::Render() {
 		//ApplicationContext::GetInstance().GetCompositingObject()->SetText(
 			//ApplicationContext::GetInstance().GetTextObject()->GetText());
 		//ApplicationContext::GetInstance().GetToneMappingObject()->Render();
-		//ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
 		//ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:
@@ -112,7 +112,7 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 
 	scd.BufferCount = 1;
 	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
+	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS | DXGI_USAGE_SHADER_INPUT;
 	scd.OutputWindow = *windowHandle;
 	scd.SampleDesc.Count = 1;
 	scd.Windowed = TRUE;
@@ -137,7 +137,41 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 		gSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
 		gDevice->CreateRenderTargetView(pBackBuffer, NULL, &gBackbufferRTV);
+
+		//D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		//srvDesc.Format = scd.BufferDesc.Format;
+		//srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		//HRESULT res = gDevice->CreateShaderResourceView(pBackBuffer, &srvDesc, &gBackbufferSRV);
 		//pBackBuffer->Release();
+
+		// Testing
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width = windowWidth;
+		desc.Height = windowHeight;
+		desc.MipLevels = 0;
+		desc.ArraySize = 1;
+		desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		desc.SampleDesc.Count = 1;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = 0;
+		ID3D11Texture2D* texture;
+		HRESULT iasdf = gDevice->CreateTexture2D(&desc, nullptr, &texture);
+
+		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
+		rtvDesc.Format = desc.Format;
+		rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		rtvDesc.Texture2D.MipSlice = 0;
+		HRESULT hrr = gDevice->CreateRenderTargetView(texture, &rtvDesc, &gBackbufferRTV2);
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		srvDesc.Format = desc.Format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+		HRESULT qweq = gDevice->CreateShaderResourceView(texture, &srvDesc, &gBackbufferSRV);
 	};
 
 	return hr;
@@ -169,6 +203,14 @@ UINT GraphicsManager::getWindowHeight() {
 
 ID3D11RenderTargetView** GraphicsManager::getBackbuffer() {
 	return &gBackbufferRTV;
+}
+
+ID3D11RenderTargetView** GraphicsManager::getBackbufferRTV() {
+	return &gBackbufferRTV2;
+}
+
+ID3D11ShaderResourceView** GraphicsManager::getBackbufferSRV() {
+	return &gBackbufferSRV;
 }
 
 void GraphicsManager::setWindowSize(UINT width = 1280, UINT height = 1024) {

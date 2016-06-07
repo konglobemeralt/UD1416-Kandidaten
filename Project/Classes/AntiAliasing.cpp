@@ -46,27 +46,30 @@ void AntiAliasing::Render() {
 	float clearColor2[4] = { 0.2f, 0.0f, 0.0f, 1.0f };
 
 	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor2);
+	//gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor2);
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
 
 	gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
 
-	gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageHigh"]);
-	gdeviceContext->PSSetShaderResources(1, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
+	//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageHigh"]);
+	//gdeviceContext->PSSetShaderResources(1, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
 
 	ResetFreeLookCamera();
 	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
-	//renderType = (Rendering)0;
+	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+	gdeviceContext->PSSetShaderResources(0, 1, m_graphicsManager->getBackbufferSRV());
+
+	renderType = (Rendering)0;
 	string type = "";
 
 	if (renderType == 0)
 	{
-		gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
+		//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
 		gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
 		type = "FXAA";
 	}
@@ -82,7 +85,7 @@ void AntiAliasing::Render() {
 	}
 	else 
 	{
-		gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
+		//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
 		gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
 		type = "Aliased";
 	}
@@ -123,6 +126,7 @@ void AntiAliasing::Initialize() {
 
 	InitTextures();
 
+	m_graphicsManager->createTexture2D("FirstSRVRTV");
 
 	m_graphicsManager->createSamplerState("AAWrapSampler", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP); //dessa ska kanske vara point eller nått när jag kör FXAA?
 	m_graphicsManager->createSamplerState("AAClampSampler", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
