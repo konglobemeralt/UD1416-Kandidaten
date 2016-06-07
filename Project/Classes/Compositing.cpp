@@ -336,7 +336,7 @@ void Compositing::Initialize() {
 	m_textureConstantBuffer.m_text = m_renderText;
 
 
-	manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));
+	//manager->createConstantBuffer("textureBuffer", &m_textureConstantBuffer, sizeof(EnabledTextures));
 
 	// ###########################################################
 	// ######		Render target & shader resource			######

@@ -241,7 +241,7 @@ void Text::Initialize() {
 	for (size_t i = 0; i < fileCount; i++)
 	{
 		if(i == 0)
-			m_infile.open("Assets/Fonts/TextPlane1.bin", std::ofstream::binary);
+			m_infile.open("Assets/Fonts/TextPlane4.bin", std::ofstream::binary);
 		else if (i == 1)
 			m_infile.open("Assets/Fonts/TextPlane2.bin", std::ofstream::binary);
 		else if (i == 2)
