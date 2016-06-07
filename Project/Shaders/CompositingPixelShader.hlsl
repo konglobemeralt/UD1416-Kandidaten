@@ -5,17 +5,17 @@ Texture2D UVReflectionSRV: register(t3);
 Texture2D DiffuseSRV: register(t4);
 Texture2D SpecularSRV: register(t5);
 Texture2D ReflectiveDistortSRV: register(t6);
-Texture2D ShadowSRV: register(t7);
+Texture2D IrradianceSRV: register(t7);
 Texture2D ReflectionSRV: register(t8);
-
+Texture2D IndirectSRV: register(t9);
 //Text planes UV
-Texture2D Text1SRV: register(t9);
-Texture2D Text2SRV: register(t10);
-Texture2D Text3SRV: register(t11);
+Texture2D Text1SRV: register(t10);
+Texture2D Text2SRV: register(t11);
+Texture2D Text3SRV: register(t12);
 //Text plane Text
-Texture2D FirstNameSRV: register(t12);
-Texture2D LastNameSRV: register(t13);
-Texture2D NumberSRV: register(t14);
+Texture2D FirstNameSRV: register(t13);
+Texture2D LastNameSRV: register(t14);
+Texture2D NumberSRV: register(t15);
 
 sampler SamplerWrap;
 
@@ -107,9 +107,9 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 tempDiffuse = DiffuseSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempSpecular = SpecularSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempRefDistort = ReflectiveDistortSRV.Sample(SamplerWrap, input.Tex);
-	float4 tempShadow = ShadowSRV.Sample(SamplerWrap, input.Tex);
+	float4 tempIrradiance = IrradianceSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempReflection = ReflectionSRV.Sample(SamplerWrap, input.Tex);
-
+	float4 tempIndirect = IndirectSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempPlayer = PlayerSRV.Sample(SamplerWrap, tempUV);
 	float4 tempPlayerReflection = PlayerSRV.Sample(SamplerWrap, tempUVRef);
 	//return tempPlayer;
@@ -127,8 +127,15 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 playerColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 playerReflectionColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	float4 backgroundColor = float4(tempDiffuse + tempSpecular + tempReflection);
+	
 
+	//float4 backgroundColor = float4(tempDiffuse + tempSpecular + tempReflection * tempIrradiance + tempIndirect);
+	//if (tempSpecular.b < .99)
+	//	tempSpecular.b *= 0;
+	//if (tempSpecular.g < .99)
+	//	tempSpecular.g *= 0;
+
+	float4 backgroundColor = tempIrradiance + tempSpecular;
 	bool singleImage = false;
 	//Text name plane1
 	if (!singleImage)
@@ -165,8 +172,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		//1. Additive
 		//2. Multiplicative
 		//3. Screen
-		int blendMode = 8;
-		float multiplier = 5.0f;
+		int blendMode = 2;
+		float multiplier = 1.0f;
 		//Player on puck
 		if ((tempUV.w > 0.999) && tempPlayer.w != 0)
 		{
@@ -212,24 +219,10 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 			{
 				return float4(pow(saturate(VividLight(backgroundColor, playerColor)), 1 / 2.2));
 			}
-			//if (additive)
-			//{
-			//	playerColor = tempPlayer;
-			//	float4 outColor;
-			//	outColor = float4(pow(saturate((tempDiffuse*tempDiffuse.w) + (tempSpecular*tempSpecular.w)  + tempReflection + (playerColor)), 1.0 / 2.2));
-			//	return outColor;
-			//}
+			else if (blendMode == -1)
+			{
 
-			//else
-			//{
-			//	playerColor = tempPlayer * multiplier;
-			//	float4 outColor;
-			//	float4 backgroundColor = float4(tempDiffuse + tempSpecular + tempReflection);
-			//	outColor = float4(pow(saturate(backgroundColor * playerColor), 1/2.2));
-			//	outColor += tempSpecular;
-			//	//outColor = float4(pow(saturate((tempDiffuse*tempDiffuse.w) + (tempSpecular*tempSpecular.w) + tempReflection * (playerColor)), 1.0 / 2.2));
-			//	return outColor;
-			//}
+			}
 		}
 
 		//Reflection on the is
@@ -242,8 +235,9 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 			//outColor = float4(pow(saturate(tempDiffuse + tempSpecular + tempReflection * (tempDiffuse * (playerReflectionColor * (tempIrradiance*-1.0f)))), 1.0 / 2.2));
 			return outColor;
 		}
-		float4 outColor = float4(pow(saturate((tempDiffuse*tempDiffuse.w) + (tempSpecular*tempSpecular.w) + (tempReflection*tempReflection.w) /*tempIrradiance*/), 1.0 / 2.2));
+		//float4 outColor = float4(pow(saturate((tempDiffuse*tempDiffuse.w) + (tempSpecular*tempSpecular.w) + (tempReflection*tempReflection.w) /*tempIrradiance*/), 1.0 / 2.2));
 		//float4 outColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 outColor = float4(pow(saturate(backgroundColor), 1/2.2));
 		return outColor;
 	}
 	
