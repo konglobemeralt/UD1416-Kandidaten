@@ -42,8 +42,6 @@ private:
 	bool m_ssaa;
 	UINT m_height;
 	UINT m_width;
-	float m_uvWidth;
-	float m_uvHeight;
 	float m_textSize;
 	float m_edgeSize;
 	float m_padding;
@@ -101,7 +99,7 @@ private:
 	// DirectWrite
 	IDWriteFactory1* m_writeFactory = nullptr;
 	const wchar_t* m_text[3];
-	CString m_font = "arial.ttf";
+	CString m_font = "DINNextLTPro-Regular.otf";
 	UINT32 m_textLength[3];
 	D2D1_RECT_F m_layoutRect;
 	IDWriteTextFormat* m_writeTextFormat[3];
@@ -124,10 +122,6 @@ private:
 	void DirectWriteEdge();
 	void GetTextOutline(const wchar_t* text, int index);
 	void EdgeRender();
-
-	//// Helper functions
-	//template<typename T> 
-	//void SafeDelete(T*& a);
 };
 
 #endif

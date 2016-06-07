@@ -10,4 +10,6 @@ SamplerState Linear : register(s0);
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
 	return text.Sample(Linear, input.Tex);
+	float3 color = text.Sample(Linear, input.Tex);
+	return float4(color, 1.0f);
 }

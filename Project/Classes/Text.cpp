@@ -22,10 +22,8 @@ Text::Text()
 	m_ssaa = false;
 	m_height = 0;
 	m_width = 0;
-	m_uvWidth = 0.0f;
-	m_uvHeight = 0.0f;
-	m_textSize = 100.0f;
-	m_edgeSize = 3.0f;
+	m_textSize = 1000.0f;
+	m_edgeSize = 30.0f;
 	m_padding = 50.0f;
 	m_scale = 1.0f;
 
@@ -76,7 +74,7 @@ void Text::Render()
 	{
 		// Initialize Systems
 		m_text[0] = L"Text";
-		m_text[1] = L"Pommes";
+		m_text[1] = L"Pomme";
 		m_text[2] = L"68";
 		InitializeDirect2D();
 		DirectWriteEdge();
@@ -437,7 +435,7 @@ void Text::DirectWriteEdge()
 	CheckStatus(m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles), L"CreateFontFileReference");
 
 	CheckStatus(m_writeFactory->CreateFontFace(
-		DWRITE_FONT_FACE_TYPE_TRUETYPE,
+		DWRITE_FONT_FACE_TYPE_CFF,
 		1,
 		&m_fontFiles,
 		0,

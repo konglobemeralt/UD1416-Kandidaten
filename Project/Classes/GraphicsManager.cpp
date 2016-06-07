@@ -66,7 +66,6 @@ void GraphicsManager::Render() {
 		ApplicationContext::GetInstance().GetTextObject()->Render();
 		//ApplicationContext::GetInstance().GetCompositingObject()->SetText(
 			//ApplicationContext::GetInstance().GetTextObject()->GetText());
-		ApplicationContext::GetInstance().GetCompositingObject()->Render();
 		//ApplicationContext::GetInstance().GetToneMappingObject()->Render();
 		//ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
 		//ApplicationContext::GetInstance().GetLightningObject()->Render();
