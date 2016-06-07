@@ -280,13 +280,11 @@ void Lightning::detectInput()
 	}
 	if (keyboardState[DIK_RIGHT] || keyboardState[DIK_D])		//Moves right when the D key or the RIGHT arrow is pressed
 	{
-		//moveLR = speed;
-		camYaw += 0.0001f;
+		moveLR = speed;
 	}
 	if (keyboardState[DIK_UP] || keyboardState[DIK_W])			//Moves forward when the W key or the UP arrow is pressed
 	{
-		//moveFB = speed;
-		camPitch += 0.0001f;
+		moveFB = speed;
 	}
 	if (keyboardState[DIK_DOWN] || keyboardState[DIK_S])		//Moves backwards when the S key or the DOWN arrow is pressed
 	{
@@ -294,7 +292,7 @@ void Lightning::detectInput()
 	}
 	if ((mouseCurrentState.lX != mouseLastState.lX) || (mouseCurrentState.lY != mouseLastState.lY))		//Rotates the camera with the mouse input!
 	{
-		camYaw += mouseLastState.lX * 0.001f;					//Rotates camera to the right and left
+		camYaw += mouseCurrentState.lX * 0.001f;					//Rotates camera to the right and left
 
 		camPitch += mouseCurrentState.lY * 0.001f;				//Rotates camera up and down
 

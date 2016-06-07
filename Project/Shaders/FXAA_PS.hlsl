@@ -1,4 +1,4 @@
-sampler sampWrap : register(s0);
+sampler sampWrap : register(s0); //har linear sampling
 sampler  sampClamp: register(s1);
 
 Texture2D txDiffuse : register(t0);
@@ -7,7 +7,7 @@ cbuffer FXAACBuffer : register(b0)
 {
 	float2 texelSizeXY;
 	float FXAA_blur_Texels_Threshhold; //hur många texlar som kommer blurras åt varje håll
-	float minimumBlurThreshhold; //hur mycket som krävs för att den ens ska blurra
+	float edgeDetectionTexelMULTIPLIER;
 	float FXAA_reduce_MULTIPLIER;
 	float FXAA_reduce_MIN; //så dirOffset inte ska bli noll
 	float2 pad;
@@ -22,14 +22,14 @@ struct VS_OUT
 
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
-
-	//return float4(txDiffuse.Sample(sampClamp, input.Tex).xyz, 1.0f);
+	/*if(input.Tex.y > 0.5f)
+		return float4(txDiffuse.Sample(sampClamp, input.Tex).xyz, 1.0f);*/
 	float3 luma = float3(0.299f, 0.587f, 0.114f); //hur ljust nånting är kinda
 
-	float lumaTR = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(1.0f, -1.0f) * texelSizeXY).xyz);
-	float lumaTL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, -1.0f) * texelSizeXY).xyz);
-	float lumaBR = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(1.0f, 1.0f) * texelSizeXY).xyz);
-	float lumaBL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, 1.0f) * texelSizeXY).xyz);
+	float lumaTR = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(1.0f, -1.0f) * texelSizeXY * edgeDetectionTexelMULTIPLIER).xyz);
+	float lumaTL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, -1.0f) * texelSizeXY * edgeDetectionTexelMULTIPLIER).xyz);
+	float lumaBR = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(1.0f, 1.0f) * texelSizeXY * edgeDetectionTexelMULTIPLIER).xyz);
+	float lumaBL = dot(luma, txDiffuse.Sample(sampClamp, input.Tex + float2(-1.0f, 1.0f) * texelSizeXY * edgeDetectionTexelMULTIPLIER).xyz);
 	float lumaM = dot(luma, txDiffuse.Sample(sampClamp, input.Tex.xy).xyz);
 
 	float2 dir;
