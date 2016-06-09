@@ -7,7 +7,6 @@ ToneMapping::ToneMapping()
 	// ########################################################
 	// ## Change width/height on SRV/RTV to match image size ##
 	// ########################################################
-	technique = GAO;
 }
 
 ToneMapping::~ToneMapping()
@@ -15,41 +14,17 @@ ToneMapping::~ToneMapping()
 
 }
 
-void ToneMapping::renderGao() {
-	deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["GAO_Luminance_RTV"], nullptr);
-	//deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["GAO_Layout"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["GAO_SamplerWrap"]);
-
-	deviceContext->VSSetShader(resources.vertexShaders["GAO_VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["GAO_PixelShader"], nullptr, 0);
-
-	manager->attachImage("ToneMapping/Gao/inputImage.tif", "GAO_SRV");
-	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["GAO_SRV"]);
-	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-
-	deviceContext->Draw(4, 0);
-
-	// MIPS
-	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-
-	manager->generateMips("GAO_Luminance_RTV", "GAO_Luminance_SRV");
-
-	XMINT4 newMip = { textureWidth, 0, 0, 0 };
-	deviceContext->UpdateSubresource(resources.constantBuffers["GAO_ConstantBuffer"], 0, nullptr, &newMip, 0, 0);
-
-	deviceContext->PSSetShader(resources.pixelShaders["GAO_FinalPixelShader"], nullptr, 0);
-	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["GAO_Luminance_SRV"]);
-	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["GAO_ConstantBuffer"]);
-
-	deviceContext->Draw(4, 0);
-
-	//manager->saveImage("ToneMapping/Gao/outputImage.png", manager->pBackBuffer);
+void ToneMapping::Render() {
+	if (manager->frameCount < 100) {
+		manager->saveImage("../Results/image" + to_string(manager->frameCount) + ".png", manager->pBackBuffer);
+		manager->frameCount++;
+	}
+	else {
+		PostQuitMessage(0);
+	}
 }
 
-void ToneMapping::initGao() {
+void ToneMapping::Initialize() {
 	manager = ApplicationContext::GetInstance().GetGraphicsManager();
 	textureWidth = int32_t(log(manager->windowWidth) / log(2));
 
@@ -86,148 +61,6 @@ void ToneMapping::initGao() {
 	//D3D11_MAPPED_SUBRESOURCE mipSubresource;
 	//deviceContext->Map(resources.textures["GAO_Luminance_RTVSRVMIP"], log(manager->windowWidth) / log(2), D3D11_MAP_READ, 0, &mipSubresource);
 
-}
-
-void ToneMapping::renderMeylan() {
-	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["MEYLAN_Layout"]);
-
-	deviceContext->VSSetShader(resources.vertexShaders["MEYLAN_VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["MEYLAN_PixelShader"], nullptr, 0);
-
-	manager->attachImage("ToneMapping/Meylan/inputImage.tif", "MEYLAN_SRV");
-	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["MEYLAN_SRV"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["MEYLAN_SamplerWrap"]);
-	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-
-	deviceContext->Draw(4, 0);
-
-	manager->saveImage("ToneMapping/Meylan/outputImage.png", manager->pBackBuffer);
-}
-
-void ToneMapping::initMeylan() {
-	// #### CONSTANT BUFFER
-	manager = ApplicationContext::GetInstance().GetGraphicsManager();
-	struct cBuffer {
-		XMFLOAT4X4 matrix;
-	}myMatrix;
-
-	manager->createConstantBuffer("MEYLAN_constantBuffer", &myMatrix, sizeof(cBuffer));
-
-	// #### VERTEX SHADER
-	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	manager->createVertexShader("MEYLAN_VertexShader", "MEYLAN_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
-
-	// #### PIXEL SHADER
-	manager->createPixelShader("MEYLAN_PixelShader"); // Name has to match shader name without .hlsl
-
-													  // #### SRV
-	manager->createTexture2D(
-		"MEYLAN_SRV",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
-		false,
-		true
-	);
-
-	// #### SAMPLER
-	manager->createSamplerState("MEYLAN_SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-}
-
-void ToneMapping::renderReinhard() {
-	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
-
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->IASetInputLayout(resources.inputLayouts["REINHARD_Layout"]);
-
-	deviceContext->VSSetShader(resources.vertexShaders["REINHARD_VertexShader"], nullptr, 0);
-	deviceContext->PSSetShader(resources.pixelShaders["REINHARD_PixelShader"], nullptr, 0);
-
-	manager->attachImage("ToneMapping/Reinhard/inputImage.tif", "REINHARD_SRV");
-	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_SRV"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
-	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-
-	deviceContext->Draw(4, 0);
-
-	manager->saveImage("ToneMapping/Reinhard/outputImage.png", manager->pBackBuffer);
-}
-
-void ToneMapping::initReinhard() {
-	// #### CONSTANT BUFFER
-	manager = ApplicationContext::GetInstance().GetGraphicsManager();
-	struct cBuffer {
-		XMFLOAT4X4 matrix;
-	}myMatrix;
-
-	manager->createConstantBuffer("REINHARD_constantBuffer", &myMatrix, sizeof(cBuffer));
-
-	// #### VERTEX SHADER
-	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	manager->createVertexShader("REINHARD_VertexShader", "REINHARD_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
-
-	// #### PIXEL SHADER
-	manager->createPixelShader("REINHARD_PixelShader"); // Name has to match shader name without .hlsl
-
-													  // #### SRV
-	manager->createTexture2D(
-		"REINHARD_SRV",
-		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		manager->getWindowWidth(),
-		manager->getWindowHeight(),
-		false,
-		true
-	);
-
-	// #### SAMPLER
-	manager->createSamplerState("REINHARD_SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-}
-
-void ToneMapping::Initialize() {
-	switch (technique)
-	{
-	case GAO:
-		initGao();
-		break;
-	case MEYLAN:
-		initMeylan();
-		break;
-	case REINHARD:
-		initReinhard();
-		break;
-	default:
-		break;
-	}
-}
-
-void ToneMapping::Render() {
-	switch (technique)
-	{
-	case GAO:
-		renderGao();
-		break;
-	case MEYLAN:
-		renderMeylan();
-		break;
-	case REINHARD:
-		renderReinhard();
-		break;
-	default:
-		break;
-	}
 }
 
 //void ToneMapping::Initialize() {

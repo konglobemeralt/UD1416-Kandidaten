@@ -62,6 +62,8 @@ public:
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	ThesisData thesisData;
 
+	UINT frameCount = 0;
+
 	//GraphicsManager(GraphicsManager const&) = delete;
 	//void operator=(GraphicsManager const&) = delete;
 

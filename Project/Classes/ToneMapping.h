@@ -10,13 +10,6 @@
 #define device m_graphicsManager->getDevice()
 #define deviceContext m_graphicsManager->getDeviceContext()
 
-enum Technique
-{
-	GAO,
-	MEYLAN,
-	REINHARD
-};
-
 class GraphicsManager;
 
 class ToneMapping
@@ -36,14 +29,6 @@ private:
 	UINT technique;
 	int32_t textureWidth = 1024;
 	ID3D11Texture2D* mipTexture;
-
-	void initGao();
-	void initMeylan();
-	void initReinhard();
-
-	void renderGao();
-	void renderMeylan();
-	void renderReinhard();
 };
 
 #endif
