@@ -47,7 +47,7 @@ void GraphicsManager::Render() {
 	switch (ApplicationContext::GetInstance().GetUser())
 	{
 	case TEXT:
-		//ApplicationContext::GetInstance().GetTextObject()->Render();
+		ApplicationContext::GetInstance().GetTextObject()->Render();
 		break;
 	case COMPOSITING:
 		ApplicationContext::GetInstance().GetCompositingObject()->Render();
