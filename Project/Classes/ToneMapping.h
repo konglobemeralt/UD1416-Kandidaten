@@ -44,6 +44,8 @@ private:
 	void renderGao();
 	void renderMeylan();
 	void renderReinhard();
+	int reinhardKey = 50;
+	//ID3D11Texture2D* reinhardCPUtext;
 };
 
 #endif
