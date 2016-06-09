@@ -143,23 +143,47 @@ void ToneMapping::initMeylan() {
 }
 
 void ToneMapping::renderReinhard() {
-	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	deviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
 
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	// STANDARD SETTINGS
+	struct cBuffer {
+		XMINT4 mipLevel;
+	}mipBuffer;
+
 	deviceContext->IASetInputLayout(resources.inputLayouts["REINHARD_Layout"]);
-
+	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	deviceContext->VSSetShader(resources.vertexShaders["REINHARD_VertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["REINHARD_PixelShader"], nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
+	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["REINHARD_ConstantBuffer"]);
 
 	manager->attachImage("ToneMapping/Reinhard/texttest3.tif", "REINHARD_SRV");
 	//manager->attachImage("ToneMapping/Reinhard/The Marble Hall merged HDR.tif", "REINHARD_SRV"); // loads image every frame = superawesomeoptimization
 	deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_SRV"]);
-	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
-	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
+
 
 	//// AVG LUMINANCE PASS
+	mipBuffer.mipLevel = { textureWidth,	// miplevel
+		1,				// Max(0) or Avg(1) Luminance, or final render(2)
+		0,				// Unassigned
+		0				// Unassigned
+	};
+	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
+	deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["REINHARD_AvgLuminance_SRV_and_RTV"], nullptr);
 	deviceContext->Draw(4, 0);
+	manager->generateMips("REINHARD_AvgLuminance_SRV_and_RTV", "REINHARD_AvgLuminance_SRV_and_RTV");
+
+
+	////// MAX LUMINANCE
+	//mipBuffer.mipLevel = {		textureWidth,	// miplevel
+	//							0,				// Max(0) or Avg(1) Luminance, or final render(2)
+	//							0,				// Unassigned
+	//							0				// Unassigned
+	//};
+	//deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
+	//deviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["REINHARD_MaxLuminance_SRV"]);
+	//deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["REINHARD_MaxLuminance_RTV"], nullptr);
+	//deviceContext->Draw(4, 0);
 
 	//ID3D11Resource* cpuResource;
 	//ID3D11Resource* avgResource;
@@ -173,34 +197,37 @@ void ToneMapping::renderReinhard() {
 
 	//// FINAL RENDER
 
-	UINT SHIFT	= 0x10;
-	UINT CTRL	= 0x11;
-	UINT G		= 0x47;
-	UINT L		= 0x4C;
-	UINT ADD	= 0x6B;
-	UINT SUB	= 0x6D;
+	UINT SHIFT = 0x10;
+	UINT CTRL = 0x11;
+	UINT G = 0x47;
+	UINT L = 0x4C;
+	UINT ADD = 0x6B;
+	UINT SUB = 0x6D;
 
 	// TOGGLE GLOBAL
 	if (GetAsyncKeyState(G)) {
-		mipBuffer.mipLevel = {	textureWidth,	// miplevel
-								2,				// Max(0) or Avg(1) Luminance, or final render(2)
-								0,				// Global(0) or Local(1) TMO, or no TMO(2)
-								reinhardKey		// Key
+		mipBuffer.mipLevel = { textureWidth,	// miplevel
+			2,				// Max(0) or Avg(1) Luminance, or final render(2)
+			0,				// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey		// Key
 		};
 	}
+
 	// TOGGLE LOCAL
 	else if (GetAsyncKeyState(L)) {
-		mipBuffer.mipLevel = {	textureWidth,	// miplevel
-								2,				// Max(0) or Avg(1) Luminance, or final render(2)
-								1,				// Global(0) or Local(1) TMO, or no TMO(2)
-								reinhardKey		// Key
+		mipBuffer.mipLevel = { textureWidth,	// miplevel
+			2,				// Max(0) or Avg(1) Luminance, or final render(2)
+			1,				// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey		// Key
 		};
 	}
+
 	// NO TMO
 	else {
-		mipBuffer.mipLevel = {	textureWidth,	// miplevel
-								2,				// Global(0) or Local(1) TMO, or no TMO(2)
-								reinhardKey		// Key
+		mipBuffer.mipLevel = { textureWidth,	// miplevel
+			2,				// Max(0) or Avg(1) Luminance, or final render(2)
+			2,				// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey		// Key
 		};
 	}
 
@@ -223,22 +250,30 @@ void ToneMapping::renderReinhard() {
 			reinhardKey -= 1;
 	}
 
+	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
+	deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["REINHARD_AvgLuminance_SRV_and_RTV"]);
+
+	deviceContext->Draw(4, 0);
 	manager->saveImage("ToneMapping/Reinhard/Local.png", manager->pBackBuffer);
 }
 
 void ToneMapping::initReinhard() {
-	// #### CONSTANT BUFFER
 	manager = ApplicationContext::GetInstance().GetGraphicsManager();
-	struct cBuffer {
-		XMFLOAT4X4 matrix;
-	}myMatrix;
+	textureWidth = int32_t(log(manager->windowWidth) / log(2));
 
-	manager->createConstantBuffer("REINHARD_constantBuffer", &myMatrix, sizeof(cBuffer));
+	// #### CONSTANT BUFFER
+	struct cBuffer {
+		XMINT4 mipLevel = { 0, 0, 0, 0 };
+	}mipBuffer;
+
+	mipBuffer.mipLevel = { textureWidth, 1, 0, 0 };
+	manager->createConstantBuffer("REINHARD_ConstantBuffer", &mipBuffer, sizeof(cBuffer));
 
 	// #### VERTEX SHADER
 	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	manager->createVertexShader("REINHARD_VertexShader", "REINHARD_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
@@ -246,30 +281,26 @@ void ToneMapping::initReinhard() {
 	// #### PIXEL SHADER
 	manager->createPixelShader("REINHARD_PixelShader"); // Name has to match shader name without .hlsl
 
-	//D3D11_TEXTURE2D_DESC desc;
-	//ZeroMemory(&desc, sizeof(desc));
-	//desc.Width = 1;
-	//desc.Height = 1;
-	//desc.MipLevels = 0;
-	//desc.ArraySize = 1;
-	//desc.Format = DXGI_FORMAT_R32_FLOAT;
-	//desc.SampleDesc.Count = 1;
-	//desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-	//desc.Usage = D3D11_USAGE_STAGING;
-	//desc.CPUAccessFlags = 0;
-	//desc.MiscFlags = 0;
+														//D3D11_TEXTURE2D_DESC desc;
+														//ZeroMemory(&desc, sizeof(desc));
+														//desc.Width = 1;
+														//desc.Height = 1;
+														//desc.MipLevels = 0;
+														//desc.ArraySize = 1;
+														//desc.Format = DXGI_FORMAT_R32_FLOAT;
+														//desc.SampleDesc.Count = 1;
+														//desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+														//desc.Usage = D3D11_USAGE_STAGING;
+														//desc.CPUAccessFlags = 0;
+														//desc.MiscFlags = 0;
 
-	//HRESULT iasdf = device->CreateTexture2D(&desc, nullptr, &reinhardCPUtext); // add subresource
+														//HRESULT iasdf = device->CreateTexture2D(&desc, nullptr, &reinhardCPUtext); // add subresource
 
-													  // #### SRV
-	manager->createTexture2D("REINHARD_SRV",						DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(),	manager->getWindowHeight(), false,	true);
-	manager->createTexture2D("REINHARD_AvgLuminance_SRV_and_RTV",	DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(),	manager->getWindowHeight(), true,	true);
+														// #### SRV
+	manager->createTexture2D("REINHARD_SRV", DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), false, true);
+	manager->createTexture2D("REINHARD_AvgLuminance_SRV_and_RTV", DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(), true, true);
 	//manager->createTexture2D("REINHARD_CPU_handle",					DXGI_FORMAT_R32G32B32A32_FLOAT, manager->getWindowWidth(), manager->getWindowHeight(),	false,	true);
 	//manager->createTexture2D("REINHARD_MaxLuminance_SRV",			DXGI_FORMAT_R32_FLOAT,			1,							1,							false,	true, reinhardCPUtext);
-		manager->getWindowHeight(),
-		false,
-		true
-	);
 
 	// #### SAMPLER
 	manager->createSamplerState("REINHARD_SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
