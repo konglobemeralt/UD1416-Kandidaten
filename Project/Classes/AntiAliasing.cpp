@@ -15,92 +15,87 @@ AntiAliasing::~AntiAliasing()
 
 
 void AntiAliasing::Render() {
-	float clearColor[4] = { 0.0f, 0.1f, 0.0f, 1.0f };
-	UINT vertexSize = sizeof(float) * 5;
-	UINT offset = 0;
+    float clearColor[4] = { 0.0f, 0.1f, 0.0f, 1.0f };
+    UINT vertexSize = sizeof(float) * 5;
+    UINT offset = 0;
 
-	//ResetFreeLookCamera();
+    m_graphicsManager->ResetViews();
 
-	//gdeviceContext->OMSetRenderTargets(1, &m_graphicsManager->thesisData.renderTargetViews["HighResRTV"], nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
-	//gdeviceContext->ClearRenderTargetView(m_graphicsManager->thesisData.renderTargetViews["HighResRTV"], clearColor);
+    detectInput();
+    updateFreeLookCamera();
 
-	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	//gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
+    float clearColor2[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	//gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
+    gdeviceContext->OMSetRenderTargets(1, &m_graphicsManager->thesisData.renderTargetViews["FinalAARTV"], nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
+    gdeviceContext->ClearRenderTargetView(m_graphicsManager->thesisData.renderTargetViews["FinalAARTV"], clearColor2);
 
-	//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["SSAA_Test"]);
+    gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
 
-	//gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
-	//gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
+    gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
 
-	//gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+    gdeviceContext->PSSetShaderResources(0, 1, m_graphicsManager->getBackbufferSRV());
+    gdeviceContext->PSSetShaderResources(1, 1, m_graphicsManager->getBackbufferSRV());
+    /*gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageHigh"]);
+    gdeviceContext->PSSetShaderResources(1, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);*/
 
-	//gdeviceContext->Draw(4, 0);
-	//går ej!!!!!!!
-	m_graphicsManager->ResetViews();
-	
-	detectInput();
-	updateFreeLookCamera();
+    ResetFreeLookCamera();
+    gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
 
-	float clearColor2[4] = { 0.2f, 0.0f, 0.0f, 1.0f };
+    gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
-	//gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor2);
+    //renderType = (Rendering)0;
+    string type = "";
 
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
+    renderType = Rendering::Both;
+    if (renderType == 0)
+    {
+        gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
+        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
+        type = "FXAA";
+    }
+    else if (renderType == 1)
+    {
+        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
+        type = "SSAA";
+    }
+    else if (renderType == 2)//both
+    {
+        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
+        type = "Both";
+    }
+    else
+    {
+        gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
+        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
+        type = "Aliased";
+    }
 
-	gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
+    gdeviceContext->Draw(4, 0); //ritar till FinalAARTV
 
-	//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageHigh"]);
-	//gdeviceContext->PSSetShaderResources(1, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
 
-	ResetFreeLookCamera();
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
+    //rita till backbuffern som final nu då!!!!
+    gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbufferRTV(), nullptr);
+    gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor2); //kan cleara för nu ska den AAade versionen (FinalAARTV) skriva över
 
-	gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+    gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
+    gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
+    gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+    
+    gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["FinalAARTV"]);
+    gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0); //denna shader bara outputtar det den får in, så nice!
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->PSSetShaderResources(0, 1, m_graphicsManager->getBackbufferSRV());
-
-	renderType = (Rendering)0;
-	string type = "";
-
-	if (renderType == 0)
-	{
-		//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
-		gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
-		type = "FXAA";
-	}
-	else if (renderType == 1)
-	{
-		gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
-		type = "SSAA";
-	}
-	else if(renderType == 2)//both
-	{
-		gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
-		type = "Both";
-	}
-	else 
-	{
-		//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
-		gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
-		type = "Aliased";
-	}
-
-	gdeviceContext->Draw(4, 0);
-
-	//if (hasStored)
-	//{
-	//	m_graphicsManager->saveImage("AntiAliasing/AAImages/" + type + AATex1, m_graphicsManager->pBackBuffer);
-	//	if (renderType >= 3)
-	//	{
-	//		hasStored = false;
-	//	}
-	//}
-	//renderType = static_cast<Rendering>(static_cast<int>(renderType) + 1);
+    gdeviceContext->Draw(4, 0);
+    //if (hasStored)
+    //{
+    //    m_graphicsManager->saveImage("AntiAliasing/AAImages/" + type + AATex1, m_graphicsManager->pBackBuffer);
+    //    if (renderType >= 3)
+    //    {
+    //        hasStored = false;
+    //    }
+    //}
+    //renderType = static_cast<Rendering>(static_cast<int>(renderType) + 1);
 }
 
 void AntiAliasing::Initialize() {
@@ -192,6 +187,15 @@ void AntiAliasing::InitTextures()
 		true,
 		true
 	);
+
+    m_graphicsManager->createTexture2D( //shaderresource
+        "FinalAARTV",
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        m_graphicsManager->getWindowWidth(),
+        m_graphicsManager->getWindowHeight(),
+        true,
+        true
+    );
 
 	//m_graphicsManager->attachImage("AntiAliasing/Images/AATest.png", "FXAA_Test"); //attachea till shaderresourcen
 	//m_graphicsManager->attachImage("AntiAliasing/Images/SceneWithLightning.030.png", "SSAA_Test");
