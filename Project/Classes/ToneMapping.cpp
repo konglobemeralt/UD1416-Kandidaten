@@ -15,13 +15,13 @@ ToneMapping::~ToneMapping()
 }
 
 void ToneMapping::Render() {
-	if (manager->frameCount < 100) {
-		manager->saveImage("../Results/image" + to_string(manager->frameCount) + ".png", manager->pBackBuffer);
-		manager->frameCount++;
-	}
-	else {
-		PostQuitMessage(0);
-	}
+	//if (manager->frameCount < 100) {
+	//	manager->saveImage("../Results/image" + to_string(manager->frameCount) + ".png", manager->pBackBuffer);
+	//	manager->frameCount++;
+	//}
+	//else {
+	//	PostQuitMessage(0);
+	//}
 }
 
 void ToneMapping::Initialize() {
