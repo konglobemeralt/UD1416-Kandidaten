@@ -92,15 +92,15 @@ void AntiAliasing::Render() {
 
 	gdeviceContext->Draw(4, 0);
 
-	if (hasStored)
-	{
-		m_graphicsManager->saveImage("AntiAliasing/AAImages/" + type + AATex1, m_graphicsManager->pBackBuffer);
-		if (renderType >= 3)
-		{
-			hasStored = false;
-		}
-	}
-	renderType = static_cast<Rendering>(static_cast<int>(renderType) + 1);
+	//if (hasStored)
+	//{
+	//	m_graphicsManager->saveImage("AntiAliasing/AAImages/" + type + AATex1, m_graphicsManager->pBackBuffer);
+	//	if (renderType >= 3)
+	//	{
+	//		hasStored = false;
+	//	}
+	//}
+	//renderType = static_cast<Rendering>(static_cast<int>(renderType) + 1);
 }
 
 void AntiAliasing::Initialize() {
