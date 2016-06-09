@@ -11,6 +11,7 @@ Text::Text()
 		m_orangeBrush[i] = nullptr;
 		m_writeTextFormat[i] = nullptr;
 		m_pathGeometry[i] = nullptr;
+		m_transformedPathGeometry[i] = nullptr;
 
 		m_timer[i] = 0.0f;
 		m_frameIndex[i] = 0;
@@ -31,6 +32,11 @@ Text::Text()
 	d2dClearColor.g = 0.0f;
 	d2dClearColor.b = 0.0f;
 	d2dClearColor.a = 1.0f;
+
+	// Set when the text should change
+	_frameChanges = new unsigned int[2];
+	_frameChanges[0] = 40;
+	_frameChanges[1] = 100;
 }
 
 Text::~Text()
@@ -53,6 +59,7 @@ Text::~Text()
 	m_codePoints ? delete[] m_codePoints : 0;
 	m_glyphIndices ? delete[] m_glyphIndices : 0;
 	m_advances ? delete[] m_advances : 0;
+	_frameChanges ? delete[] _frameChanges : 0;
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -68,7 +75,7 @@ Text::~Text()
 	}
 }
 
-void Text::Render() 
+void Text::Render()
 {
 	if (m_firstTime)
 	{
@@ -77,9 +84,25 @@ void Text::Render()
 		m_text[1] = L"Pommes";
 		m_text[2] = L"68";
 		InitializeDirect2D();
+		InitializeDirectWrite();
 		DirectWriteEdge();
 		m_firstTime = false;
 	}
+
+	if (_frameCount == _frameChanges[0])
+	{
+		m_text[0] = L"dfg";
+		m_text[1] = L"uiop";
+		m_text[2] = L"97";
+
+		for (size_t i = 0; i < 3; i++)
+		{
+			//m_pathGeometry[i] ? m_pathGeometry[i]->Release() : 0;
+			//GetTextOutline(m_text[i], i);
+		}
+		DirectWriteEdge();
+	}
+	_frameCount++;
 
 	gdeviceContext->OMSetRenderTargets(1, manager->getBackbufferRTV(), nullptr);
 	//gdeviceContext->ClearRenderTargetView(*manager->getBackbuffer(), clearColor);
@@ -94,7 +117,7 @@ void Text::Render()
 
 	for (size_t i = 0; i < 3; i++)
 	{
-			Update(i);
+		Update(i);
 		gdeviceContext->IASetVertexBuffers(0, 1, &m_textPlaneBuffer[i], &vertexSize, &offset);
 		EdgeRender();
 
@@ -377,6 +400,36 @@ void Text::InitializeDirect2D()
 	}
 }
 
+void Text::InitializeDirectWrite()
+{
+	// Factory
+	DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown**>(&m_writeFactory));
+
+	CString strPath;
+	TCHAR* pstrExePath = strPath.GetBuffer(MAX_PATH);
+
+	::GetModuleFileName(0, pstrExePath, MAX_PATH);
+	strPath.ReleaseBuffer();
+
+	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
+	strPath = strPath.Left(strPath.ReverseFind(L'\\'));
+	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
+	strPath += L"Assets\\Fonts\\" + m_font;
+
+	m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles);
+
+	m_writeFactory->CreateFontFace(
+		DWRITE_FONT_FACE_TYPE_CFF,
+		1,
+		&m_fontFiles,
+		0,
+		DWRITE_FONT_SIMULATIONS_NONE,
+		&m_fontFaceBeginning);
+	m_fontFaceBeginning->QueryInterface<IDWriteFontFace1>(&m_fontFace);
+}
+
 void Text::Update(unsigned int id)
 {
 	//m_timer[id] += 0.06f;
@@ -415,35 +468,6 @@ void Text::Update(unsigned int id)
 
 void Text::DirectWriteEdge()
 {
-	// Factory
-	CheckStatus(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-		__uuidof(IDWriteFactory),
-		reinterpret_cast<IUnknown**>(&m_writeFactory)),
-		L"DWriteCreateFactory");
-
-	CString strPath;
-	TCHAR* pstrExePath = strPath.GetBuffer(MAX_PATH);
-
-	::GetModuleFileName(0, pstrExePath, MAX_PATH);
-	strPath.ReleaseBuffer();
-
-	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
-	strPath = strPath.Left(strPath.ReverseFind(L'\\'));
-	strPath = strPath.Left(strPath.ReverseFind(L'\\') + 1);
-	strPath += L"Assets\\Fonts\\" + m_font;
-
-	CheckStatus(m_writeFactory->CreateFontFileReference(strPath, NULL, &m_fontFiles), L"CreateFontFileReference");
-
-	CheckStatus(m_writeFactory->CreateFontFace(
-		DWRITE_FONT_FACE_TYPE_CFF,
-		1,
-		&m_fontFiles,
-		0,
-		DWRITE_FONT_SIMULATIONS_NONE,
-		&m_fontFaceBeginning),
-		L"CreateFontFace");
-	m_fontFaceBeginning->QueryInterface<IDWriteFontFace1>(&m_fontFace);
-
 	float maxSize = 0.0f;
 	for (int i = 0; i < 3; i++)
 	{
@@ -457,17 +481,9 @@ void Text::DirectWriteEdge()
 	// Center text
 	for (int i = 0; i < 3; i++)
 	{
-		//D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
-		//	1.0f, 0.0f,
-		//	0.0f, 1.0f,
-		//	0,-0
-		//);
 		D2D1::Matrix3x2F const matrix = D2D1::Matrix3x2F(
 			m_scale, 0.0f,
 			0.0f, -m_scale,
-			//(m_quadWidth * 2) - (bound[i].right / 2), m_quadHeight * 2 + bound[i].bottom
-			//m_padding / 2.0f, (m_quadHeight / m_scale) + (bound[0].top + bound[0].bottom)
-			//m_padding / 2.0f, (m_quadHeight / 2.0f) - ((abs(bound[0].top) + bound[0].bottom))
 			(m_padding * m_scale) / 2.0f, (m_padding * m_scale) / 2.0f
 			);
 		m_d2dFactory->CreateTransformedGeometry(
@@ -488,16 +504,15 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 	{
 		m_codePoints[i] = text[i];
 	}
-	CheckStatus(m_fontFace->GetGlyphIndices(m_codePoints, m_textLength[index], m_glyphIndices), L"GetGlyphIndices");
+	m_fontFace->GetGlyphIndices(m_codePoints, m_textLength[index], m_glyphIndices);
 
 	//Create the path geometry
-	CheckStatus(m_d2dFactory->CreatePathGeometry(&m_pathGeometry[index]), L"CreatePathGeometry");
-	CheckStatus(m_pathGeometry[index]->Open((ID2D1GeometrySink**)&m_geometrySink), L"Open");
-	
-	DWRITE_GLYPH_OFFSET glyphOffset = { 100.0f, 1.0f };
-	FLOAT glyphAdvances = 250.0f;
-	// (48.0f / 72.0f)*96.0f
-	CheckStatus(m_fontFace->GetGlyphRunOutline(
+	m_pathGeometry[index] ? m_pathGeometry[index]->Release() : 0;
+	m_transformedPathGeometry[index] ? m_transformedPathGeometry[index]->Release() : 0;
+	m_d2dFactory->CreatePathGeometry(&m_pathGeometry[index]);
+	m_pathGeometry[index]->Open((ID2D1GeometrySink**)&m_geometrySink);
+
+	m_fontFace->GetGlyphRunOutline(
 		m_textSize,
 		m_glyphIndices,
 		NULL,
@@ -505,33 +520,10 @@ void Text::GetTextOutline(const wchar_t* text, int index)
 		m_textLength[index],
 		false,
 		false,
-		m_geometrySink),
-		L"GetGlyphRunOutline");
-	// Getting advances
-	m_advances = new int[m_textLength[index]];
-	m_fontFace->GetDesignGlyphAdvances(m_textLength[index], m_glyphIndices, m_advances);
+		m_geometrySink);
 
-	CheckStatus(m_geometrySink->Close(), L"Close");
-	
+	m_geometrySink->Close();
 	m_pathGeometry[index]->GetBounds(D2D1::IdentityMatrix(), &bound[index]);
-	float hej;
-	m_pathGeometry[0]->ComputeLength(D2D1::IdentityMatrix(), &hej);
-
-	// Stroke style
-	float dashes[] = { 0.0f };
-	CheckStatus(m_d2dFactory->CreateStrokeStyle(
-		D2D1::StrokeStyleProperties(
-			D2D1_CAP_STYLE_FLAT,
-			D2D1_CAP_STYLE_FLAT,
-			D2D1_CAP_STYLE_FLAT,
-			D2D1_LINE_JOIN_MITER,
-			10.0f,
-			D2D1_DASH_STYLE_SOLID,
-			0.0f),
-		NULL,
-		NULL,
-		&m_strokeStyle),
-		L"CreateStrokeStyle");
 }
 
 void Text::EdgeRender()
@@ -542,14 +534,6 @@ void Text::EdgeRender()
 		m_d2dRenderTarget[i]->BeginDraw();
 		m_d2dRenderTarget[i]->SetTransform(D2D1::IdentityMatrix());
 		m_d2dRenderTarget[i]->Clear(NULL);
-
-		//// // Draw text with outline
-		//m_d2dRenderTarget[i]->SetTransform(
-		//	//D2D1::Matrix3x2F::Translation(-2000, 2000) * 
-		//	D2D1::Matrix3x2F::Translation(800, -800) *
-		//	D2D1::Matrix3x2F::Scale(m_scale, -m_scale)
-		//	//D2D1::Matrix3x2F::Rotation(270.0f)
-		//);
 		m_d2dRenderTarget[i]->DrawGeometry(m_transformedPathGeometry[i], m_blackBrush[i], m_edgeSize * m_scale);
 		m_d2dRenderTarget[i]->FillGeometry(m_transformedPathGeometry[i], m_orangeBrush[i]);
 

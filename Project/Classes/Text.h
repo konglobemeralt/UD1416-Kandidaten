@@ -46,6 +46,9 @@ private:
 	float m_edgeSize;
 	float m_padding;
 	float m_scale;
+	unsigned int _frameCount = 0;
+	unsigned int* _frameChanges = nullptr;
+	unsigned int _playerID = 0;
 
 	// Direct3D
 	float clearColor[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
@@ -122,6 +125,7 @@ private:
 	void DirectWriteEdge();
 	void GetTextOutline(const wchar_t* text, int index);
 	void EdgeRender();
+	void InitializeDirectWrite();
 };
 
 #endif
