@@ -228,13 +228,14 @@ void Compositing::Render() {
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
 	gdeviceContext->Draw(4, 0);
 
-	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
-	//gdeviceContext->Draw(4, 0);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+	gdeviceContext->Draw(4, 0);
+
 
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
