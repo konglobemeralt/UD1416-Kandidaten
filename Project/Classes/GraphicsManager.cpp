@@ -222,7 +222,7 @@ ID3D11ShaderResourceView** GraphicsManager::getBackbufferSRV() {
 
 InfoRetriever* GraphicsManager::getInfoRetriever()
 {
-    return &infoRetriever;
+    return infoRetriever;
 }
 
 void GraphicsManager::setWindowSize(UINT width = 1280, UINT height = 1024) {
