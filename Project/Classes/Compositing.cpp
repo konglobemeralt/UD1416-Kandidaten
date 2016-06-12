@@ -95,8 +95,11 @@ void Compositing::Render() {
 	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
 	//}
 
-    manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hämta korrekt bild
-    currPlayerIndex++;
+    manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
+    if (currPlayerIndex < manager->getInfoRetriever()->playerInfo.size()) 
+    {
+        currPlayerIndex++;
+    }
 
 	string uvString;
 	string uvRefString;
