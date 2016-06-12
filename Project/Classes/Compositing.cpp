@@ -96,10 +96,9 @@ void Compositing::Render() {
 	//}
 
     manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
-    if (currPlayerIndex < manager->getInfoRetriever()->playerInfo.size()) 
-    {
-        currPlayerIndex++;
-    }
+
+
+  
 
 	string uvString;
 	string uvRefString;
@@ -236,7 +235,17 @@ void Compositing::Render() {
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
 	gdeviceContext->Draw(4, 0);
 
+	
+	//TODO: fixa till att bara köras vid frame intervals
+	if (currPlayerIndex < manager->getInfoRetriever()->playerInfo.size())
+	{
+		currPlayerIndex++;
 
+	}
+	if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
+	{
+		currPlayerIndex = 0;
+	}
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
 	m_imageCount++;
