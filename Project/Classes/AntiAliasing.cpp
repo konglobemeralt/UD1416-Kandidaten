@@ -45,7 +45,7 @@ void AntiAliasing::Render() {
     gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
     //renderType = (Rendering)0;
-    string type = "";
+    string type = "FXAA";
 
     renderType = Rendering::Both;
     if (renderType == 0)

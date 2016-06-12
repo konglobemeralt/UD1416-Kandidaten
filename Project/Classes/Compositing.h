@@ -21,9 +21,9 @@ public:
 	void SetText(ID3D11ShaderResourceView* text[3]);
 private:
 	GraphicsManager* m_graphicsManager;
-	UINT m_startFrame = 80;
-	UINT m_imageCount = 80;
-	UINT m_imageSum = 80;
+	UINT m_startFrame = 0;
+	UINT m_imageCount = 0;
+	UINT m_imageSum = 200;
 	string m_UVFrame;
 	string m_UVReflectionFrame;
 	string m_beautyFrame;

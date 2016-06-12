@@ -11,7 +11,7 @@
 ApplicationContext* ApplicationContext::applicationContext = nullptr;
 ApplicationContext::ApplicationContext()
 {
-	m_user = TEXT;
+	m_user = ALL;
 	m_antiAliasing = new AntiAliasing;
 	m_text = new Text;
 	m_lightning = new Lightning;

@@ -82,17 +82,17 @@ void Compositing::Render() {
 		manager->attachImage("putin.png", "PlayerSRV");
 	}*/
 
-	if (m_imageCount == 2)
+	if (m_imageCount == 0)
 	{
-		manager->attachImage("dickbutt3.png", "PlayerSRV");
+		manager->attachImage("Spelare-1.png", "PlayerSRV");
 	}
 	if (m_imageCount == 30)
 	{
-		manager->attachImage("putin.png", "PlayerSRV");
+		manager->attachImage("Spelare-1.png", "PlayerSRV");
 	}
 	if (m_imageCount == 90)
 	{
-		manager->attachImage("dickbutt3.png", "PlayerSRV");
+		manager->attachImage("Spelare-1.png", "PlayerSRV");
 	}
 
 	string uvString;
@@ -222,13 +222,13 @@ void Compositing::Render() {
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
-	//gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
+	gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
 	gdeviceContext->Draw(4, 0);
 
-	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	//gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
-	//gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
-	//gdeviceContext->Draw(4, 0);
+	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
+	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
+	gdeviceContext->Draw(4, 0);
 
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
@@ -341,7 +341,7 @@ void Compositing::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("BlueCircles.png", "PlayerSRV");
+//	manager->attachImage("BlueCircles.png", "PlayerSRV");
 
 
 

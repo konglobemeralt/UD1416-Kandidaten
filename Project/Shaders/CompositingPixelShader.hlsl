@@ -175,7 +175,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		int blendMode = 2;
 		float multiplier = 1.0f;
 		//Player on puck
-		if ((tempUV.w > 0.999) && tempPlayer.w != 0)
+		if ((tempUV.w !=0.999) && tempPlayer.w != 0)
 		{
 			playerColor = tempPlayer;
 			if (blendMode == 0)
