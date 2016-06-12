@@ -67,6 +67,8 @@ private:
 	bool m_shotTaken = false;
 	// Eriks test
 	ID3D11Texture2D* texture;
+
+    int currPlayerIndex = 0;
 };
 
 #endif

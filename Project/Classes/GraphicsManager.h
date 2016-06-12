@@ -9,6 +9,7 @@
 #include <string>
 #include <d3d11sdklayers.h>
 #include "DataStructures.h"
+#include "InfoRetriever.h"
 
 #include "../DirectXToolkit/Inc/WICTextureLoader.h"
 #include "../DirectXTex/DirectXTexP.h"
@@ -34,6 +35,7 @@ private:
 
 	void setRasterstate(D3D11_CULL_MODE cullmode);
 	HRESULT CreateDirect3DContext();
+    void CreateInfoRetriever();
 	
 
 	// Quad
@@ -46,6 +48,9 @@ private:
 	ID3D11DepthStencilView* emptyDSV;
 	ID3D11RenderTargetView* emptyRTV[4];
 	ID3D11ShaderResourceView* emptySRV[8];
+
+    //infoRetriever for player pictures and info
+    InfoRetriever* infoRetriever = nullptr;
 	
 public:
 	void ResetViews();
@@ -78,6 +83,7 @@ public:
 	ID3D11RenderTargetView** getBackbuffer();
 	ID3D11RenderTargetView** getBackbufferRTV();
 	ID3D11ShaderResourceView** getBackbufferSRV();
+    InfoRetriever* getInfoRetriever();
 
 	void setWindowSize(UINT width, UINT height);
 

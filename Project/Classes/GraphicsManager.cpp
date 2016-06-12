@@ -11,6 +11,7 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	windowHandle = hwnd;
 	CreateDirect3DContext();
 	setRasterstate(D3D11_CULL_NONE);
+    CreateInfoRetriever();
 
 	struct TriangleVertex
 	{
@@ -177,6 +178,12 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 	return hr;
 }
 
+void GraphicsManager::CreateInfoRetriever()
+{
+    infoRetriever = new InfoRetriever();
+    infoRetriever->Initialize();
+}
+
 void GraphicsManager::ResetViews(){
 	emptyDSV = NULL;
 	int x = 0;
@@ -211,6 +218,11 @@ ID3D11RenderTargetView** GraphicsManager::getBackbufferRTV() {
 
 ID3D11ShaderResourceView** GraphicsManager::getBackbufferSRV() {
 	return &gBackbufferSRV;
+}
+
+InfoRetriever* GraphicsManager::getInfoRetriever()
+{
+    return &infoRetriever;
 }
 
 void GraphicsManager::setWindowSize(UINT width = 1280, UINT height = 1024) {

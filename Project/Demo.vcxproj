@@ -105,6 +105,7 @@
     <ClInclude Include="Classes\Compositing.h" />
     <ClInclude Include="Classes\DataStructures.h" />
     <ClInclude Include="Classes\GraphicsManager.h" />
+    <ClInclude Include="Classes\InfoRetriever.h" />
     <ClInclude Include="Classes\Lightning.h" />
     <ClInclude Include="Classes\Text.h" />
     <ClInclude Include="Classes\ToneMapping.h" />

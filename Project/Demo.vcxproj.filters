@@ -44,5 +44,6 @@
     <ClInclude Include="Classes\Text.h" />
     <ClInclude Include="Classes\ToneMapping.h" />
     <ClInclude Include="Classes\WindowManager.h" />
+    <ClInclude Include="Classes\InfoRetriever.h" />
   </ItemGroup>
 </Project>

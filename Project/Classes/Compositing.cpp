@@ -82,18 +82,21 @@ void Compositing::Render() {
 		manager->attachImage("putin.png", "PlayerSRV");
 	}*/
 
-	if (m_imageCount == 2)
-	{
-		manager->attachImage("dickbutt3.png", "PlayerSRV");
-	}
-	if (m_imageCount == 30)
-	{
-		manager->attachImage("putin.png", "PlayerSRV");
-	}
-	if (m_imageCount == 90)
-	{
-		manager->attachImage("dickbutt3.png", "PlayerSRV");
-	}
+	//if (m_imageCount == 2)
+	//{
+	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
+	//}
+	//if (m_imageCount == 30)
+	//{
+	//	manager->attachImage("putin.png", "PlayerSRV");
+	//}
+	//if (m_imageCount == 90)
+	//{
+	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
+	//}
+
+    manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hämta korrekt bild
+    currPlayerIndex++;
 
 	string uvString;
 	string uvRefString;
