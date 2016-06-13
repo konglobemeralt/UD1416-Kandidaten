@@ -7,10 +7,10 @@
 #include <dinput.h>						//Keyboard/mouse input
 #include <DirectXMath.h>
 
-//#define manager GraphicsManager::getInstance()
-//#define resources GraphicsManager::getInstance().thesisData
-#define gdevice m_graphicsManager->getDevice()
-#define gdeviceContext m_graphicsManager->getDeviceContext()
+#define manager m_graphicsManager
+#define resources m_graphicsManager->thesisData
+#define device m_graphicsManager->getDevice()
+#define deviceContext m_graphicsManager->getDeviceContext()
 
 using namespace DirectX;
 class WindowManager;

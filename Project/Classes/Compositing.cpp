@@ -12,13 +12,18 @@ Compositing::~Compositing()
 
 }
 
-void Compositing::Render() {
+void Compositing::Render(string shaderresource, string rendertarget) {
+
+	if (rendertarget.empty()) gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	else gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews[rendertarget], nullptr);
+
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
 
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbufferRTV(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*manager->getBackbufferRTV(), clearColor);
+	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	//gdeviceContext->ClearRenderTargetView(*manager->getBackbufferRTV(), clearColor);
+	
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);

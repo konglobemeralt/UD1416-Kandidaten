@@ -27,7 +27,7 @@ private:
 	ID3D11Device* gDevice = nullptr;
 	ID3D11DeviceContext* gDeviceContext = nullptr;
 	ID3D11RenderTargetView* gBackbufferRTV = nullptr;
-	ID3D11RenderTargetView* gBackbufferRTV2 = nullptr;
+	//ID3D11RenderTargetView* gBackbufferRTV2 = nullptr;
 	ID3D11ShaderResourceView* gBackbufferSRV = nullptr;
 
 	HWND* windowHandle;
@@ -81,7 +81,7 @@ public:
 	UINT getWindowWidth();
 	UINT getWindowHeight();
 	ID3D11RenderTargetView** getBackbuffer();
-	ID3D11RenderTargetView** getBackbufferRTV();
+	//ID3D11RenderTargetView** getBackbufferRTV();
 	ID3D11ShaderResourceView** getBackbufferSRV();
     InfoRetriever* getInfoRetriever();
 

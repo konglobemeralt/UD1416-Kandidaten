@@ -15,7 +15,7 @@ class GraphicsManager;
 class ToneMapping
 {
 public:
-	void Render();
+	void Render(string shaderResource = "", string rendertarget = "");
 	void Initialize();
 	ToneMapping();
 	~ToneMapping();
@@ -29,7 +29,7 @@ private:
 	UINT technique;
 	int32_t textureWidth = 1024;
 	ID3D11Texture2D* mipTexture;
-	int reinhardKey = 50;
+	int reinhardKey = 36;
 	//ID3D11Texture2D* reinhardCPUtext;
 };
 

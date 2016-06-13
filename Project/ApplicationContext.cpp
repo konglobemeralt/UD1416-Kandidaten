@@ -13,7 +13,7 @@ ApplicationContext::ApplicationContext()
 {
 	m_user = TEXT;
 	m_antiAliasing = new AntiAliasing;
-	m_text = new Text;
+	//m_text = new Text;
 	m_lightning = new Lightning;
 	m_compositing = new Compositing;
 	m_toneMapping = new ToneMapping;
@@ -63,7 +63,7 @@ void ApplicationContext::Initialize()
 	switch (applicationContext->m_user)
 	{
 	case TEXT:
-		applicationContext->m_text->Initialize();
+		//applicationContext->m_text->Initialize();
 		break;
 	case COMPOSITING:
 		applicationContext->m_compositing->Initialize();
@@ -78,7 +78,7 @@ void ApplicationContext::Initialize()
 		applicationContext->m_lightning->Initialize();
 		break;
 	case ALL:
-		applicationContext->m_text->Initialize();
+		//applicationContext->m_text->Initialize();
 		applicationContext->m_compositing->Initialize();
 		applicationContext->m_toneMapping->Initialize();
 		applicationContext->m_antiAliasing->Initialize();

@@ -16,7 +16,7 @@ class Compositing
 public:
 	Compositing();
 	~Compositing();
-	void Render();
+	void Render(string shaderResource = "", string rendertarget = "");
 	void Initialize();
 	void SetText(ID3D11ShaderResourceView* text[3]);
 private:

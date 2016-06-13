@@ -42,13 +42,15 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	D3D11_SUBRESOURCE_DATA data;
 	data.pSysMem = triangleVertices;
 	gDevice->CreateBuffer(&bufferDesc, &data, &gQuadBuffer);
+
+	this->createTexture2D("pipeline_SRV_RTV", DXGI_FORMAT_R32G32B32A32_FLOAT, this->getWindowWidth(), this->getWindowHeight(), true, true);
 }
 
 void GraphicsManager::Render() {
 	switch (ApplicationContext::GetInstance().GetUser())
 	{
 	case TEXT:
-		ApplicationContext::GetInstance().GetTextObject()->Render();
+		//ApplicationContext::GetInstance().GetTextObject()->Render();
 		break;
 	case COMPOSITING:
 		ApplicationContext::GetInstance().GetCompositingObject()->Render();
@@ -63,12 +65,11 @@ void GraphicsManager::Render() {
 		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	case ALL:
-		ApplicationContext::GetInstance().GetCompositingObject()->Render();
-		ApplicationContext::GetInstance().GetTextObject()->Render();
+		ApplicationContext::GetInstance().GetCompositingObject()->Render("", "");
 		//ApplicationContext::GetInstance().GetCompositingObject()->SetText(
 		//ApplicationContext::GetInstance().GetTextObject()->GetText());
-		ApplicationContext::GetInstance().GetToneMappingObject()->Render();
-		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render();
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render("pipeline_SRV_RTV", "pipeline_SRV_RTV");
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render("pipeline_SRV_RTV", "");
 		//ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:
@@ -161,11 +162,11 @@ HRESULT GraphicsManager::CreateDirect3DContext() {
 		ID3D11Texture2D* texture;
 		HRESULT iasdf = gDevice->CreateTexture2D(&desc, nullptr, &texture);
 
-		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-		rtvDesc.Format = desc.Format;
-		rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		rtvDesc.Texture2D.MipSlice = 0;
-		HRESULT hrr = gDevice->CreateRenderTargetView(texture, &rtvDesc, &gBackbufferRTV2);
+		//D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
+		//rtvDesc.Format = desc.Format;
+		//rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		//rtvDesc.Texture2D.MipSlice = 0;
+		//HRESULT hrr = gDevice->CreateRenderTargetView(texture, &rtvDesc, &gBackbufferRTV2);
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		srvDesc.Format = desc.Format;
@@ -212,9 +213,9 @@ ID3D11RenderTargetView** GraphicsManager::getBackbuffer() {
 	return &gBackbufferRTV;
 }
 
-ID3D11RenderTargetView** GraphicsManager::getBackbufferRTV() {
-	return &gBackbufferRTV2;
-}
+//ID3D11RenderTargetView** GraphicsManager::getBackbufferRTV() {
+//	return &gBackbufferRTV2;
+//}
 
 ID3D11ShaderResourceView** GraphicsManager::getBackbufferSRV() {
 	return &gBackbufferSRV;

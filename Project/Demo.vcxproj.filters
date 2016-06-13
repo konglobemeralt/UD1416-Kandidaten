@@ -4,24 +4,34 @@
     <FxCompile Include="Shaders\CompositingPixelShader.hlsl" />
     <FxCompile Include="Shaders\CompositingVertexShader.hlsl" />
     <FxCompile Include="Shaders\FXAA_PS.hlsl" />
-    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl" />
     <FxCompile Include="Shaders\LightningDomainShader.hlsl" />
     <FxCompile Include="Shaders\LightningGeometryShader.hlsl" />
     <FxCompile Include="Shaders\LightningHullShader.hlsl" />
     <FxCompile Include="Shaders\LightningPixelShader.hlsl" />
     <FxCompile Include="Shaders\LightningVertexShader.hlsl" />
-    <FxCompile Include="Shaders\MEYLAN_PixelShader.hlsl" />
-    <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl" />
     <FxCompile Include="Shaders\PixelShader.hlsl" />
     <FxCompile Include="Shaders\REINHARD_PixelShader.hlsl" />
     <FxCompile Include="Shaders\REINHARD_VertexShader.hlsl" />
     <FxCompile Include="Shaders\SimpleVertexShader.hlsl" />
     <FxCompile Include="Shaders\SSAA_PS.hlsl" />
-    <FxCompile Include="Shaders\GAO_PixelShader.hlsl" />
-    <FxCompile Include="Shaders\GAO_VertexShader.hlsl" />
     <FxCompile Include="Shaders\VertexShader.hlsl" />
     <FxCompile Include="Shaders\Text_PS.hlsl" />
     <FxCompile Include="Shaders\Text_VS.hlsl" />
+    <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
+      <Filter>Old</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GAO_PixelShader.hlsl">
+      <Filter>Old</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GAO_VertexShader.hlsl">
+      <Filter>Old</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MEYLAN_PixelShader.hlsl">
+      <Filter>Old</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl">
+      <Filter>Old</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplicationContext.cpp" />
@@ -45,5 +55,10 @@
     <ClInclude Include="Classes\ToneMapping.h" />
     <ClInclude Include="Classes\WindowManager.h" />
     <ClInclude Include="Classes\InfoRetriever.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Old">
+      <UniqueIdentifier>{ba04e680-067f-4483-a800-c3c3edb493fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

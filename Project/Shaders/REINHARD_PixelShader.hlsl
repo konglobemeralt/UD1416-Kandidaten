@@ -76,7 +76,7 @@ float2 uv = floor(input.Tex * imagesize) / imagesize;
 const float delta = 0.00001;
 
 // USER SETTINGS
-float key = levels.w * 0.01; //0.72; //exp(AvgLum.SampleLevel(SamplerWrap, uv, levels.x));
+float key = exp(AvgLum.SampleLevel(SamplerWrap, uv, levels.x)); //levels.w * 0.01; //0.72; //exp(AvgLum.SampleLevel(SamplerWrap, uv, levels.x));
 float lWhite = 1.0;
 ////////////////
 
@@ -101,7 +101,7 @@ else {
 
 		// APPLY LUMINANCE
 		float3 xyY = RGB2xyY(rgb);
-		xyY.z *= (finLum + 0.5); // some dumbass had *= here before which gave greater contrasts but looked weeeird
+		xyY.z = finLum; // some dumbass had *= here before which gave greater contrasts but looked weeeird
 		rgb = xyY2RGB(xyY);
 	}
 
@@ -112,7 +112,7 @@ else {
 
 		// APPLY LUMINANCE
 		float3 xyY = RGB2xyY(rgb);
-		xyY.z *= (finLum + 0.5);
+		xyY.z = finLum;
 		rgb = xyY2RGB(xyY);
 	}
 

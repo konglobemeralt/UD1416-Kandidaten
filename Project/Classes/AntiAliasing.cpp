@@ -14,7 +14,13 @@ AntiAliasing::~AntiAliasing()
 
 
 
-void AntiAliasing::Render() {
+void AntiAliasing::Render(string shaderresource, string rendertarget) {
+
+	if (rendertarget.empty()) 
+		deviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	else 
+		deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews[rendertarget], nullptr);
+
     float clearColor[4] = { 0.0f, 0.1f, 0.0f, 1.0f };
     UINT vertexSize = sizeof(float) * 5;
     UINT offset = 0;
@@ -26,52 +32,58 @@ void AntiAliasing::Render() {
 
     float clearColor2[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-    gdeviceContext->OMSetRenderTargets(1, &m_graphicsManager->thesisData.renderTargetViews["FinalAARTV"], nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
-    gdeviceContext->ClearRenderTargetView(m_graphicsManager->thesisData.renderTargetViews["FinalAARTV"], clearColor2);
+	//gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
+	//deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["pipeline_SRV_RTV"], nullptr);
 
-    gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	deviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
 
-    gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
+	deviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
 
-    gdeviceContext->PSSetShaderResources(0, 1, m_graphicsManager->getBackbufferSRV());
+	//deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["pipeline_SRV_RTV"]);
     gdeviceContext->PSSetShaderResources(1, 1, m_graphicsManager->getBackbufferSRV());
     /*gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageHigh"]);
     gdeviceContext->PSSetShaderResources(1, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);*/
 
     ResetFreeLookCamera();
-    gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
+	deviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
 
-    gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
+	deviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
 
-    //renderType = (Rendering)0;
+	//deviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+
+	if (shaderresource.empty())
+		return;
+	else
+		deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews[shaderresource]);
+//	deviceContext->PSSetShaderResources(0, 1, m_graphicsManager->getBackbufferSRV());
     string type = "";
 
     renderType = Rendering::Both;
     if (renderType == 0)
     {
         gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
-        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
+		deviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
         type = "FXAA";
     }
     else if (renderType == 1)
     {
-        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
+		deviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
         type = "SSAA";
     }
     else if (renderType == 2)//both
     {
-        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
+		deviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["FXAA_PS"], nullptr, 0);
         type = "Both";
     }
     else
     {
         gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["ImageLow"]);
-        gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
+		deviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
         type = "Aliased";
     }
 
-    gdeviceContext->Draw(4, 0); //ritar till FinalAARTV
+	deviceContext->Draw(4, 0);
 
 
     //rita till backbuffern som final nu då!!!!
@@ -125,8 +137,8 @@ void AntiAliasing::Initialize() {
 
 	m_graphicsManager->createSamplerState("AAWrapSampler", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP); //dessa ska kanske vara point eller nått när jag kör FXAA?
 	m_graphicsManager->createSamplerState("AAClampSampler", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["AAWrapSampler"]);
-	gdeviceContext->PSSetSamplers(1, 1, &m_graphicsManager->thesisData.samplerStates["AAClampSampler"]);
+	deviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["AAWrapSampler"]);
+	deviceContext->PSSetSamplers(1, 1, &m_graphicsManager->thesisData.samplerStates["AAClampSampler"]);
 }
 
 void AntiAliasing::InitConstantBuffers()
@@ -144,7 +156,7 @@ void AntiAliasing::InitConstantBuffers()
 	FXAA_PS_cb.FXAA_reduce_MIN = 1.0f / 64.0f;
 
 
-	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"], 0, NULL, &FXAA_PS_cb, 0, 0);
+	deviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"], 0, NULL, &FXAA_PS_cb, 0, 0);
 }
 
 void AntiAliasing::InitTextures()
@@ -213,8 +225,8 @@ void AntiAliasing::ResetFreeLookCamera()
 	XMStoreFloat4x4(&Matrix_VS_cb.view, XMMatrixIdentity());
 	XMStoreFloat4x4(&Matrix_VS_cb.WVP, XMMatrixIdentity());
 
-	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"], 0, nullptr, &Matrix_VS_cb, 0, 0);
-	gdeviceContext->VSSetConstantBuffers(1, 1, &m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"]);
+	deviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"], 0, nullptr, &Matrix_VS_cb, 0, 0);
+	deviceContext->VSSetConstantBuffers(1, 1, &m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"]);
 }
 
 void AntiAliasing::updateFreeLookCamera()
@@ -272,8 +284,8 @@ void AntiAliasing::updateFreeLookCamera()
 	XMStoreFloat4x4(&Matrix_VS_cb.WVP, XMMatrixTranspose(WVP));
 	//Matrix_VS_cb.view = XMViewSpace;
 	//gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
-	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"], 0, nullptr, &Matrix_VS_cb, 0, 0);
-	gdeviceContext->VSSetConstantBuffers(1, 1, &m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"]);
+	deviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"], 0, nullptr, &Matrix_VS_cb, 0, 0);
+	deviceContext->VSSetConstantBuffers(1, 1, &m_graphicsManager->thesisData.constantBuffers["Matrix_VS_cb"]);
 }
 void AntiAliasing::detectInput()
 {

@@ -41,7 +41,7 @@ void Lightning::createVertexBuffer()
 
 	D3D11_SUBRESOURCE_DATA data2;
 	data2.pSysMem = lightningVertices;
-	gdevice->CreateBuffer(&bufferDesc2, &data2, &lightningBuffer);
+	device->CreateBuffer(&bufferDesc2, &data2, &lightningBuffer);
 
 
 }
@@ -82,28 +82,29 @@ void Lightning::Render() {
 	lightningCBuffer.camPos = camPos;
 	lightningCBuffer.lineWidth = lineWidth;
 	//gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
-	gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);	//NOT WORKING
+	deviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"], 0, nullptr, &lightningCBuffer, 0, 0);	//NOT WORKING
 	
 	//gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["constantBuffer"], 0, NULL, &constantBuffer, 0, 0);	//NOT WORKING
 	//gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["constantBuffer"]);
 
-	gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
-	gdeviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
+	//gdeviceContext->OMSetRenderTargets(1, m_graphicsManager->getBackbuffer(), nullptr);
+	deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["pipeline_SRV_RTV"], nullptr);
+	deviceContext->ClearRenderTargetView(*m_graphicsManager->getBackbuffer(), clearColor);
 
 	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);		//LINESTRIP
-	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
-	gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
-	gdeviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);		//TRIANGLESTRIP
+	deviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["FirstLayout"]);
+	deviceContext->PSSetSamplers(0, 1, &m_graphicsManager->thesisData.samplerStates["CoolSampler"]);
 
-	gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
+	deviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["LightningVertexShader"], nullptr, 0);
 	//deviceContext->HSSetShader(resources.hullShaders["LightningHullShader"], nullptr, 0);
 	//deviceContext->DSSetShader(resources.domainShaders["LightningDomainShader"], nullptr, 0);
-	gdeviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
-	gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["LightningPixelShader"], nullptr, 0);
+	deviceContext->GSSetShader(m_graphicsManager->thesisData.geometryShaders["LightningGeometryShader"], nullptr, 0);
+	deviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["LightningPixelShader"], nullptr, 0);
 
-	gdeviceContext->IASetVertexBuffers(0, 1, &lightningBuffer, &vertexSize, &offset);
+	deviceContext->IASetVertexBuffers(0, 1, &lightningBuffer, &vertexSize, &offset);
 
-	gdeviceContext->Draw(4, 0);
+	deviceContext->Draw(4, 0);
 }
 
 void Lightning::Initialize() {
@@ -131,7 +132,7 @@ void Lightning::Initialize() {
 
 	m_graphicsManager->createConstantBuffer("lightningCBuffer", &lightningCBuffer, sizeof(cBuffer));
 	//gdeviceContext->UpdateSubresource(m_graphicsManager->thesisData.constantBuffers["constantBuffer"], 0, NULL, &constantBuffer, 0, 0);	//NOT WORKING
-	gdeviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
+	deviceContext->VSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["lightningCBuffer"]);
 	///////////___________NEW_________________/////////////
 
 	// ###########################################################

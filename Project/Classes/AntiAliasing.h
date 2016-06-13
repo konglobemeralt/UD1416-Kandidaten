@@ -6,10 +6,10 @@
 #pragma comment (lib, "dxguid.lib")		//Keyboard/mouse input
 #include <dinput.h>						//Keyboard/mouse input
 
-//#define manager GraphicsManager::getInstance()
-//#define resources GraphicsManager::getInstance().thesisData
-#define gdevice m_graphicsManager->getDevice()
-#define gdeviceContext m_graphicsManager->getDeviceContext()
+#define manager m_graphicsManager
+#define resources m_graphicsManager->thesisData
+#define device m_graphicsManager->getDevice()
+#define deviceContext m_graphicsManager->getDeviceContext()
 class WindowManager;
 class GraphicsManager;
 class AntiAliasing
@@ -17,13 +17,13 @@ class AntiAliasing
 public:
 	AntiAliasing();
 	~AntiAliasing();
-	void Render();
+	void Render(string shaderResource = "", string rendertarget = "");
 	void Initialize();
 
 	void InitExample();
 
-	void RenderSSAA();
-	void RenderFXAA();
+	//void RenderSSAA();
+	//void RenderFXAA();
 private:
 	GraphicsManager* m_graphicsManager;
 
