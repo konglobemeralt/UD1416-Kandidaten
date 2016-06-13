@@ -42,6 +42,7 @@ private:
     };
     
     vector<char*> fileNames;
+    vector<int> fileNameSizes;
     vector<int> playerOrderNr; //innehåller i samma ordning som fileNames de olika spelar indexen
     vector<int> playerNr;
     vector<PlayerName> playerNames;
@@ -83,6 +84,7 @@ private:
 
                 if (fileNamePointer[0] > 47 && fileNamePointer[0] < 58) { //är ett nummer
                     fileNames.push_back(fileNamePointer);
+                    fileNameSizes.push_back(fileNameSize);
                 }
 
             } while (FindNextFile(hFind, &data));
@@ -201,7 +203,25 @@ private:
         for (int i = 0; i < fileNames.size(); i++)
         {
             PlayerInfo pInfo;
-            pInfo.fileName = fileNames[i];
+
+            string filePathstring = "Assets//Players/";
+            int filePathSize = filePathstring.length + fileNameSizes[i];
+            char* filePath = new char[filePathSize];
+            int currIndex = 0;
+
+            for (int y = 0; y < filePathstring.length; y++)
+            {
+                filePath[currIndex] = filePathstring.at(y);
+                currIndex++;
+            }
+
+            for (int y = 0; y < fileNameSizes[i]; y++)
+            {
+                filePath[currIndex] = fileNames[i][y];
+                currIndex++;
+            }
+
+            pInfo.fileName = filePath;
             pInfo.playerNr = playerNr[i];
             pInfo.playerName = playerNames[i];
             playerInfo.push_back(pInfo);
