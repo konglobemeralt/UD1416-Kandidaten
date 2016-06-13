@@ -11,7 +11,7 @@ using namespace DirectX;
 using namespace std;
 
 void setUser() {
-	ApplicationContext::GetInstance().SetUser(COMPOSITING);
+	ApplicationContext::GetInstance().SetUser(ALL);
 /*		
 		CHOOSE FROM:
 		TEXT

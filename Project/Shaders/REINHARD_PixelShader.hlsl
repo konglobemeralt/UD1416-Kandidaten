@@ -93,7 +93,7 @@ if (levels.y == 1) {
 
 //FINAL PASS
 else {
-	float finLum = 1.0;
+	float finLum = 0.0;
 
 	//// GLOBAL TONE MAP
 	if (levels.z == 0 || levels.z == 3) {
@@ -118,7 +118,7 @@ else {
 
 	// GAMMA CORRECTION
 	float gamma = 1.0 / 2.2;
-	rgb = pow(rgb, float3(gamma, gamma, gamma));
+	//rgb = pow(rgb, float3(gamma, gamma, gamma));
 
 	if (levels.z == 3 || levels.z == 4)
 		return saturate(finLum);

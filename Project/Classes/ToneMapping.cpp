@@ -15,7 +15,6 @@ ToneMapping::~ToneMapping()
 }
 
 void ToneMapping::Render(string shaderresource, string rendertarget) {
-
 	// STANDARD SETTINGS
 	struct cBuffer {
 		XMINT4 mipLevel;
@@ -67,7 +66,7 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	}
 
 	//// TOGGLE LOCAL
-	else /*if (GetAsyncKeyState(L)) */{
+	else if (GetAsyncKeyState(L)) {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
 			2,				// Max(0) or Avg(1) Luminance, or final render(2)
 			1,				// Global(0) or Local(1) TMO, or no TMO(2)
@@ -76,13 +75,13 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	}
 
 	//// NO TMO
-	//else {
-	//	mipBuffer.mipLevel = { textureWidth,	// miplevel
-	//		2,				// Max(0) or Avg(1) Luminance, or final render(2)
-	//		2,				// Global(0) or Local(1) TMO, or no TMO(2)
-	//		reinhardKey		// Key
-	//	};
-	//}
+	else {
+		mipBuffer.mipLevel = { textureWidth,	// miplevel
+			2,				// Max(0) or Avg(1) Luminance, or final render(2)
+			2,				// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey		// Key
+		};
+	}
 
 	//// TOGGLE LUMINANCE
 	//if (GetAsyncKeyState(SHIFT)) {

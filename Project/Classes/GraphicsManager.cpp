@@ -65,11 +65,11 @@ void GraphicsManager::Render() {
 		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	case ALL:
-		ApplicationContext::GetInstance().GetCompositingObject()->Render("", "");
+		ApplicationContext::GetInstance().GetCompositingObject()->Render("", "pipeline_SRV_RTV");
 		//ApplicationContext::GetInstance().GetCompositingObject()->SetText(
 		//ApplicationContext::GetInstance().GetTextObject()->GetText());
-		ApplicationContext::GetInstance().GetToneMappingObject()->Render("pipeline_SRV_RTV", "pipeline_SRV_RTV");
-		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render("pipeline_SRV_RTV", "");
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render("pipeline_SRV_RTV", "");
+		//ApplicationContext::GetInstance().GetAntiAliasingObject()->Render("pipeline_SRV_RTV", "");
 		//ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:

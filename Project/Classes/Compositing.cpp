@@ -14,9 +14,6 @@ Compositing::~Compositing()
 
 void Compositing::Render(string shaderresource, string rendertarget) {
 
-	if (rendertarget.empty()) gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
-	else gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews[rendertarget], nullptr);
-
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT vertexSize = sizeof(float) * 5;
 	UINT offset = 0;
@@ -235,7 +232,13 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
 	gdeviceContext->Draw(4, 0);
 
-	gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+
+	if (rendertarget.empty())
+		gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
+	else
+		gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews[rendertarget], nullptr);
+
 	gdeviceContext->PSSetShader(resources.pixelShaders["PixelShader"], nullptr, 0);
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
 	gdeviceContext->Draw(4, 0);
