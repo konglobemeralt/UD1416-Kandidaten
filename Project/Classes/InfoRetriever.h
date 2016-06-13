@@ -200,16 +200,16 @@ private:
             }
         }
 
-        for (int i = 0; i < fileNames.size(); i++)
-        {
-            PlayerInfo pInfo;
+		for (int i = 0; i < fileNames.size(); i++)
+		{
+			PlayerInfo pInfo;
 
-            string filePathstring = "Assets//Players/";
-            int filePathSize = filePathstring.length + fileNameSizes[i];
+			string filePathstring = "Players/";
+			int filePathSize = filePathstring.length() + fileNameSizes[i];
             char* filePath = new char[filePathSize];
             int currIndex = 0;
 
-            for (int y = 0; y < filePathstring.length; y++)
+            for (int y = 0; y < filePathstring.length(); y++)
             {
                 filePath[currIndex] = filePathstring.at(y);
                 currIndex++;

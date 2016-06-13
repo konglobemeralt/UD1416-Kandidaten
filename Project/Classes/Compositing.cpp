@@ -96,8 +96,8 @@ void Compositing::Render() {
 	//}
 
     manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
-
-
+	InfoRetriever* NiceBajs = manager->getInfoRetriever();
+	string tmp = manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName;
   
 
 	string uvString;
@@ -357,7 +357,7 @@ void Compositing::Initialize() {
 	manager->createTexture2D("FirstSRVRTV");
 
 	// Add image on an SRV (base filepath will be set to the assets folder automatically)
-	manager->attachImage("BlueCircles.png", "PlayerSRV");
+	//manager->attachImage("BlueCircles.png", "PlayerSRV");
 
 
 
