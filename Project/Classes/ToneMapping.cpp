@@ -114,9 +114,9 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->Draw(4, 0);
 
 	//Save everyframe. 
-	//string fileName = "..\\Results\\image" + std::to_string(m_frameCount) + ".png";
-	//manager->saveImage(fileName, manager->pBackBuffer);
-	//m_frameCount++;
+	string fileName = "..\\Results\\image" + std::to_string(m_frameCount) + ".png";
+	manager->saveImage(fileName, manager->pBackBuffer);
+	m_frameCount++;
 }
 
 void ToneMapping::Initialize() {

@@ -107,9 +107,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		}
 	}
 
-	//int videoCreated = system("cd FFMPEG\\bin && ffmpeg.exe -i ..\\..\\Results\\image%d.png -y -f avi -r 24 -an -vframes 100  ..\\..\\Results\\test.avi"); //image%03d.png
-	//if (videoCreated != 0)
-	//	system("echo An error has occured! Make sure the FFMPEG folder has not been moved. && pause");
+	int videoCreated = system("cd FFMPEG\\bin && ffmpeg.exe -i ..\\..\\Results\\image%d.png -y -f avi -c:v huffyuv  ..\\..\\Results\\test.avi"); //image%03d.png
+	
+	if (videoCreated != 0)
+		system("echo An error has occured! Make sure the FFMPEG folder has not been moved. && pause");
 
 	DestroyWindow(*windowManager->getWindowHandle());
 	AppContext.Shutdown();
