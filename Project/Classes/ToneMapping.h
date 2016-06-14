@@ -31,6 +31,8 @@ private:
 	ID3D11Texture2D* mipTexture;
 	int reinhardKey = 36;
 	//ID3D11Texture2D* reinhardCPUtext;
+
+	int m_frameCount;
 };
 
 #endif
