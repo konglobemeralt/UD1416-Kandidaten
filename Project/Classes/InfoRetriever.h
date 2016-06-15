@@ -72,7 +72,8 @@ private:
         {
             do 
             {
-                int fileNameSize = lstrlen(data.cFileName) + 1;
+				
+                int fileNameSize = (lstrlen(data.cFileName) + 1);
 
                 char* fileNamePointer = new char[fileNameSize];
                 for (int i = 0; i < fileNameSize; i++)
@@ -97,6 +98,9 @@ private:
         FindClose(hFind);
         
     }
+
+
+
 
     void SortNamesAndFiles()
     {
@@ -215,7 +219,8 @@ private:
                 currIndex++;
             }
 
-            for (int y = 0; y < fileNameSizes[i]; y++)
+			
+            for (int y = 0; y < filePathSize + 1; y++)
             {
                 filePath[currIndex] = fileNames[i][y];
                 currIndex++;

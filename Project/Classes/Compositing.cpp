@@ -97,9 +97,9 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
 	//}
 
+
     manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
-	InfoRetriever* NiceBajs = manager->getInfoRetriever();
-	string tmp = manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName;
+	
   
 
 	string uvString;
@@ -245,14 +245,14 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 
 	
 	//Byt spelarbild vid frameIndex, kolla om inom antal tillgängliga spelare
-	if (m_imageCount == m_playerChangeFrame[currPlayerIndex] && currPlayerIndex <  manager->getInfoRetriever()->playerInfo.size())
+	if (m_imageCount == m_playerChangeFrame[currPlayerIndex] && currPlayerIndex <  manager->getInfoRetriever()->playerInfo.size()-1)
 	{
 		currPlayerIndex++;
-
 	}
 	m_imageCount++;
+
 	InfoRetriever* coolInfoRetreiver = manager->getInfoRetriever();
-	int hej = 0;
+
 	//if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
 	//{
 	//	currPlayerIndex = 0;
