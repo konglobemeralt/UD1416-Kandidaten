@@ -244,19 +244,22 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	gdeviceContext->Draw(4, 0);
 
 	
-	//TODO: fixa till att bara köras vid frame intervals
-	if (m_imageCount == m_playerChangeFrame[currPlayerIndex])
+	//Byt spelarbild vid frameIndex, kolla om inom antal tillgängliga spelare
+	if (m_imageCount == m_playerChangeFrame[currPlayerIndex] && currPlayerIndex <  manager->getInfoRetriever()->playerInfo.size())
 	{
 		currPlayerIndex++;
 
 	}
+	m_imageCount++;
+	InfoRetriever* coolInfoRetreiver = manager->getInfoRetriever();
+	int hej = 0;
 	//if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
 	//{
 	//	currPlayerIndex = 0;
 	//}
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
-	m_imageCount++;
+
 //	if (m_imageCount == m_imageSum+1)
 //		m_imageCount = m_startFrame;
 //	if (!m_shotTaken)
