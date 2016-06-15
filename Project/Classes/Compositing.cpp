@@ -245,25 +245,25 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 
 	
 	//TODO: fixa till att bara köras vid frame intervals
-	if (currPlayerIndex < manager->getInfoRetriever()->playerInfo.size())
+	if (m_imageCount == m_playerChangeFrame[currPlayerIndex])
 	{
 		currPlayerIndex++;
 
 	}
-	if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
-	{
-		currPlayerIndex = 0;
-	}
+	//if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
+	//{
+	//	currPlayerIndex = 0;
+	//}
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
 	m_imageCount++;
-	if (m_imageCount == m_imageSum+1)
-		m_imageCount = m_startFrame;
-	if (!m_shotTaken)
-	{
-		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
-		m_shotTaken = true;
-	}
+//	if (m_imageCount == m_imageSum+1)
+//		m_imageCount = m_startFrame;
+//	if (!m_shotTaken)
+//	{
+//		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
+//		m_shotTaken = true;
+//	}
 }
 
 void Compositing::Initialize() {

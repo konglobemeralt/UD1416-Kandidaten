@@ -21,9 +21,9 @@ public:
 	void SetText(ID3D11ShaderResourceView* text[3]);
 private:
 	GraphicsManager* m_graphicsManager;
-	UINT m_startFrame = 80;
-	UINT m_imageCount = 80;
-	UINT m_imageSum = 80;
+	UINT m_startFrame = 0;
+	UINT m_imageCount = 0;
+	UINT m_imageSum = 0;
 	string m_UVFrame;
 	string m_UVReflectionFrame;
 	string m_beautyFrame;
@@ -69,6 +69,35 @@ private:
 	ID3D11Texture2D* texture;
 
     int currPlayerIndex = 0;
+
+	int m_playerChangeFrame[25] =
+	{
+		10,
+		20,
+		30,
+		40,
+		50,
+		60,
+		70,
+		80,
+		90,
+		100,
+		110,
+		120,
+		130,
+		140,
+		150,
+		160,
+		170,
+		180,
+		190,
+		200,
+		210,
+		220,
+		230,
+		240,
+		250
+	};
 };
 
 #endif
