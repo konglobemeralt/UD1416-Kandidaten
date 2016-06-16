@@ -32,15 +32,14 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 
 	//// AVG LUMINANCE PASS
 	mipBuffer.mipLevel = { textureWidth,	// miplevel
-		1,				// Max(0) or Avg(1) Luminance, or final render(2)
-		0,				// Unassigned
-		0				// Unassigned
+		1,									// Max(0) or Avg(1) Luminance, or final render(2)
+		0,									// Unassigned
+		0									// Unassigned
 	};
+
 	deviceContext->UpdateSubresource(resources.constantBuffers["REINHARD_ConstantBuffer"], 0, nullptr, &mipBuffer, 0, 0);
 	deviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["REINHARD_AvgLuminance_SRV_and_RTV"], nullptr);
 
-	//manager->attachImage("ToneMapping/Reinhard/texttest3.tif", "REINHARD_SRV");
-	//deviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["REINHARD_SRV"]);
 	if (shaderresource.empty())
 		return;
 	else
@@ -49,7 +48,7 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->Draw(4, 0);
 	manager->generateMips("REINHARD_AvgLuminance_SRV_and_RTV", "REINHARD_AvgLuminance_SRV_and_RTV");
 
-	//// FINAL RENDER
+	//// RENDER CONTROLS
 	UINT SHIFT = 0x10;
 	UINT CTRL = 0x11;
 	UINT G = 0x47;
@@ -65,7 +64,6 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 			reinhardKey		// Key
 		};
 	}
-
 	//// TOGGLE LOCAL
 	else if (GetAsyncKeyState(L)) {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
@@ -74,7 +72,6 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 			reinhardKey		// Key
 		};
 	}
-
 	//// NO TMO
 	else {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
@@ -88,7 +85,7 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	//if (GetAsyncKeyState(SHIFT)) {
 	//	mipBuffer.mipLevel.z += 3;
 	//}
-
+	//
 	//// ADJUST KEY
 	//if (GetAsyncKeyState(ADD)) {
 	//	if (GetAsyncKeyState(CTRL))
@@ -112,11 +109,6 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["REINHARD_AvgLuminance_SRV_and_RTV"]);
 
 	deviceContext->Draw(4, 0);
-
-	//Save everyframe. 
-	//string fileName = "..\\Results\\image" + std::to_string(m_frameCount) + ".png";
-	//manager->saveImage(fileName, manager->pBackBuffer);
-	//m_frameCount++;
 }
 
 void ToneMapping::Initialize() {
