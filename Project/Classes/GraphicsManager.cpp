@@ -43,7 +43,9 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	data.pSysMem = triangleVertices;
 	gDevice->CreateBuffer(&bufferDesc, &data, &gQuadBuffer);
 
-	this->createTexture2D("pipeline_SRV_RTV", DXGI_FORMAT_R32G32B32A32_FLOAT, this->getWindowWidth(), this->getWindowHeight(), true, true);
+	// need 2 texture2d because cant read and write from/to same object. so pingpong between 2 objects. 
+	this->createTexture2D("pipeline_SRV_RTV1", DXGI_FORMAT_R32G32B32A32_FLOAT, this->getWindowWidth(), this->getWindowHeight(), true, true);
+	this->createTexture2D("pipeline_SRV_RTV2", DXGI_FORMAT_R32G32B32A32_FLOAT, this->getWindowWidth(), this->getWindowHeight(), true, true);
 }
 
 void GraphicsManager::Render() {
@@ -65,11 +67,11 @@ void GraphicsManager::Render() {
 		ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	case ALL:
-		ApplicationContext::GetInstance().GetCompositingObject()->Render("", "pipeline_SRV_RTV");
+		ApplicationContext::GetInstance().GetCompositingObject()->Render("", "pipeline_SRV_RTV1");
 		//ApplicationContext::GetInstance().GetCompositingObject()->SetText(
 		//ApplicationContext::GetInstance().GetTextObject()->GetText());
-		ApplicationContext::GetInstance().GetToneMappingObject()->Render("pipeline_SRV_RTV", "");
-		//ApplicationContext::GetInstance().GetAntiAliasingObject()->Render("pipeline_SRV_RTV", "");
+		ApplicationContext::GetInstance().GetToneMappingObject()->Render("pipeline_SRV_RTV1", "pipeline_SRV_RTV2");
+		ApplicationContext::GetInstance().GetAntiAliasingObject()->Render("pipeline_SRV_RTV2", "");
 		//ApplicationContext::GetInstance().GetLightningObject()->Render();
 		break;
 	default:

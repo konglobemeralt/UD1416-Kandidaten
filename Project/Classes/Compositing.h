@@ -47,7 +47,7 @@ private:
 	bool m_renderReflectionDistorion= true;
 	bool m_renderIrradiance			= true;
 	bool m_renderReflection			= true;
-	bool m_renderIndirect =			true;
+	bool m_renderIndirect			= true;
 	bool m_renderText				= true;
 
 	struct EnabledTextures
