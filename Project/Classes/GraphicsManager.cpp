@@ -215,10 +215,6 @@ ID3D11RenderTargetView** GraphicsManager::getBackbuffer() {
 	return &gBackbufferRTV;
 }
 
-//ID3D11RenderTargetView** GraphicsManager::getBackbufferRTV() {
-//	return &gBackbufferRTV2;
-//}
-
 ID3D11ShaderResourceView** GraphicsManager::getBackbufferSRV() {
 	return &gBackbufferSRV;
 }

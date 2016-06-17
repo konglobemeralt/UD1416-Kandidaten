@@ -4,10 +4,8 @@
 
 ToneMapping::ToneMapping()
 {
-	// ########################################################
-	// ## Change width/height on SRV/RTV to match image size ##
-	// ########################################################
-	m_frameCount = 0;
+	// THIS COULD WORK IN FUTURE:
+	// this->Initialize();
 }
 
 ToneMapping::~ToneMapping()
@@ -24,7 +22,6 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->IASetInputLayout(resources.inputLayouts["REINHARD_Layout"]);
 	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	deviceContext->VSSetShader(resources.vertexShaders["REINHARD_VertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["REINHARD_PixelShader"], nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
 	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["REINHARD_ConstantBuffer"]);
@@ -59,25 +56,25 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	//// TOGGLE GLOBAL
 	if (GetAsyncKeyState(G)) {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
-			2,				// Max(0) or Avg(1) Luminance, or final render(2)
-			0,				// Global(0) or Local(1) TMO, or no TMO(2)
-			reinhardKey		// Key
+			2,									// Max(0) or Avg(1) Luminance, or final render(2)
+			0,									// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey							// Key
 		};
 	}
 	//// TOGGLE LOCAL
 	else if (GetAsyncKeyState(L)) {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
-			2,				// Max(0) or Avg(1) Luminance, or final render(2)
-			1,				// Global(0) or Local(1) TMO, or no TMO(2)
-			reinhardKey		// Key
+			2,									// Max(0) or Avg(1) Luminance, or final render(2)
+			1,									// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey							// Key
 		};
 	}
 	//// NO TMO
 	else {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
-			2,				// Max(0) or Avg(1) Luminance, or final render(2)
-			2,				// Global(0) or Local(1) TMO, or no TMO(2)
-			reinhardKey		// Key
+			2,									// Max(0) or Avg(1) Luminance, or final render(2)
+			2,									// Global(0) or Local(1) TMO, or no TMO(2)
+			reinhardKey							// Key
 		};
 	}
 

@@ -12,8 +12,6 @@ AntiAliasing::~AntiAliasing()
 
 }
 
-
-
 void AntiAliasing::Render(string shaderresource, string rendertarget) {
 
 	manager->ResetViews();
@@ -28,22 +26,15 @@ void AntiAliasing::Render(string shaderresource, string rendertarget) {
 	UINT offset = 0;
 
 	//ResetFreeLookCamera();
-
 	//gdeviceContext->OMSetRenderTargets(1, &m_graphicsManager->thesisData.renderTargetViews["HighResRTV"], nullptr); //sätt in rendertarget här om man nu vill skriva till texture!
 	//gdeviceContext->ClearRenderTargetView(m_graphicsManager->thesisData.renderTargetViews["HighResRTV"], clearColor);
-
 	//gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	//gdeviceContext->IASetInputLayout(m_graphicsManager->thesisData.inputLayouts["AASimpleLayout"]);
-
 	//gdeviceContext->PSSetConstantBuffers(0, 1, &m_graphicsManager->thesisData.constantBuffers["FXAA_PS_cb"]);
-
 	//gdeviceContext->PSSetShaderResources(0, 1, &m_graphicsManager->thesisData.shaderResourceViews["SSAA_Test"]);
-
 	//gdeviceContext->VSSetShader(m_graphicsManager->thesisData.vertexShaders["SimpleVertexShader"], nullptr, 0);
 	//gdeviceContext->PSSetShader(m_graphicsManager->thesisData.pixelShaders["SSAA_PS"], nullptr, 0);
-
 	//gdeviceContext->IASetVertexBuffers(0, 1, m_graphicsManager->getQuad(), &vertexSize, &offset);
-
 	//gdeviceContext->Draw(4, 0);
 	//går ej!!!!!!!
 	
@@ -179,7 +170,6 @@ void AntiAliasing::InitTextures()
 	//		bool renderTarget = true,
 	//		bool shaderResource = true
 	//	);
-
 	//m_graphicsManager->createTexture2D( //shaderresource
 	//	"FXAA_Test",
 	//	DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -188,7 +178,6 @@ void AntiAliasing::InitTextures()
 	//	false,
 	//	true
 	//);
-
 	//m_graphicsManager->createTexture2D( //shaderresource
 	//	"SSAA_Test",
 	//	DXGI_FORMAT_R32G32B32A32_FLOAT,

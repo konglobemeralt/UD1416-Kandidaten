@@ -1,4 +1,8 @@
 #include <string>
+
+#include <crtdbg.h>
+#include <iostream>
+
 #include "WindowManager.h"
 #include "GraphicsManager.h"
 #include "DataStructures.h"
@@ -50,7 +54,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	CoInitialize(NULL);
+
+	// CONSIDER ADDING CONFIG FILE INSTEAD OF USING ARGS
+	//the calling application must free the memory used by the argument list when it is no longer needed. To free the memory, use a single call to the LocalFree function.
+	int numArgs;
+	LPWSTR cmd = GetCommandLineW();
+	LPWSTR* argList = CommandLineToArgvW(cmd, &numArgs);
+	if (argList == NULL)
+		return 0;
+
+	vector<LPWSTR> cmdline;
+	for (unsigned int i = 0; i < numArgs; i++) {
+		cmdline.push_back(argList[i]);
+	}
+	LocalFree(argList);
+
 	ApplicationContext::Startup();
 	setUser();
 	//WindowManager windowManager(hInstance, WndProc);
