@@ -108,8 +108,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		{
 			currentFrame = timeGetTime();
 
-			float fps = 1 / ((currentFrame - lastFrame) * 0.001);
-			int seconds = 1500 / fps;
+			float fps = 1 / ((currentFrame - lastFrame) * 0.001f);
+			int seconds = (int)(1500 / fps);
 			int hh = (seconds / 60) / 60;
 			seconds -= (hh * 60) * 60;
 			int mm = seconds / 60;
@@ -119,7 +119,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			headerMessage.append(L"Uptime: " + to_wstring((unsigned int)uptime) + L"   FPS: " + to_wstring(fps) + L"    (Time to render 25 players á 60 frames: " + to_wstring(hh) + L"h " + to_wstring(mm) + L"m " + to_wstring(seconds) + L"s)");
 			SetWindowText(*windowManager->getWindowHandle(), headerMessage.c_str());
 			
-			uptime += ((currentFrame - lastFrame) * 0.001);
+			uptime += ((currentFrame - lastFrame) * 0.001f);
 			lastFrame = currentFrame;
 			
 			AppContext.GetGraphicsManager()->Render();

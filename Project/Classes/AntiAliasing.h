@@ -33,7 +33,7 @@ private:
 	void updateFreeLookCamera();
 	void ResetFreeLookCamera();
 
-	float speed = 0.001;
+	float speed = 0.001f;
 
 	XMFLOAT4 worldForward, worldRight, camForward, camRight;
 	XMFLOAT4X4 ViewSpace;

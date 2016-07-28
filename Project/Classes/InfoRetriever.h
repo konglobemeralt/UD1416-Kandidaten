@@ -101,7 +101,7 @@ private:
     void SortNamesAndFiles()
     {
         //int maxIndex = 0, minIndex = 0;
-        for (int i = 0; i < fileNames.size(); i++)
+        for (unsigned int i = 0; i < fileNames.size(); i++)
         {
             int playerOrder = 0;
             int startNameIndex = 0;
@@ -174,9 +174,9 @@ private:
             playerNr.push_back(playerNR);
         }
         //sortera!
-        for (int i = 0; i < fileNames.size(); i++)
+        for (unsigned int i = 0; i < fileNames.size(); i++)
         {
-            for (int y = 0; y < fileNames.size(); y++)
+            for (unsigned int y = 0; y < fileNames.size(); y++)
             {
                 if (playerOrderNr[i] < playerOrderNr[y])
                 {
@@ -200,7 +200,7 @@ private:
             }
         }
 
-		for (int i = 0; i < fileNames.size(); i++)
+		for (unsigned int i = 0; i < fileNames.size(); i++)
 		{
 			PlayerInfo pInfo;
 
@@ -209,13 +209,13 @@ private:
             char* filePath = new char[filePathSize];
             int currIndex = 0;
 
-            for (int y = 0; y < filePathstring.length(); y++)
+            for (unsigned int y = 0; y < filePathstring.length(); y++)
             {
                 filePath[currIndex] = filePathstring.at(y);
                 currIndex++;
             }
 
-            for (int y = 0; y < fileNameSizes[i]; y++)
+            for (unsigned int y = 0; y < fileNameSizes[i]; y++)
             {
                 filePath[currIndex] = fileNames[i][y];
                 currIndex++;

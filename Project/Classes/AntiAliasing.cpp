@@ -259,7 +259,7 @@ void AntiAliasing::updateFreeLookCamera()
 	XMCamUp = XMLoadFloat4(&camUp);
 
 	XMViewSpace = XMMatrixLookAtLH(XMCamPos, XMCamLook, XMCamUp);
-	Projection = XMMatrixPerspectiveFovLH(3.14*0.45, m_graphicsManager->getWindowWidth() / m_graphicsManager->getWindowHeight(), 0.01f, 20.0f); //	FLOAT FovAngleY, FLOAT AspectRatio, FLOAT NearZ, FLOAT FarZ
+	Projection = XMMatrixPerspectiveFovLH(3.14f*0.45f, (float)(m_graphicsManager->getWindowWidth() / m_graphicsManager->getWindowHeight()), 0.01f, 20.0f); //	FLOAT FovAngleY, FLOAT AspectRatio, FLOAT NearZ, FLOAT FarZ
 																																				//Projection = XMMatrixOrthographicLH(20, 20, 0.5f, 20.0f);
 	World = XMMatrixIdentity();
 	WVP = World * XMViewSpace * Projection;

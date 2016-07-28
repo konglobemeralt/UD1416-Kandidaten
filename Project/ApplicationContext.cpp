@@ -25,8 +25,8 @@ ApplicationContext::~ApplicationContext()
 {
 	delete m_antiAliasing;
 	m_antiAliasing = nullptr;
-	delete m_text;
-	m_text = nullptr;
+	//delete m_text;
+	//m_text = nullptr;
 	delete m_lightning;
 	m_lightning = nullptr;
 	delete m_compositing;

@@ -22,6 +22,7 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->IASetInputLayout(resources.inputLayouts["REINHARD_Layout"]);
 	deviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	deviceContext->VSSetShader(resources.vertexShaders["VertexShader"], nullptr, 0);
 	deviceContext->PSSetShader(resources.pixelShaders["REINHARD_PixelShader"], nullptr, 0);
 	deviceContext->PSSetSamplers(0, 1, &resources.samplerStates["REINHARD_SamplerWrap"]);
 	deviceContext->PSSetConstantBuffers(0, 1, &resources.constantBuffers["REINHARD_ConstantBuffer"]);
@@ -126,7 +127,7 @@ void ToneMapping::Initialize() {
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	manager->createVertexShader("REINHARD_VertexShader", "REINHARD_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
+	manager->createVertexShader("VertexShader", "REINHARD_Layout", layoutDesc, ARRAYSIZE(layoutDesc));
 
 	// #### PIXEL SHADER
 	manager->createPixelShader("REINHARD_PixelShader"); // Name has to match shader name without .hlsl

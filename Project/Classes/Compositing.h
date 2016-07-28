@@ -68,7 +68,7 @@ private:
 	// Eriks test
 	ID3D11Texture2D* texture;
 
-    int currPlayerIndex = 0;
+	unsigned int currPlayerIndex = 0;
 };
 
 #endif
