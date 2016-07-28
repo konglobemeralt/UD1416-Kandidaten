@@ -48,6 +48,26 @@ void GraphicsManager::initGraphics(HWND* hwnd) {
 	this->createTexture2D("pipeline_SRV_RTV2", DXGI_FORMAT_R32G32B32A32_FLOAT, this->getWindowWidth(), this->getWindowHeight(), true, true);
 }
 
+GraphicsManager::~GraphicsManager()
+{
+	gSwapChain->Release();
+	gDevice->Release();
+	gDeviceContext->Release();
+	gBackbufferRTV->Release();
+	gBackbufferSRV->Release();
+	
+	//windowHandle != nullptr ? delete windowHandle : NULL;
+	//gQuadBuffer != nullptr ? delete gQuadBuffer : NULL;
+	//rasterState != nullptr ? delete rasterState : NULL;
+	infoRetriever != nullptr ? delete infoRetriever : NULL;
+	//pBackBuffer != nullptr ? delete pBackBuffer : NULL;
+	//ID3D11DepthStencilView* emptyDSV;
+	//ID3D11RenderTargetView* emptyRTV[4];
+	//ID3D11ShaderResourceView* emptySRV[8];
+
+
+}
+
 void GraphicsManager::Render() {
 	switch (ApplicationContext::GetInstance().GetUser())
 	{

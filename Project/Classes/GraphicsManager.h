@@ -59,6 +59,7 @@ public:
 		return instance;
 	}*/
 	GraphicsManager() {};
+	~GraphicsManager();
 	void Render();
 	
 	UINT windowWidth = 960;

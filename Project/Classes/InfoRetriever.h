@@ -18,14 +18,18 @@ public:
     InfoRetriever() {}
     ~InfoRetriever()
     {
-        //for (int i = 0; i < playerInfo.size(); i++)
-        //{
-        //    delete(playerInfo[i].fileName);
-
-        //    delete(playerInfo[i].playerName.firstName);
-        //    delete(playerInfo[i].playerName.lastName);
-        //}
-        //playerInfo.clear();
+        for (unsigned int i = 0; i < playerInfo.size(); i++)
+        {
+            delete playerInfo[i].fileName;
+            delete playerInfo[i].playerName.firstName;
+            delete playerInfo[i].playerName.lastName;
+        }
+        playerInfo.clear();
+		fileNames.clear();
+		fileNameSizes.clear();
+		playerOrderNr.clear();
+		playerNr.clear();
+		playerNames.clear();
     }
 private:
     struct PlayerName
