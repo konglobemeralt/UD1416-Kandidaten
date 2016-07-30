@@ -95,11 +95,27 @@ struct VS_OUT {
 	float2 Tex : TEXCOORD;
 };
 
+
+SamplerState sampler_linear_clamp
+{
+	Filter = MIN_MAG_MIP_LINEAR;
+	AddressU = Clamp;
+	AddressV = Clamp;
+};
+
+
+
+
 float4 PS_main(VS_OUT input) : SV_TARGET
 {
 	//float4 outColor;
 
-	float2x2 rotationMatrix = float2x2(0, 1, -1, 0);
+
+
+	//float2x2 rotationMatrix = float2x2(0, 1, -1, 0);
+	//SamplerWrap.SampleLevel(PlayerSRV, 0, 3);
+	//UVSRV.SampleLevel(sampler_linear_clamp, 0, 0);
+	//PlayerSRV.SampleLevel(sampler_linear_clamp, 0, 0);
 
 	float4 tempBeauty = BackgroundSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempUV = UVSRV.Sample(SamplerWrap, input.Tex);
@@ -112,11 +128,14 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 tempIndirect = IndirectSRV.Sample(SamplerWrap, input.Tex);
 	float4 tempPlayer = PlayerSRV.Sample(SamplerWrap, tempUV);
 	float4 tempPlayerReflection = PlayerSRV.Sample(SamplerWrap, tempUVRef);
+
 	//return tempPlayer;
+	//return tempUV;
 
 	//Text planes
 	float4 tempText1 = Text1SRV.Sample(SamplerWrap, input.Tex);
 	float4 textyTest1 = FirstNameSRV.Sample(SamplerWrap, saturate(tempText1));
+
 
 	float4 tempText2 = Text2SRV.Sample(SamplerWrap, input.Tex);
 	float4 textyTest2 = LastNameSRV.Sample(SamplerWrap, saturate(tempText2));
@@ -127,7 +146,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 	float4 playerColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 playerReflectionColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	
+
 
 	//float4 backgroundColor = float4(tempDiffuse + tempSpecular + tempReflection * tempIrradiance + tempIndirect);
 	//if (tempSpecular.b < .99)
@@ -172,7 +191,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		//1. Additive
 		//2. Multiplicative
 		//3. Screen
-		int blendMode = 2;
+		int blendMode = 1;
 		float multiplier = 1.0f;
 		//Player on puck
 		if ((tempUV.w > 0.999) && tempPlayer.w != 0)
@@ -180,12 +199,12 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 			playerColor = tempPlayer;
 			if (blendMode == 0)
 			{
-				return float4(pow(playerColor, 1 / 2.2));
+				return float4(pow(PlayerSRV.Sample(SamplerWrap, UVSRV.Sample(SamplerWrap, input.Tex)), 1 / 1.4));
 			}
 			if (blendMode == 1)
 			{
-				
-				return float4(pow(saturate(Additive(backgroundColor, playerColor)), 1 / 2.2));
+
+				return float4(pow(saturate(Additive(backgroundColor, playerColor)), 1 / 1.5));
 
 			}
 			else if (blendMode == 2)
@@ -237,13 +256,13 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 		}
 		//float4 outColor = float4(pow(saturate((tempDiffuse*tempDiffuse.w) + (tempSpecular*tempSpecular.w) + (tempReflection*tempReflection.w) /*tempIrradiance*/), 1.0 / 2.2));
 		//float4 outColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-		float4 outColor = float4(pow(saturate(backgroundColor), 1/2.2));
+		float4 outColor = float4(pow(saturate(backgroundColor), 1 / 2.2));
 		return outColor;
 	}
-	
+
 	else
 	{
-		return float4(pow((tempBeauty), 1.0/2.2));
+		return float4(pow((tempBeauty), 1.0 / 2.2));
 	}
 
 
@@ -252,7 +271,7 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 	//return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	//Background
-	
+
 	/*float4 outColor;
 	outColor = tempPlayerReflection + playerColor;
 	return outColor;*/

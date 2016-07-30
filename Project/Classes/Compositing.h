@@ -21,9 +21,9 @@ public:
 	void SetText(ID3D11ShaderResourceView* text[3]);
 private:
 	GraphicsManager* m_graphicsManager;
-	UINT m_startFrame = 80;
-	UINT m_imageCount = 80;
-	UINT m_imageSum = 80;
+	UINT m_startFrame = 150;
+	UINT m_imageCount = 150;
+	UINT m_imageSum = 0;
 	string m_UVFrame;
 	string m_UVReflectionFrame;
 	string m_beautyFrame;
@@ -36,19 +36,19 @@ private:
 	string m_textFrame1;
 	string m_textFrame2;
 	string m_textFrame3;
-	
-	bool m_renderSequence = false;
 
-	bool m_renderUV					= true;
-	bool m_renderUVReflection		= true;
-	bool m_renderBeauty				= true;
-	bool m_renderDiffuse			= true;
-	bool m_renderSpecular			= true;
-	bool m_renderReflectionDistorion= true;
-	bool m_renderIrradiance			= true;
-	bool m_renderReflection			= true;
-	bool m_renderIndirect			= true;
-	bool m_renderText				= true;
+	bool m_renderSequence = true;
+
+	bool m_renderUV = true;
+	bool m_renderUVReflection = true;
+	bool m_renderBeauty = true;
+	bool m_renderDiffuse = true;
+	bool m_renderSpecular = true;
+	bool m_renderReflectionDistorion = true;
+	bool m_renderIrradiance = true;
+	bool m_renderReflection = true;
+	bool m_renderIndirect = true;
+	bool m_renderText = true;
 
 	struct EnabledTextures
 	{
@@ -68,7 +68,36 @@ private:
 	// Eriks test
 	ID3D11Texture2D* texture;
 
-	unsigned int currPlayerIndex = 0;
+	int currPlayerIndex = 0;
+
+	int m_playerChangeFrame[25] =
+	{
+		177,
+		231,
+		310,
+		395,
+		50,
+		60,
+		70,
+		80,
+		90,
+		100,
+		110,
+		120,
+		130,
+		140,
+		150,
+		160,
+		170,
+		180,
+		190,
+		200,
+		210,
+		220,
+		230,
+		240,
+		100
+	};
 };
 
 #endif

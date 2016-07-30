@@ -20,7 +20,7 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 
 	//gdeviceContext->OMSetRenderTargets(1, manager->getBackbuffer(), nullptr);
 	//gdeviceContext->ClearRenderTargetView(*manager->getBackbufferRTV(), clearColor);
-	
+
 
 	gdeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	gdeviceContext->IASetInputLayout(resources.inputLayouts["CompositingLayout"]);
@@ -33,55 +33,55 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//Find correct background and UV images to sample from
 	if (m_imageCount <= 9)
 	{
-		framePadding = "00";
+		framePadding = "0";
 	}
 	else if (m_imageCount > 9 && m_imageCount < 100)
 	{
-		framePadding = "0";
+		framePadding = "";
 	}
 	else
 	{
-		framePadding = "";
+		framePadding = "0";
 	}
-		
+
 
 	//Switch image to composit depending on frame
 	/*if (imageCount == 0)
 	{
-		manager->attachImage("dickbutt.png", "PlayerSRV");
+	manager->attachImage("dickbutt.png", "PlayerSRV");
 	}
 
 	if (imageCount == 79)
 	{
-		manager->attachImage("Pepe.png", "PlayerSRV");
+	manager->attachImage("Pepe.png", "PlayerSRV");
 	}
 
 	if (imageCount == 120)
 	{
-		manager->attachImage("bert.png", "PlayerSRV");
+	manager->attachImage("bert.png", "PlayerSRV");
 	}
 
 
 	if (imageCount == 175)
 	{
-		manager->attachImage("trump.png", "PlayerSRV");
+	manager->attachImage("trump.png", "PlayerSRV");
 	}
 
 	if (imageCount == 242)
 	{
-		manager->attachImage("putin.png", "PlayerSRV");
-		
+	manager->attachImage("putin.png", "PlayerSRV");
+
 	}
 
 	if (imageCount == 284)
 	{
-		manager->attachImage("putin2.png", "PlayerSRV");
+	manager->attachImage("putin2.png", "PlayerSRV");
 
 	}
 
 	if (imageCount == 329)
 	{
-		manager->attachImage("putin.png", "PlayerSRV");
+	manager->attachImage("putin.png", "PlayerSRV");
 	}*/
 
 	//if (m_imageCount == 2)
@@ -97,10 +97,11 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
 	//}
 
-    manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
-	InfoRetriever* NiceBajs = manager->getInfoRetriever();
-	string tmp = manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName;
-  
+
+	manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
+	gdeviceContext->GenerateMips(resources.shaderResourceViews["PlayerSRV"]);
+
+
 
 	string uvString;
 	string uvRefString;
@@ -117,25 +118,25 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//Concatenate to filename to find correct UV and Backgroudn image.
 	if (m_renderSequence)
 	{
-		uvString			= m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
-		uvRefString		= m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".png";
-		beautyString		= m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
-		diffuseString	= m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
-		specularString	= m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
-		refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".png";
-		irradianceString		= m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
-		reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
-		indirectString = m_indirectFrame + framePadding + to_string(m_imageCount) + ".png";
-		textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
-		textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
-		textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
+		uvString = m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
+		uvRefString = m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".tif";
+		beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".tif";
+		diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".tif";
+		specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".tif";
+		refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".tif";
+		irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".tif";
+		reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".tif";
+		indirectString = m_indirectFrame + framePadding + to_string(m_imageCount) + ".tif";
+		textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".tif";
+		textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".tif";
+		textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".tif";
 	}
 	else
 	{
-		uvString = m_UVFrame + ".png";
+		uvString = m_UVFrame + ".tif";
 		uvRefString = m_UVReflectionFrame + ".png";
 		beautyString = m_beautyFrame + ".png";
-		diffuseString = m_diffuseFrame  + ".png";
+		diffuseString = m_diffuseFrame + ".png";
 		specularString = m_specularFrame + ".png";
 		refDistortString = m_refDistortFrame + ".png";
 		irradianceString = m_irradianceFrame + ".png";
@@ -197,7 +198,7 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	}
 	if (m_renderText)
 	{
-		manager->attachImage("textPlane1/untitled.046.png", "Text1SRV");
+		manager->attachImage(textPlane1String, "Text1SRV");
 		gdeviceContext->PSSetShaderResources(10, 1, &resources.shaderResourceViews["Text1SRV"]);
 
 		manager->attachImage(textPlane2String, "Text2SRV");
@@ -220,13 +221,17 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 
 	//manager->attachImage(cat, "UVSRV");
 	//manager->attachImage(cat2, "BackgroundSRV");
-	
-	
+
+
 	/*gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["UVSRV"]);
 	gdeviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["PlayerSRV"]);
 	gdeviceContext->PSSetShaderResources(2, 1, &resources.shaderResourceViews["BackgroundSRV"]);*/
 
+
+
+
 	gdeviceContext->PSSetSamplers(0, 1, &resources.samplerStates["SamplerWrap"]);
+
 
 	gdeviceContext->IASetVertexBuffers(0, 1, manager->getQuad(), &vertexSize, &offset);
 	gdeviceContext->OMSetRenderTargets(1, &resources.renderTargetViews["Final"], nullptr);
@@ -243,27 +248,30 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	gdeviceContext->PSSetShaderResources(0, 1, &resources.shaderResourceViews["Final"]);
 	gdeviceContext->Draw(4, 0);
 
-	
-	//TODO: fixa till att bara köras vid frame intervals
-	if (currPlayerIndex < manager->getInfoRetriever()->playerInfo.size())
+
+	//Byt spelarbild vid frameIndex, kolla om inom antal tillgängliga spelare
+	if (m_imageCount == m_playerChangeFrame[currPlayerIndex])
 	{
 		currPlayerIndex++;
+	}
+	m_imageCount++;
 
-	}
-	if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
-	{
-		currPlayerIndex = 0;
-	}
+
+
+	//if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
+	//{
+	//	currPlayerIndex = 0;
+	//}
 	//Add 1 to image count and if 400 reset to 0 to create a loop.
 	//Sleep(5);
-	m_imageCount++;
-	if (m_imageCount == m_imageSum+1)
-		m_imageCount = m_startFrame;
-	if (!m_shotTaken)
-	{
-		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
-		m_shotTaken = true;
-	}
+
+	//	if (m_imageCount == m_imageSum+1)
+	//		m_imageCount = m_startFrame;
+	//	if (!m_shotTaken)
+	//	{
+	//		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
+	//		m_shotTaken = true;
+	//	}
 }
 
 void Compositing::Initialize() {
@@ -349,7 +357,7 @@ void Compositing::Initialize() {
 		true,
 		true,
 		texture
-	);
+		);
 
 	// Only SRV
 	manager->createTexture2D(
@@ -359,7 +367,7 @@ void Compositing::Initialize() {
 		manager->getWindowHeight(),
 		true,
 		false
-	);
+		);
 
 	// Both
 	manager->createTexture2D("FirstSRVRTV");
@@ -370,20 +378,20 @@ void Compositing::Initialize() {
 
 
 
-	m_UVFrame =					"RenderCube/UV/MasterBeauty_1080AA";
-	m_UVReflectionFrame =		"";
-	m_beautyFrame =				"RenderCube/Floor/f_DirrectIrradiance";
-	m_diffuseFrame =			"RenderCube/Floor/f_DiffuseMaterialColor";
-	m_specularFrame =			"RenderCube/Floor/f_Specular";
-	m_refDistortFrame =			"";
-	m_indirectFrame =			"RenderCube/Floor/f_Indirect";
-	//m_reflectionFrame =			"RenderCube/Floor/f_Reflection";
-	m_irradianceFrame =			"RenderCube/Floor/f_DirectIrradiance";
-	m_textFrame1 = "textPlane1/untitled.";
+	m_UVFrame = "KHK_Logo_Rink_Animation_Alpha_uvLayer/UVb_uv";
+	m_UVReflectionFrame = "";
+	m_beautyFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_diffuseFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_specularFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_refDistortFrame = "";
+	m_indirectFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_reflectionFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_irradianceFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_textFrame1 = "TextPlane/text_uv";
 	m_textFrame2 = "textPlane2/untitled.";
 	m_textFrame3 = "textPlane3/untitled.";
-	
-	
+
+
 	m_textureConstantBuffer.m_UV = m_renderUV;
 	m_textureConstantBuffer.m_UVRef = m_renderUVReflection;
 	m_textureConstantBuffer.m_beauty = m_renderBeauty;
@@ -408,6 +416,7 @@ void Compositing::Initialize() {
 	//	);
 
 	manager->createSamplerState("SamplerWrap", D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
+
 }
 
 void Compositing::SetText(ID3D11ShaderResourceView* text[3])

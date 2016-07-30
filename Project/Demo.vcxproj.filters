@@ -1,21 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="Shaders\CompositingPixelShader.hlsl" />
-    <FxCompile Include="Shaders\CompositingVertexShader.hlsl" />
-    <FxCompile Include="Shaders\FXAA_PS.hlsl" />
-    <FxCompile Include="Shaders\LightningDomainShader.hlsl" />
-    <FxCompile Include="Shaders\LightningGeometryShader.hlsl" />
-    <FxCompile Include="Shaders\LightningHullShader.hlsl" />
-    <FxCompile Include="Shaders\LightningPixelShader.hlsl" />
-    <FxCompile Include="Shaders\LightningVertexShader.hlsl" />
     <FxCompile Include="Shaders\PixelShader.hlsl" />
-    <FxCompile Include="Shaders\REINHARD_PixelShader.hlsl" />
-    <FxCompile Include="Shaders\SimpleVertexShader.hlsl" />
-    <FxCompile Include="Shaders\SSAA_PS.hlsl" />
     <FxCompile Include="Shaders\VertexShader.hlsl" />
-    <FxCompile Include="Shaders\Text_PS.hlsl" />
-    <FxCompile Include="Shaders\Text_VS.hlsl" />
     <FxCompile Include="Shaders\GAO_FinalPixelShader.hlsl">
       <Filter>Old</Filter>
     </FxCompile>
@@ -31,33 +18,114 @@
     <FxCompile Include="Shaders\MEYLAN_VertexShader.hlsl">
       <Filter>Old</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\CompositingVertexShader.hlsl">
+      <Filter>Compositing</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CompositingPixelShader.hlsl">
+      <Filter>Compositing</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningDomainShader.hlsl">
+      <Filter>Lightning</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningGeometryShader.hlsl">
+      <Filter>Lightning</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningHullShader.hlsl">
+      <Filter>Lightning</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningPixelShader.hlsl">
+      <Filter>Lightning</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightningVertexShader.hlsl">
+      <Filter>Lightning</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\FXAA_PS.hlsl">
+      <Filter>AntiAliasing</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SSAA_PS.hlsl">
+      <Filter>AntiAliasing</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\REINHARD_PixelShader.hlsl">
+      <Filter>ToneMapping</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleVertexShader.hlsl">
+      <Filter>AntiAliasing</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Text_PS.hlsl">
+      <Filter>Text</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Text_VS.hlsl">
+      <Filter>Text</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplicationContext.cpp" />
-    <ClCompile Include="Classes\AntiAliasing.cpp" />
-    <ClCompile Include="Classes\Compositing.cpp" />
-    <ClCompile Include="Classes\Lightning.cpp" />
     <ClCompile Include="Classes\main.cpp" />
     <ClCompile Include="Classes\GraphicsManager.cpp" />
-    <ClCompile Include="Classes\Text.cpp" />
-    <ClCompile Include="Classes\ToneMapping.cpp" />
     <ClCompile Include="Classes\WindowManager.cpp" />
+    <ClCompile Include="Classes\AntiAliasing.cpp">
+      <Filter>AntiAliasing</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Compositing.cpp">
+      <Filter>Compositing</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Lightning.cpp">
+      <Filter>Lightning</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\ToneMapping.cpp">
+      <Filter>ToneMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Text.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ApplicationContext.h" />
-    <ClInclude Include="Classes\AntiAliasing.h" />
-    <ClInclude Include="Classes\Compositing.h" />
-    <ClInclude Include="Classes\DataStructures.h" />
     <ClInclude Include="Classes\GraphicsManager.h" />
-    <ClInclude Include="Classes\Lightning.h" />
-    <ClInclude Include="Classes\Text.h" />
-    <ClInclude Include="Classes\ToneMapping.h" />
     <ClInclude Include="Classes\WindowManager.h" />
-    <ClInclude Include="Classes\InfoRetriever.h" />
+    <ClInclude Include="Classes\AntiAliasing.h">
+      <Filter>AntiAliasing</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Compositing.h">
+      <Filter>Compositing</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Lightning.h">
+      <Filter>Lightning</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\ToneMapping.h">
+      <Filter>ToneMapping</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Text.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\InfoRetriever.h">
+      <Filter>InfoRetreiver</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\DataStructures.h">
+      <Filter>InfoRetreiver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Old">
       <UniqueIdentifier>{ba04e680-067f-4483-a800-c3c3edb493fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AntiAliasing">
+      <UniqueIdentifier>{11474351-2f17-4a4a-980b-1a7fdd92619c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compositing">
+      <UniqueIdentifier>{7682f619-7d7e-48ab-b46a-be0cd3c81658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lightning">
+      <UniqueIdentifier>{2d6fc5c5-e2aa-439d-b539-54f38683a7bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ToneMapping">
+      <UniqueIdentifier>{20242f61-2199-4d97-b98a-7a5c93459e18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text">
+      <UniqueIdentifier>{67507a0a-b77f-4464-ac7a-30e7f881d2e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InfoRetreiver">
+      <UniqueIdentifier>{8cc2b5e8-fce5-46cf-9e2c-962cc7a21800}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
