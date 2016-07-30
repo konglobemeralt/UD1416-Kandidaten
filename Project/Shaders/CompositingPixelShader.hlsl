@@ -267,31 +267,4 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 
 
 
-
-
-	//return float4(0.0f, 0.0f, 0.0f, 0.0f);
-	//Background
-
-	/*float4 outColor;
-	outColor = tempPlayerReflection + playerColor;
-	return outColor;*/
-	/*float4 tempUV = UVSRV.Sample(SamplerWrap, input.Tex);
-	float4 tempUV2 = PlayerSRV.Sample(SamplerWrap, saturate(tempUV));
-
-
-	float4 tempUVBackground = BackgroundSRV.Sample(SamplerWrap, input.Tex);
-
-
-
-	float4 playerAmbient = float4(1.1f, 1.1f, 0.7f, 1.0f);
-	float4 funkyLight = float4(1.6f, 1.6f, 0.6f, 1.0f);
-
-
-	if (!(tempUV2.w < 0.5) && !(tempUV.z > 0))
-	{
-	return (playerAmbient * PlayerSRV.Sample(SamplerWrap, saturate(tempUV)) + (funkyLight * (PlayerSRV.Sample(SamplerWrap, saturate(tempUV))) * tempUVBackground));
-	}
-	else
-	return tempUVBackground;*/
-
 }
