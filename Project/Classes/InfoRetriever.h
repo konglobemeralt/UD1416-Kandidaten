@@ -30,6 +30,8 @@ public:
 		playerOrderNr.clear();
 		playerNr.clear();
 		playerNames.clear();
+
+		
     }
 private:
     struct PlayerName
@@ -45,7 +47,7 @@ private:
         PlayerName playerName;
     };
     
-    vector<char*> fileNames;
+    vector<string> fileNames;
     vector<int> fileNameSizes;
     vector<int> playerOrderNr; //innehåller i samma ordning som fileNames de olika spelar indexen
     vector<int> playerNr;
@@ -62,6 +64,9 @@ public:
     }
     //vector<char*> playerNames;
     //vector<char*> fileNamesSorted;
+	
+	char* fileNamePointer;
+
 
 private:
 
@@ -78,18 +83,23 @@ private:
             {
                 int fileNameSize = lstrlen(data.cFileName) + 1;
 
-                char* fileNamePointer = new char[fileNameSize];
-                for (int i = 0; i < fileNameSize; i++)
-                {
-                    fileNamePointer[i] = char(data.cFileName[i]);
-                }
+                fileNamePointer;
+                
+				wstring tempFileNamePointer = data.cFileName;
 
-                fileNamePointer[fileNameSize] = '\0';
+				//convert wstring to string
+				std::string fileNamePointer(tempFileNamePointer.begin(), tempFileNamePointer.end());
+                
+                
+
+                //fileNamePointer[fileNameSize] = '\0';
 
                 if (fileNamePointer[0] > 47 && fileNamePointer[0] < 58) { //är ett nummer
-                    fileNames.push_back(fileNamePointer);
+                    fileNames.push_back(fileNamePointer.c_str());
                     fileNameSizes.push_back(fileNameSize);
                 }
+
+				
 
             } while (FindNextFile(hFind, &data));
         }
@@ -185,7 +195,7 @@ private:
                 if (playerOrderNr[i] < playerOrderNr[y])
                 {
                     int tempPlayerOrderNr = playerOrderNr[i];
-                    char* tempName = fileNames[i];
+                    string tempName = fileNames[i];
                     PlayerName tempPlayerName = playerNames[i];
                     int tempPlayerNr = playerNr[i];
 
