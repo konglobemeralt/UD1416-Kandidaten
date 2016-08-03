@@ -97,9 +97,13 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
 	//}
 
+	//convert wstring to string
+	//std::wstring tempConvert(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName);
+	//std::string playerString(tempConvert.begin(), tempConvert.end());
+	
 
 	manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
-	gdeviceContext->GenerateMips(resources.shaderResourceViews["PlayerSRV"]);
+	
 
 
 
@@ -256,7 +260,7 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	}
 	m_imageCount++;
 
-
+	
 
 	//if (currPlayerIndex >  manager->getInfoRetriever()->playerInfo.size() -1)
 	//{
@@ -272,6 +276,8 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
 	//		m_shotTaken = true;
 	//	}
+
+	
 }
 
 void Compositing::Initialize() {
