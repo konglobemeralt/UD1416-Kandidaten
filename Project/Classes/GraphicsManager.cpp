@@ -115,6 +115,7 @@ ID3D11DeviceContext* GraphicsManager::getDeviceContext() {
 void GraphicsManager::setRasterstate(D3D11_CULL_MODE cullmode) {
 	D3D11_RASTERIZER_DESC rastDesc;
 
+	ID3D11Debug* DebugDevice = nullptr;
 	rastDesc.FillMode = D3D11_FILL_SOLID;
 	rastDesc.CullMode = cullmode;
 	rastDesc.FrontCounterClockwise = FALSE;

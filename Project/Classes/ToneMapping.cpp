@@ -107,6 +107,11 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->PSSetShaderResources(1, 1, &resources.shaderResourceViews["REINHARD_AvgLuminance_SRV_and_RTV"]);
 
 	deviceContext->Draw(4, 0);
+
+	//Save everyframe. 
+	string fileName = "..\\Results\\image" + std::to_string(m_frameCount) + ".png";
+	manager->saveImage(fileName, manager->pBackBuffer);
+	m_frameCount++;
 }
 
 void ToneMapping::Initialize() {

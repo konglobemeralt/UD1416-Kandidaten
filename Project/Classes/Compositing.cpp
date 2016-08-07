@@ -33,15 +33,19 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//Find correct background and UV images to sample from
 	if (m_imageCount <= 9)
 	{
-		framePadding = "0";
+		framePadding = "000";
 	}
 	else if (m_imageCount > 9 && m_imageCount < 100)
 	{
-		framePadding = "";
+		framePadding = "00";
+	}
+	else if (m_imageCount > 100 && m_imageCount < 999)
+	{
+		framePadding = "0";
 	}
 	else
 	{
-		framePadding = "0";
+		framePadding = "";
 	}
 
 
@@ -97,15 +101,17 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//	manager->attachImage("dickbutt3.png", "PlayerSRV");
 	//}
 
-	//convert wstring to string
-	//std::wstring tempConvert(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName);
-	//std::string playerString(tempConvert.begin(), tempConvert.end());
+
 	
-
-	manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
+	//alla spelare
+	//manager->attachImage(manager->getInfoRetriever()->playerInfo[currPlayerIndex].fileName, "PlayerSRV"); //hur ofta ska denna bytas? vid vilka frames?
 	
-
-
+	//tempPlayer
+	manager->attachImage("temp.png", "PlayerSRV");
+	
+	ID3D11Debug* DebugDevice = nullptr;
+	HRESULT hr = gdevice->QueryInterface(IID_PPV_ARGS(&DebugDevice));
+	DebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 
 	string uvString;
 	string uvRefString;
@@ -124,16 +130,16 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	{
 		uvString = m_UVFrame + framePadding + to_string(m_imageCount) + ".png";
 		uvRefString = m_UVReflectionFrame + framePadding + to_string(m_imageCount) + ".tif";
-		beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".tif";
-		diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".tif";
-		specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".tif";
-		refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".tif";
-		irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".tif";
-		reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".tif";
-		indirectString = m_indirectFrame + framePadding + to_string(m_imageCount) + ".tif";
-		textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".tif";
-		textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".tif";
-		textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".tif";
+		beautyString = m_beautyFrame + framePadding + to_string(m_imageCount) + ".png";
+		diffuseString = m_diffuseFrame + framePadding + to_string(m_imageCount) + ".png";
+		specularString = m_specularFrame + framePadding + to_string(m_imageCount) + ".png";
+		refDistortString = m_refDistortFrame + framePadding + to_string(m_imageCount) + ".png";
+		irradianceString = m_irradianceFrame + framePadding + to_string(m_imageCount) + ".png";
+		reflectionString = m_reflectionFrame + framePadding + to_string(m_imageCount) + ".png";
+		indirectString = m_indirectFrame + framePadding + to_string(m_imageCount) + ".png";
+		textPlane1String = m_textFrame1 + framePadding + to_string(m_imageCount) + ".png";
+		textPlane2String = m_textFrame2 + framePadding + to_string(m_imageCount) + ".png";
+		textPlane3String = m_textFrame3 + framePadding + to_string(m_imageCount) + ".png";
 	}
 	else
 	{
@@ -273,10 +279,13 @@ void Compositing::Render(string shaderresource, string rendertarget) {
 	//		m_imageCount = m_startFrame;
 	//	if (!m_shotTaken)
 	//	{
-	//		manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
+	//manager->saveImage("PresCube/WithLogoIrradiance.png", manager->pBackBuffer);
 	//		m_shotTaken = true;
 	//	}
-
+	if (m_imageCount == 2275)
+	{
+		exit(EXIT_FAILURE);
+	}
 	
 }
 
@@ -353,7 +362,7 @@ void Compositing::Initialize() {
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
-
+	
 	gdevice->CreateTexture2D(&desc, nullptr, &texture); // add subresource
 	manager->createTexture2D(
 		"Final",
@@ -384,15 +393,15 @@ void Compositing::Initialize() {
 
 
 
-	m_UVFrame = "KHK_Logo_Rink_Animation_Alpha_uvLayer/UVb_uv";
+	m_UVFrame = "KHK_Logo_Rink_Animation_Alpha_uvLayer/uv_uv";
 	m_UVReflectionFrame = "";
-	m_beautyFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
-	m_diffuseFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
-	m_specularFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_beautyFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/btBeauty.";
+	m_diffuseFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/btBeauty.";
+	m_specularFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/btBeauty.";
 	m_refDistortFrame = "";
-	m_indirectFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
-	m_reflectionFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
-	m_irradianceFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/MasterBeauty.";
+	m_indirectFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/btBeauty.";
+	m_reflectionFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/btBeauty.";
+	m_irradianceFrame = "KHK_Logo_Rink_Animation_Alpha_mainLayer/btBeauty.";
 	m_textFrame1 = "TextPlane/text_uv";
 	m_textFrame2 = "textPlane2/untitled.";
 	m_textFrame3 = "textPlane3/untitled.";

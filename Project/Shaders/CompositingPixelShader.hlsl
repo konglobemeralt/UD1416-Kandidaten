@@ -244,6 +244,8 @@ float4 PS_main(VS_OUT input) : SV_TARGET
 			}
 		}
 
+		
+
 		//Reflection on the is
 		if (!(tempPlayerReflection.w < 0.9) && tempUVRef.w > 0.999f)
 		{

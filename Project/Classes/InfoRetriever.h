@@ -48,9 +48,9 @@ private:
     };
     
     vector<string> fileNames;
-    vector<int> fileNameSizes;
-    vector<int> playerOrderNr; //innehåller i samma ordning som fileNames de olika spelar indexen
-    vector<int> playerNr;
+    vector<unsigned int> fileNameSizes;
+    vector<unsigned int> playerOrderNr; //innehåller i samma ordning som fileNames de olika spelar indexen
+    vector<unsigned int> playerNr;
     vector<PlayerName> playerNames;
 
 public:
