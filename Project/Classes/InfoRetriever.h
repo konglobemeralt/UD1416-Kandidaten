@@ -90,7 +90,6 @@ private:
                     fileNames.push_back(fileNamePointer);
                     fileNameSizes.push_back(fileNameSize);
                 }
-
             } while (FindNextFile(hFind, &data));
         }
         else 

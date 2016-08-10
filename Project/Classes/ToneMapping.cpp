@@ -46,38 +46,38 @@ void ToneMapping::Render(string shaderresource, string rendertarget) {
 	deviceContext->Draw(4, 0);
 	manager->generateMips("REINHARD_AvgLuminance_SRV_and_RTV", "REINHARD_AvgLuminance_SRV_and_RTV");
 
-	//// RENDER CONTROLS
-	UINT SHIFT = 0x10;
-	UINT CTRL = 0x11;
-	UINT G = 0x47;
-	UINT L = 0x4C;
-	UINT ADD = 0x6B;
-	UINT SUB = 0x6D;
+	////// RENDER CONTROLS
+	//UINT SHIFT = 0x10;
+	//UINT CTRL = 0x11;
+	//UINT G = 0x47;
+	//UINT L = 0x4C;
+	//UINT ADD = 0x6B;
+	//UINT SUB = 0x6D;
 
-	//// TOGGLE GLOBAL
-	if (GetAsyncKeyState(G)) {
-		mipBuffer.mipLevel = { textureWidth,	// miplevel
-			2,									// Max(0) or Avg(1) Luminance, or final render(2)
-			0,									// Global(0) or Local(1) TMO, or no TMO(2)
-			reinhardKey							// Key
-		};
-	}
+	////// TOGGLE GLOBAL
+	//if (GetAsyncKeyState(G)) {
+	//	mipBuffer.mipLevel = { textureWidth,	// miplevel
+	//		2,									// Max(0) or Avg(1) Luminance, or final render(2)
+	//		0,									// Global(0) or Local(1) TMO, or no TMO(2)
+	//		reinhardKey							// Key
+	//	};
+	//}
 	//// TOGGLE LOCAL
-	else if (GetAsyncKeyState(L)) {
+	//else if (GetAsyncKeyState(L)) {
 		mipBuffer.mipLevel = { textureWidth,	// miplevel
 			2,									// Max(0) or Avg(1) Luminance, or final render(2)
 			1,									// Global(0) or Local(1) TMO, or no TMO(2)
 			reinhardKey							// Key
 		};
-	}
-	//// NO TMO
-	else {
-		mipBuffer.mipLevel = { textureWidth,	// miplevel
-			2,									// Max(0) or Avg(1) Luminance, or final render(2)
-			2,									// Global(0) or Local(1) TMO, or no TMO(2)
-			reinhardKey							// Key
-		};
-	}
+	//}
+	////// NO TMO
+	//else {
+	//	mipBuffer.mipLevel = { textureWidth,	// miplevel
+	//		2,									// Max(0) or Avg(1) Luminance, or final render(2)
+	//		2,									// Global(0) or Local(1) TMO, or no TMO(2)
+	//		reinhardKey							// Key
+	//	};
+	//}
 
 	//// TOGGLE LUMINANCE
 	//if (GetAsyncKeyState(SHIFT)) {

@@ -259,3 +259,6 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+*.tif
+Project/Assets/KHK_Logo_Rink_Animation_Alpha_mainLayer/desktop.ini
+Project/Assets/KHK_Logo_Rink_Animation_Alpha_uvLayer/desktop.ini
